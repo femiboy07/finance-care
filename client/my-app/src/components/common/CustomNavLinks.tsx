@@ -22,7 +22,7 @@ const CustomNavLinks:React.FC<CustomNavProps>=({to,children,exact=false,title})=
     const cloneWithProps = (child: React.ReactNode): React.ReactNode => {
         if (React.isValidElement(child)) {
           const props = {
-            className: isActive ? `  ${child.type === 'svg' ? 'lg:mr-[24px]' : 'lg:mr-[24px]'}` : 'lg:mr-[24px]',
+            className: isActive ? `  ${child.type === 'svg' ? 'mr-[24px]' : 'mr-[24px]'}` : 'mr-[24px]',
             fill: child.type === 'svg' ? (isActive ? '' : 'white') : undefined,
             
             children: React.Children.map(child.props.children, cloneWithProps),
@@ -32,7 +32,7 @@ const CustomNavLinks:React.FC<CustomNavProps>=({to,children,exact=false,title})=
         return child;
       };
     return(
-        <NavLink to={to}  title={title}  className={`min-h-[40px]  lg:px-3 px-1 py-2  cursor-pointer flex items-center w-full lg:justify-start justify-center ${isActive ? 'bg-orange-300 text-orange-600  ':" "} `} reloadDocument={title === 'transaction' ? true : false}>
+        <NavLink to={to}  title={title}  className={`min-h-[40px]  px-3  py-2  cursor-pointer flex items-center w-full justify-start  ${isActive ? 'bg-orange-300 text-orange-600  ':" "} `} reloadDocument={title === 'transaction' ? true : false}>
           {React.Children.map(children,cloneWithProps)}
         </NavLink>
     )

@@ -22,7 +22,7 @@ export default function SelectAccount({name,setAccountName,accountName}:{name:st
     return (
         <>
          <Select name={name} value={accountName}  onValueChange={setAccountName} >
-                    <SelectTrigger className="w-[180px] h-12 bg-white">
+                    <SelectTrigger className="w-[180px] min-h-12 bg-white">
                         <SelectValue placeholder="Accounts" defaultValue={accountName} />
                       <SelectContent> 
                       {data && data.map((item:any)=>{

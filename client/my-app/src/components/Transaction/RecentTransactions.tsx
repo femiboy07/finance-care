@@ -51,14 +51,14 @@ export default function ReacentTransactions(){
           
        
     return (
-        <Card className=' lg:w-[55%] w-full'>
+        <Card className=' w-full lg:w-[50%]'>
          <CardHeader>
           <CardTitle className='flex justify-between items-center'>
-             <h1>Transaction History</h1>
-             <Button onClick={()=>navigate('transactions')} className={buttonVariants({variant:'ghost',className:'bg-transparent text-orange-300'})}>
+          <h1>Transaction History</h1>
+            <Button onClick={()=>navigate('transactions',{replace:true,state:'love'})} className={buttonVariants({variant:'ghost',className:'bg-transparent text-orange-300'})}>
                 view all
-                <ArrowRightSquareIcon className='ml-2'/>
-            </Button>
+              <ArrowRightSquareIcon className='ml-2'/>
+            =</Button>
           </CardTitle>
           </CardHeader>
           <CardContent>

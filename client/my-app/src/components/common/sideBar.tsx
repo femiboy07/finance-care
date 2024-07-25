@@ -9,30 +9,25 @@ import { useInnerWidthState } from "../../hooks/useInnerWidthState";
 
 
 
-export default function SideBar(){
-            
-
-const location=useLocation();
-// const convert = useMemo(()=>month > 0  &&  month <= 9 ? `0${month}` : `${month}`,[month]);
-
-   const [width]=useInnerWidthState();
+export default function SideBar({open,setOpen}:{open:boolean,setOpen:any}){
+      
 
 
     return(
-        <div  style={{height:`100%`}} className={`  ${width <= 1200 ? 'hidden':'fixed'}   flex-col  border-black w-64     justify-between rounded-bl-lg  z-50 bg-white text-black pb-5  overflow-y-auto      shadow-sm flex left-0   bottom-0 `}>
-             <div className="h-16 w-full  left-[12px]  border-black bg-white   p-[18px]   flex gap-2 items-center">
-             <div className=" relative   w-10 h-10">
+        <div  style={{height:`100%`}} className={` hidden   lg:fixed shadow-md   lg:flex-col  border-black w-64     justify-between rounded-bl-lg  z-50 bg-white text-black pb-5  overflow-y-auto       lg:flex  left-0   bottom-0 `}>
+             <div className="h-16 w-full  left-[12px]  border-black bg-white   p-[18px] flex  gap-2 items-center">
+             <div className=" relative w-10 h-10">
              <img src={peerIcon} alt="my-img" className="absolute  inset-0"/>
             
              </div>
-             <span className="lg:block hidden font-mono">TrackKIT</span>
+             <span className="block  font-mono">TrackKIT</span>
            </div>
             <div className=" flex-[1_1_auto] p-[12px] w-full space-y-2  mt-5 mb-auto " id="sections">
             <div className="items px-3 rounded-md">
                  <CustomNavLinks title="dashboard"  to="/dashboard">
                   <>
-                  <LayoutDashboardIcon className={`lg:mr-[24px]`} />
-                  <span className={`lg:flex hidden`}>Dashboard</span>
+                  <LayoutDashboardIcon className={`mr-[24px]`} />
+                  <span className={``}>Dashboard</span>
                   </>
                  </CustomNavLinks>
             </div>
@@ -44,40 +39,34 @@ const location=useLocation();
             isPending ? "" : "",
             isActive ? "text-orange-300" : "",
             isTransitioning ? "" : "",
-           ].join(`min-h-[40px]  lg:px-3 px-1 py-2  cursor-pointer flex items-center w-full lg:justify-start justify-center ${isActive ? 'bg-orange-300 text-orange-600':''} `)
+           ].join(`min-h-[40px]  px-3  py-2  cursor-pointer flex items-center w-full justify-start  ${isActive ? 'bg-orange-300 text-orange-600':''} `)
             }  to={`budget`}   >
-                
-              
-                {({ isActive  }) => (
+              {({ isActive  }) => (
                   <>
-                   <Backpack  color={`${isActive ? 'orange':'black'}`}   className="lg:mr-[24px]" />
-                   <span className="lg:flex hidden  ">Budgets</span>
+                   <Backpack  color={`${isActive ? 'orange':'black'}`}   className="mr-[24px]" />
+                   <span className="  ">Budgets</span>
                  </>
-                )}
-               
-               
-               
-                </NavLink>
+              )}
+            </NavLink>
             </div>
       
             <div className="items px-3">
            
-            <NavLink   title="transaction"  className={({ isActive, isPending, isTransitioning }) =>
+            <NavLink   title="transaction" reloadDocument={true}  className={({ isActive, isPending, isTransitioning }) =>
             [
             isPending ? "" : "",
             isActive ? "text-orange-300" : "",
             isTransitioning ? "" : "",
-           ].join(`min-h-[40px]  lg:px-3 px-1 py-2  rounded-md cursor-pointer flex items-center w-full lg:justify-start justify-center ${isActive ? 'bg-orange-300 text-orange-600':''} `)
+           ].join(`min-h-[40px]  px-3  py-2  rounded-md cursor-pointer flex items-center w-full justify-start  ${isActive ? 'bg-orange-300 text-orange-600':''} `)
             }  to={`/dashboard/transactions`}   >
                 
               
                 {({ isActive  }) => (
                   <>
-                   <LucideTerminalSquare  className="lg:mr-[24px]" />
-                   <span className="lg:flex hidden  ">Transactions</span>
+                   <LucideTerminalSquare  className="mr-[24px]" />
+                   <span className="  ">Transactions</span>
                  </>
                 )}
-               
                
                
                 </NavLink>
@@ -86,8 +75,8 @@ const location=useLocation();
             <div className="items px-3">
                  <CustomNavLinks  title="accounts"  to="/dashboard/accounts">
                  <>
-                <BanknoteIcon className="  lg:mr-[24px]"/>
-                <span className="lg:flex hidden ">Accounts</span>
+                <BanknoteIcon className="mr-[24px]"/>
+                <span className="">Accounts</span>
                 </>
                 </CustomNavLinks>
             </div>
@@ -95,7 +84,7 @@ const location=useLocation();
                  <CustomNavLinks  title="visualization"  to="/dashboard/visualization">
                  <>
                 <BarChart2Icon className="lg:mr-[24px]" />
-                <span className="lg:flex hidden ">Visualization</span>
+                <span className=" ">Visualization</span>
                 </>
                 </CustomNavLinks>
             </div>
@@ -105,15 +94,15 @@ const location=useLocation();
               <hr/>
             <div className="items px-3">
                  <Link  title="Overview" className=" min-h-[40px]  cursor-pointer flex items-center w-full lg:justify-start justify-center " to="/dashboard">
-                <Settings2Icon className=" text-black lg:mr-[24px]"/>
-                <span className="lg:flex hidden ">Settings</span>
+                <Settings2Icon className=" text-black mr-[24px]"/>
+                <span className="">Settings</span>
                 </Link>
             </div>
 
               <div className="items  min-h-[40px] px-3">
               <Link  title="Overview" className=" min-h-[40px]  cursor-pointer flex items-center w-full lg:justify-start justify-center " to="/dashboard">
-                <LogOutIcon className=" text-black lg:mr-[24px]"/>
-                <span className="lg:flex hidden ">LogOut</span>
+                <LogOutIcon className=" text-black mr-[24px]"/>
+                <span className=" ">LogOut</span>
                      
                 </Link>
 

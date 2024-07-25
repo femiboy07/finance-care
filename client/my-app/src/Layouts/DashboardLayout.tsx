@@ -6,6 +6,7 @@ import { Toaster } from "../@/components/ui/toaster";
 import { addMonths, subMonths } from "date-fns";
 import { useAuth } from "../context/userAutthContext";
 import { useInnerWidthState } from "../hooks/useInnerWidthState";
+import MobileSideBar from "../components/common/mobileSideBar";
 
 
 
@@ -19,7 +20,6 @@ export type ContextType={
     setMonth:any;
     searchParams:any;
     setSearchParams:any;
-    params:any;
     category:any;
     name:any;
     setCategory:any;
@@ -39,7 +39,7 @@ export default function DashBoardLayout(){
   
     const [months,setMonth]=useState(nextMonth);
     const [searchParams, setSearchParams] = useSearchParams();
-    const params = new URLSearchParams();
+    // const params = new URLSearchParams();
     const [name,setName]=useState(searchParams.get('name') || "");
     const [category,setCategory]=useState(searchParams.get("category") || "");
     const [width]=useInnerWidthState();
@@ -50,6 +50,13 @@ export default function DashBoardLayout(){
      "January", "February", "March", "April", "May", "June",
      "July", "August", "September", "October", "November", "December"
    ];
+   const [open,setOpen]=useState(false);
+   
+  const handleOpenSideBar=()=>{
+    
+    setOpen(true);
+  
+}
 
    const monthString=monthNames[months.getMonth()];
    
@@ -72,11 +79,12 @@ export default function DashBoardLayout(){
   
    
     return(
-        <div className="h-full w-full flex   ">
+    <div className="h-full w-full flex   ">
            {/* so this is for the side bar */}
-         <NavBar/>  
-         <SideBar/> 
-         <div className={ `flex   flex-col  h-full w-full max-['768px']:ml-5 lg:px-2 ml-auto  ${width <= 1200 ? 'ml-0':'ml-64'}`}>
+         <NavBar handleOpenSideBar={handleOpenSideBar}/>  
+         <SideBar setOpen={setOpen} open={open}/> 
+        {width  < 1024 && <MobileSideBar open={open} setOpen={setOpen}/>}
+        <div className={ `flex flex-col h-full w-full   mx-auto lg:ml-64  `}>
         <Outlet 
         context=
         {{PrevMonth,
@@ -87,7 +95,7 @@ export default function DashBoardLayout(){
         setMonth,
         searchParams,
         setSearchParams,
-        params,category
+        category
         ,name
         ,setCategory
         ,setName,
@@ -96,10 +104,8 @@ export default function DashBoardLayout(){
          page,
          currentPage,
         } satisfies ContextType}  /> 
-           
-        <Toaster/>
+       <Toaster/>
       </div>
-         
-        </div>
+      </div>
     )
 };

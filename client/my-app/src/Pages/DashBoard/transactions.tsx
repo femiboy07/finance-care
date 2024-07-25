@@ -8,13 +8,15 @@ import SelectAccount from "../../components/Transaction/selectAccount";
 import { TransactionTable, transactionColumns } from "../../components/Transaction/transactionData";
 import { Card } from "../../@/components/ui/card";
 import { Button, buttonVariants } from "../../@/components/ui/button";
-import {  useLocation, useNavigate, useOutletContext, useParams } from "react-router-dom";
+import {  useLocation, useNavigate, useOutletContext, useParams, useSearchParams } from "react-router-dom";
 import { ContextType } from "../../Layouts/DashboardLayout";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "../../@/components/ui/pagination";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../../@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
 import EditTransaction from "../../components/Transaction/EditTransaction";
 import AddTransaction from "../../components/Transaction/AddTransaction";
+import SearchFilterSkeleton from "../../components/Skeleton/SearchFiterSkeleton";
+import TransactionSkeleton from "../../components/Skeleton/TransactionSkeleton";
 
 
 
@@ -42,6 +44,7 @@ export default function TransactionPage(){
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isAddTransaction,setIsAddTransaction]=useState(false);
     const [selectedTransaction, setSelectedTransaction] = useState(null);
+    const [searchParam,setSearchParam]=useSearchParams();
   
   
    
@@ -49,38 +52,25 @@ export default function TransactionPage(){
       queryKey:['alltransactions',token.access_token,{name,category,year,month,page}],
       queryFn:fetchTransaction,
     })
-    const params = useMemo(()=>new URLSearchParams(),[]);
-   
-
-    useEffect(() => {
-      // Logic to set initial params or handle page load
-      if (!year || !month ) {
-        const currentYear = new Date().getFullYear();
-        const currentMonth = new Date().getMonth() + 1;
-        navigate(`/dashboard/transactions/${currentYear}/${currentMonth}?page=${page}`);
-      }
-     
-    }, [year, month, navigate,page]);
+    
    
 
     useEffect(()=>{
       
-      if (category) params.set('category',category);
-      if (name) params.set('name', name);
-      if(page) params.set('page',page.toString())
-       setSearchParams(params)
-      
-    },[category, name, setSearchParams, params, page]);
+      if (category) searchParam.set('category',category);
+      if (name) searchParam.set('name', name);
+      if(page) searchParam.set('page',page.toString())
+       setSearchParam(searchParam);
 
-    useEffect(() => {
-      // Cleanup function to reset the params when the component unmounts
-      return () => {
-        params.delete('category');
-        params.delete('name');
-        params.delete('page');
-        setSearchParams(params);
-      };
-    }, [setSearchParams, params]);
+      
+     
+    },[category, name, page, searchParam, setSearchParam]);
+
+    useEffect(()=>{
+     
+    },[location.search,navigate])
+
+    
 
   const handleOpenSideBar=()=>{
     setIsAddTransaction(true);
@@ -160,14 +150,14 @@ export default function TransactionPage(){
         return {
           ...col,
           cell: ({row}:any) => (
-            <DropdownMenu>
+            <DropdownMenu >
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">
                   <span className="sr-only">Open menu</span>
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="z-10">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                 <DropdownMenuItem
                   onClick={() => navigator.clipboard.writeText(row.original.category)}
@@ -194,7 +184,7 @@ export default function TransactionPage(){
           <h1 className="text-black text-2xl text-center lg:text-left">Transactions</h1>
           <div className="mt-1">
             <div className="date-table-filters w-full flex h-24 items-center  max-w-full ">
-                <MonthPicker params={params}/>
+                <MonthPicker params={searchParam}/>
                 <div className="ml-auto" >
                  <Button onClick={handleOpenSideBar} className={buttonVariants({variant:"default",className:" bg-orange-400"})}>
                    Add Transaction
@@ -203,12 +193,11 @@ export default function TransactionPage(){
             </div>
           
             </div>
-           
-            {data && month && year &&
-            <div className=" h-full">
-           
+            
             <div className="filters-searches max-w-full  w-full  ">
-               <div className="filter-container shadow-md bg-white h-24  flex items-center px-3">
+              {isPending && <SearchFilterSkeleton/>}
+              {data &&
+               <div className="filter-container shadow-md rounded-md bg-white h-24  flex items-center px-3">
                <SearchTransactions/>
                <div className="ml-auto   flex items-center">
                 <SelectAccount name={name} accountName={name} setAccountName={setName}/>
@@ -227,24 +216,26 @@ export default function TransactionPage(){
                     </SelectTrigger>
                  </Select>
                  </div>
-               </div> 
+               </div>} 
                </div>
-            
-              
-            <TransactionTable columns={columns} data={data.listTransactions} listData={data} isPending={isPending}/>
-               
-         
-             {isSidebarOpen && ( 
-              <Card className="fixed right-0  top-0 bottom-0 z-[48] w-96 px-5 h-full scrollbar-hide overflow-hidden scroll-m-0 overflow-y-auto"> 
-              <EditTransaction transaction={selectedTransaction} closeSideBar={closeSidebar}/>
-             </Card>
-           )} 
-            {isAddTransaction && ( 
+               {isAddTransaction && ( 
               <div className="fixed right-0  top-0 left-0 z-[9999] scrollbar w-full h-full flex justify-end "> 
              <AddTransaction setIsAddTransaction={setIsAddTransaction}/>
              </div>
            )}  
-          <Pagination className="mt-2 ">
+               {isSidebarOpen && ( 
+              <Card className="fixed right-0  top-0 bottom-0 z-[48] w-96 px-5 h-full scrollbar-hide overflow-hidden scroll-m-0 overflow-y-auto"> 
+              <EditTransaction transaction={selectedTransaction} closeSideBar={closeSidebar}/>
+             </Card>
+           )} 
+              
+        <div className=" h-full">
+        {isPending && <TransactionSkeleton/>}
+          
+          {data  && month && year && (
+            <>
+          <TransactionTable columns={columns} data={data.listTransactions} listData={data} isPending={isPending}/>
+               <Pagination className="mt-2 ">
              <PaginationContent className=" py-2  rounded-md ml-auto">
         <PaginationItem className=" bg-transparent  cursor-pointer rounded-md " >
           <PaginationPrevious  className=" hover:bg-transparent"  onClick={handlePrevious} />
@@ -255,7 +246,8 @@ export default function TransactionPage(){
         </PaginationItem>
       </PaginationContent>
       </Pagination>
-     </div>}
+      </>)}
+     </div>
     </div>
        
     )

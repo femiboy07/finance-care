@@ -12,6 +12,8 @@ import { useQuery } from "@tanstack/react-query";
 import { getMetrics, getUser } from "../../api/apiRequest";
 import { formatAmount } from "../../utils/formatAmount";
 import ReacentTransactions from "../../components/Transaction/RecentTransactions";
+import { useOutletContext, useSearchParams } from "react-router-dom";
+import { ContextType } from "../../Layouts/DashboardLayout";
 
 
 
@@ -20,6 +22,8 @@ import ReacentTransactions from "../../components/Transaction/RecentTransactions
 export default function DashBoard(){
             const [loading,setLoading]=useState(false);
             const token = JSON.parse(localStorage.getItem('userAuthToken') || '{}');
+          
+            const [searchParam,setSearchParam]=useSearchParams();
             const {isPending,error,data}=useQuery({
               queryKey:['metrics',token.access_token],
               queryFn: getMetrics
@@ -29,6 +33,8 @@ export default function DashBoard(){
               queryKey:['username',token.access_token],
               queryFn:getUser
             })
+
+     
 
       
       if(isPending){
@@ -48,7 +54,7 @@ export default function DashBoard(){
             console.log(usernameData)
 
 return (
-    <div className=" w-full lg:px-9 px-3 h-full mt-20 mb-10">
+    <div className=" w-full px-3 lg:px-9 h-full mt-20 mb-10">
         <div className=" w-full h-full space-y-8 "> 
         {usernameData &&  
          <div className="user-welcome text-orange-300 font-mono leading-9 font-extrabold">
@@ -130,7 +136,7 @@ return (
           </Card> */}
 
           <ReacentTransactions/>
-          <Card className=" w-full order-1 lg:px-5 px-0 flex-1 py-7">
+          <Card className=" w-[60%] order-1 lg:px-3 px-0 flex-1 py-7 ">
             <CardTitle className="mb-5">Statistics</CardTitle>
             <StatsGraph/>
           </Card>

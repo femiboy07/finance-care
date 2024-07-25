@@ -41,7 +41,7 @@ export const transactionColumns:ColumnDef<Transaction>[]=[
   {
     accessorKey:"date",
     header:({header:{colSpan}})=>{
-      return <div className="" >{"Date"}</div>
+      return <div className="uppercase" >{"Date"}</div>
     },
     cell:({row,cell})=>{
        const date=row.original.date;
@@ -60,7 +60,7 @@ export const transactionColumns:ColumnDef<Transaction>[]=[
     accessorKey:"description",
     header:(props)=>{
       props.header.colSpan=0;
-      return <div className="w-64">{"Description"}</div>
+      return <div className="w-64 uppercase">{"Description"}</div>
     },
     cell({cell,row}) {
         return <span className="w-32 font-bold">{row.original.description}</span>
@@ -70,7 +70,7 @@ export const transactionColumns:ColumnDef<Transaction>[]=[
   {
     accessorKey:"category",
     header:(props)=>{
-      return <div className=" max-w-32">{"Category"}</div>
+      return <div className=" max-w-32 uppercase">{"Category"}</div>
     },
     cell(props) {
         return (
@@ -91,7 +91,7 @@ export const transactionColumns:ColumnDef<Transaction>[]=[
 
  {
     accessorKey:"amount",
-    header:"Amount",
+    header:"AMOUNT",
     cell({row,cell}) {
     const amount:any = row.original.amount.$numberDecimal;
     const formatted = new Intl.NumberFormat("en-NG", {
@@ -148,7 +148,7 @@ export function TransactionTable<TData,TValue>({columns,data,isPending,listData}
    })
 
     return (
-      <div className=" px-5 py-4 bg-white">
+      <div className=" px-5 py-4 mt-5 bg-white rounded-md">
       <Table className="  border-separate [&_tc]:border-collapse md:table-auto table-fixed   border-0 border-spacing-y-2  ">
         <TableHeader className=" ">
           {table.getHeaderGroups().map((headerGroup) => (
@@ -169,23 +169,21 @@ export function TransactionTable<TData,TValue>({columns,data,isPending,listData}
           ))}
         </TableHeader>
         <TableBody className="border border-black">
-
-          {isPending  ? (<div className="flex justify-center text-black bg-red-600 w-full h-full">Loading...</div>):(
-          
-          <>
+       {isPending  ? (<div className="flex justify-center  text-black bg-red-600 w-full h-full">Loading...</div>):(
+      <>
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
               
               <TableRow
                  key={row.id}
                 data-state={row.getIsSelected() && "selected"}
-                className="border-l-2 py-2 border-separate "
+                className="border-l-2 py-4 border-separat  "
               >
                 {/* <td className="border fixed left-0 w-0 h-0"></td> */}
                 {row.getVisibleCells().map((cell) => (
                   <>
                   
-                  <TableCell key={cell.id} className=" first-of-type:border-spacing-y-72 last-of-type:border-r-2   last-of-type:rounded-r-md  first-of-type:border-l-4 h-4 py-1 first-of-type:mt-2 first-of-type:border-l-orange-700 first-of-type:rounded-l-lg border-t  border-b  first-line:border-l-black ">
+                  <TableCell key={cell.id} className=" bg-orange-100 first-of-type:border-spacing-y-72 last-of-type:border-r-2   last-of-type:rounded-r-md  first-of-type:border-l-4 h-4 py-4 first-of-type:mt-2 first-of-type:border-l-orange-700 first-of-type:rounded-l-lg border-t  border-b  first-line:border-l-black ">
                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                  </>

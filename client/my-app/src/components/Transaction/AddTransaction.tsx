@@ -107,7 +107,6 @@ const handleDayPickerSelect = (date: Date | undefined) => {
           await mutation.mutateAsync({ queryKey: ['addtransaction', token.access_token], variable:values});
        }catch(err){
         toast({
-            
           description:"transaction was not succesfull",
           variant:"destructive",
           className:"text-black bg-white"
@@ -150,9 +149,7 @@ useEffect(() => {
                 <div className='mb-[1em] flex flex-col '>
                 <div className=" form-header border px-[1em] space-y-4 mb-[24px] pt-[1em] rounded-md  pb-[1em]">
                  <h1 className='border-b'>Details</h1>
-                   
-               
-                 <FormField
+                <FormField
                 control={form.control}
                 name="type"
                 render={({ field }) => (

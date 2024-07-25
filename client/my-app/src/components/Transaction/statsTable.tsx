@@ -45,7 +45,7 @@ export default function StatsGraph(){
        }      
     
     return (
-         <ResponsiveContainer width="100%" height={300}  className=" bg-white">
+         <ResponsiveContainer width="100%" height={300}  className="">
              <LineChart width={500}  height={300} className='h-full' data={data}  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
              <Line type="monotone"  stroke="#888d48" />
     
