@@ -36,19 +36,9 @@ export default function MonthPicker({params}:{params:any}){
   },[NextMonth, convert, navigate, params, year]);
 
   useEffect(()=>{
-
-    
-  
-    if (year && convert) {
-      // const currentPath = window.location.pathname;
-      // console.log(currentPath);
-      const targetPath = `/dashboard/transactions/${year}/${convert}`;
-       
-      // Only navigate if we're not already on the target path
-      // if (currentPath !== targetPath) {
-      navigate(targetPath);
-      
-      
+  if (year && convert) {
+       const targetPath = `/dashboard/transactions/${year}/${convert}`;
+       navigate(targetPath);
     }
   },[year,convert,navigate])
   
@@ -65,7 +55,7 @@ export default function MonthPicker({params}:{params:any}){
            </Button>
          </div>
          <div className="date-picker date-title ml-2">  
-            <span className=" text-black text-3xl">{monthString}{year}</span>
+            <span className=" text-black text-lg lg:text-3xl">{monthString}{year}</span>
          </div>
         </div>
     )

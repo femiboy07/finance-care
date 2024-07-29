@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { LineChart,Line,CartesianGrid,XAxis,YAxis, ResponsiveContainer, Legend, Tooltip, Area,AreaChart, CartesianAxis} from 'recharts';
+import { LineChart,Line,CartesianGrid,XAxis,YAxis, ResponsiveContainer, Legend, Tooltip, Area,AreaChart, CartesianAxis, Bar,BarChart} from 'recharts';
+import { apiClient } from '../../api/axios';
+// import { BarChart } from 'lucide-react';
 
 
 
@@ -21,11 +23,7 @@ export default function StatsGraph(){
              useEffect(()=>{
                 if(token.access_token){
                     setLoading(true);
-                    axios.get("http://localhost:5000/api/transactions/statistics?year=2024",{
-                         headers:{
-                           "Authorization":`Bearer ${token.access_token}`
-                         }
-                      }).then((res:any)=>{
+                    apiClient.get("/transactions/statistics?year=2024").then((res:any)=>{
                          
                              setLoading(false)
                              console.log(res.data);
@@ -46,19 +44,18 @@ export default function StatsGraph(){
     
     return (
          <ResponsiveContainer width="100%" height={300}  className="">
-             <LineChart width={500}  height={300} className='h-full' data={data}  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-             <Line type="monotone"  stroke="#888d48" />
-    
-             <CartesianAxis stroke="#ccc" strokeDasharray="1 1" />
+             <BarChart width={500}  height={300}  data={data} margin={{top: 20, right: 20, bottom: 20, left: 20}}  >
+       
+             <CartesianAxis stroke="#ccc" strokeDasharray="3 3" />
              <XAxis dataKey="name"/>
-             <YAxis/>
+             <YAxis dataKey="expense"/> 
              <Tooltip/>
-             <Legend verticalAlign='top' horizAdvX={"right"} height={36} /> 
-              <Line type={"monotone"} dataKey="income" label={{fill:"orange",fontSize:20,enableBackground:"white",color:"white"}} stroke="#8884d8" />
-             <Line type={"monotone"} dataKey="expense" stroke="#82ca9d" /> 
-             
-          </LineChart>
-          </ResponsiveContainer>
+            
+             <Legend/> 
+             <Bar dataKey="expense"  fill="#8884d8" barSize={54}/>
+             <Bar dataKey="income" fill="#82ca9d" className=' w-full'  barSize={800}/>
+          </BarChart>
+       </ResponsiveContainer>
          
         
     )

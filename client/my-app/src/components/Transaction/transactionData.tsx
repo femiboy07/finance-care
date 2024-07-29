@@ -2,19 +2,13 @@ import React from "react";
 import {ColumnDef, flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../@/components/ui/table";
 import { formatDate } from "date-fns";
-import { formatAmount } from "../../utils/formatAmount";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../@/components/ui/select";
-import { CheckCircle2Icon, CheckCircleIcon, LucideHome, MoreHorizontal, ShoppingBag } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../../@/components/ui/dropdown-menu";
-import { Button } from "../../@/components/ui/button";
-import { useMutation } from "@tanstack/react-query";
-import EditTransaction from "./EditTransaction";
-import { useNavigate } from "react-router-dom";
-import { isPending } from "@reduxjs/toolkit";
+import { CheckCircleIcon } from "lucide-react";
 
 
 
-type Transaction={
+
+
+export type Transaction={
     _id:string;
     category:string;
     amount:any;
@@ -74,14 +68,11 @@ export const transactionColumns:ColumnDef<Transaction>[]=[
     },
     cell(props) {
         return (
-                           <>
-                           <div className="flex gap-2  ">
-                              
-                               <span className=" self-center">{props.row.original.category}</span>
-                              </div>
-                          
-                          
-                           </>
+        <>
+        <div className="flex gap-2  ">
+            <span className=" self-center">{props.row.original.category}</span>
+        </div>
+        </>
                          
         )
     },
@@ -183,7 +174,7 @@ export function TransactionTable<TData,TValue>({columns,data,isPending,listData}
                 {row.getVisibleCells().map((cell) => (
                   <>
                   
-                  <TableCell key={cell.id} className=" bg-orange-100 first-of-type:border-spacing-y-72 last-of-type:border-r-2   last-of-type:rounded-r-md  first-of-type:border-l-4 h-4 py-4 first-of-type:mt-2 first-of-type:border-l-orange-700 first-of-type:rounded-l-lg border-t  border-b  first-line:border-l-black ">
+                  <TableCell key={cell.id} className="  first-of-type:border-spacing-y-72 last-of-type:border-r-2   last-of-type:rounded-r-md  first-of-type:border-l-4 h-4 py-4 first-of-type:mt-2 first-of-type:border-l-orange-700 first-of-type:rounded-l-lg border-t  border-b  first-line:border-l-black ">
                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                  </>

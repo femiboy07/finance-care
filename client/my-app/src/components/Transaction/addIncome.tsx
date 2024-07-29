@@ -128,8 +128,8 @@ const formSchema=z.object({
         <Dialog>
         <DialogTrigger >
         <div className="flex flex-col gap-2 items-center">
-        <Button onClick={()=>navigate(`transactions`,{replace:true})} className={buttonVariants({variant:"secondary",size:"icon",className:"rounded-full min-h-12 bg-green-200 "})}>
-           <Plus color="white"  className="bg-green-600 rounded-full"/>
+        <Button onClick={()=>navigate(`transactions`,{replace:true})} className={buttonVariants({variant:"secondary",className:"rounded-full h-12 w-12  lg:h-16 lg:w-16   relative flex flex-col justify-center items-center bg-green-200 "})}>
+           <Plus color="white"  className="bg-green-600 self-center rounded-full  h-[25px] w-[25px]"/>
         </Button>
         <span className=" text-pretty font-semibold">Top up</span>
         </div>

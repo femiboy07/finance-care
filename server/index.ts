@@ -32,12 +32,14 @@ const port=5000;
 app.use(cors({
     origin:[
         "http://localhost:3000",
+        "http://localhost:3001",
         "http://localhost:5000"
     ],
     
 }));
 
 app.use(passport.initialize())
+app.use(express.json());
 app.use(express.urlencoded({extended:true}))
 app.use((req:CreateTransactionRequest,res,next)=>{
     req.io=io;
@@ -114,10 +116,7 @@ io.on("connection",(socket)=>{
              socket.on('trackBudget',async()=>{
                 const budget=await budgets.find({userId});
                 socket.emit('initialData',budget);
-
-
                 const changeStream=budgets.watch();
-
                 changeStream.on('change',async(change)=>{
                     if (change.operationType === 'update' || change.operationType === 'insert') {
                         const updatedBudget = await budgets.findById(change.documentKey._id);

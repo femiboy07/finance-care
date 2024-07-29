@@ -16,7 +16,7 @@ export default function SelectAccount({name,setAccountName,accountName}:{name:st
     const token = JSON.parse(localStorage.getItem('userAuthToken') || '{}');
     
     const {data,isPending,error}=useQuery({
-        queryKey:['accounts',token.access_token],
+        queryKey:['accounts'],
         queryFn:getAccountsName
    })
     return (

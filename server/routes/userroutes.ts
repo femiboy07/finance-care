@@ -1,5 +1,5 @@
 import express, { NextFunction, Request, Response } from "express";
-import { getUserName, register, signInUser } from "../controllers/user";
+import { getUserName, refreshToken, register, signInUser } from "../controllers/user";
 import { redirectIfAuthenticated } from "../middlewares/redirectIfAuthenticated";
 import oauth2Client from "../middlewares/googleauthClient";
 import user from "../models/User";
@@ -41,56 +41,7 @@ router.post('/logIn',signInUser);
 
 
 
-router.post('/refreshtoken', async (req: Request, res: Response) => {
-    const { refreshToken } = req.body;
-  
-    if (!refreshToken) {
-      return res.status(401).send('Refresh Token Required');
-    }
-  
-    try {
-      // Verify the refresh token
-      const decoded = jwt.verify(refreshToken, process.env.SECRET_KEY!) as {_id:string,email:string};
-      console.log(decoded,"decoded")
-      const users = await user.findById(decoded._id);
-      console.log(users)
-  
-      if (!users) {
-        return res.status(403).send('Invalid Refresh Token');
-      }
-  
-      // remove-old userRefreshtoken;
-
-      const tokenIndex=users.userRefreshTokens.indexOf(refreshToken);
-
-      if (tokenIndex === -1) {
-        return res.status(403).json({ message: 'Invalid Refresh Token' });
-    }
-
-    // Remove the old refresh token from the user's array
-    users.userRefreshTokens.splice(tokenIndex, 1);
-
-      // Generate a new access token
-      const accessToken = jwt.sign(
-        { id: users._id, email: users.email },
-        process.env.SECRET_KEY!,
-        { expiresIn: '1h' }
-      );
-
-      const refreshtoken = jwt.sign(
-        { id: users._id, email: users.email },
-        process.env.SECRET_KEY!,
-        { expiresIn: '7h' }
-      );
-
-      users.userRefreshTokens.push(refreshtoken);
-      await users.save();
-  
-      res.json({ accessToken ,refreshtoken});
-    } catch (err) {
-      return res.status(403).send('Invalid Refresh Token');
-    }
-  }); 
+router.post('/refreshtoken',refreshToken); 
 
 
 router.get('/google', passport.authenticate('jwt', { session: false }), (req:Request | any, res) => {

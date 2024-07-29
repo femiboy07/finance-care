@@ -66,8 +66,7 @@ export default function EditTransaction({transaction,closeSideBar}:{transaction:
         category:transaction.category,
         description:transaction.description,
         amount:transaction.amount.$numberDecimal,
-        // status:transaction.status,
-        accountId:transaction.accountId,
+         accountId:transaction.accountId,
     },
     mode:"onChange"
   })

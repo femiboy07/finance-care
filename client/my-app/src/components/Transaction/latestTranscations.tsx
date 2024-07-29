@@ -54,7 +54,6 @@ export default function LatestTranscations(){
             <TableCaption>Recent Transcation</TableCaption>
             <TableHeader>
                 <TableRow>
-                {/* <TableHead className="w-[100px]">Account Name</TableHead> */}
                 <TableHead>Date</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead >Category</TableHead>

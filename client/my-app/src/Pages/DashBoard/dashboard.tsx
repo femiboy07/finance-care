@@ -12,8 +12,11 @@ import { useQuery } from "@tanstack/react-query";
 import { getMetrics, getUser } from "../../api/apiRequest";
 import { formatAmount } from "../../utils/formatAmount";
 import ReacentTransactions from "../../components/Transaction/RecentTransactions";
-import { useOutletContext, useSearchParams } from "react-router-dom";
+import { useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
 import { ContextType } from "../../Layouts/DashboardLayout";
+import useRequireAuth from "../../hooks/useRequireAuth";
+import { createPortal } from "react-dom";
+import UserLoggedOut from "../../components/Modals/UserLoggedOut";
 
 
 
@@ -22,15 +25,18 @@ import { ContextType } from "../../Layouts/DashboardLayout";
 export default function DashBoard(){
             const [loading,setLoading]=useState(false);
             const token = JSON.parse(localStorage.getItem('userAuthToken') || '{}');
-          
+            const auth=useRequireAuth()
+            const navigate=useNavigate();
+            const {removeToken,isLoading}=useRequireAuth();
             const [searchParam,setSearchParam]=useSearchParams();
             const {isPending,error,data}=useQuery({
-              queryKey:['metrics',token.access_token],
-              queryFn: getMetrics
+              queryKey:['metrics'],
+              queryFn: getMetrics,
+             
             })
 
             const {data:usernameData}=useQuery({
-              queryKey:['username',token.access_token],
+              queryKey:['username'],
               queryFn:getUser
             })
 
@@ -55,7 +61,8 @@ export default function DashBoard(){
 
 return (
     <div className=" w-full px-3 lg:px-9 h-full mt-20 mb-10">
-        <div className=" w-full h-full space-y-8 "> 
+        <div className=" w-full h-full space-y-8 ">
+         
         {usernameData &&  
          <div className="user-welcome text-orange-300 font-mono leading-9 font-extrabold">
           <h1 className=" text-2xl ">Welcome, {usernameData.data}</h1>
@@ -141,7 +148,10 @@ return (
             <StatsGraph/>
           </Card>
         </div>
+        <div className="fixed -translate-x-1/2 top-1/2 -translate-y-1/2 left-1/2 w-full">
+        {isLoading && <UserLoggedOut/>}
         </div>
+    </div>
         
     )
 }

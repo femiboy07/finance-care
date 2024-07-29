@@ -17,7 +17,7 @@ export default function ReacentTransactions(){
     const navigate=useNavigate()
     const {data,isPending,isSuccess,error}=useQuery({
         queryFn:fetchTransactions,
-        queryKey:["latesttransaction",token.access_token]
+        queryKey:["latesttransaction"]
     });
 
     if(isPending){
@@ -27,7 +27,7 @@ export default function ReacentTransactions(){
     if(error){
         console.log('error')
     }
-
+      console.log(data,"recent transaction")
     const time=data && data.transactions.map((item:any)=>{
         return {
             ...item,
@@ -58,13 +58,13 @@ export default function ReacentTransactions(){
             <Button onClick={()=>navigate('transactions',{replace:true,state:'love'})} className={buttonVariants({variant:'ghost',className:'bg-transparent text-orange-300'})}>
                 view all
               <ArrowRightSquareIcon className='ml-2'/>
-            =</Button>
+            </Button>
           </CardTitle>
           </CardHeader>
           <CardContent>
            {newData && Object.keys(newData).map((category)=>(
              <div key={category} className='flex font-bold flex-col mb-3 '>
-             <h2 className='pb-3   text-gray-400 text-sm'>{category}</h2>
+             <h2 className='pb-3 text-slate-200 text-md'>{category}</h2>
                <ul className='space-y-3'>
                  {newData[category].map((transaction:any)=>(
                     <li key={transaction._id} className='flex justify-between w-full'>
@@ -72,8 +72,7 @@ export default function ReacentTransactions(){
                         <span>{transaction.category}</span>
                          <h4 className=' text-xs text-gray-300'>{transaction.time}</h4>
                         </div>
-                      
-                      <span className={` ${transaction.type === 'income' ? 'text-green-500 font-bold':'text-red-600 font-bold'}`}>{formatAmount(transaction.amount.$numberDecimal)}</span>
+                      <span className={` ${transaction.type === 'income' ? 'text-green-500 font-bold':'text-black font-bold'}`}>{formatAmount(transaction.amount.$numberDecimal)}</span>
                     </li>
                  ))}
                 </ul> 

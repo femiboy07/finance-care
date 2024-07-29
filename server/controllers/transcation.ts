@@ -33,15 +33,18 @@ export interface CreateTransactionRequest extends Request {
 
 
 export async function createTranscation(req:CreateTransactionRequest,res:Response):Promise <ITranscations | any>{
-        const {type,amount,description,category,accountId}=req.body;
+        const {type,amount,description,category,accountId,date}=req.body;
 
      
 
         try{
+          // if(  !amount || !description || !category){
+          //   return res.status(400).json({message:"those values are needed"})
+          //  }
 
           if (!type) {
             return res.status(400).json({ message: "Transaction type is required" });
-        }
+          }
         if (!amount) {
             return res.status(400).json({ message: "Transaction amount is required" });
         }
@@ -51,9 +54,9 @@ export async function createTranscation(req:CreateTransactionRequest,res:Respons
         if (!category) {
             return res.status(400).json({ message: "Transaction category is required" });
         }
-      //   if (!date) {
-      //     return res.status(400).json({ message: "Transaction date is required" });
-      // }
+        if (!date) {
+          return res.status(400).json({ message: "Transaction date is required" });
+      }
        
         if (!accountId) {
             return res.status(400).json({ message: "Account ID is required" });
@@ -84,7 +87,8 @@ export async function createTranscation(req:CreateTransactionRequest,res:Respons
                 name:account.name,
                 amount,
                 description,
-                category
+                category,
+                date:date
              });
              
             
@@ -202,7 +206,7 @@ export async function getLatestTranscations(req:CreateTransactionRequest,res:Res
     try{
       const transactions = await transcation.aggregate([
         { $match: { userId: req.user?._id! } }, // Filter by user ID if needed
-        { $sort: { date: -1 } }, // Sort by date in descending order
+        { $sort: { date:  -1} }, // Sort by date in descending order1
         { $limit: 3 } // Limit to the specified number of latest transactions
     ]);
     

@@ -17,7 +17,7 @@ export default function AccountPage(){
     const token = JSON.parse(localStorage.getItem('userAuthToken') || '{}');
     const [hideOver,setHideOver]=useState(false);
     const {data,isPending,error}=useQuery({
-         queryKey:['allaccounts',token.access_token],
+         queryKey:['allaccounts'],
          queryFn:getAccounts
     })
     

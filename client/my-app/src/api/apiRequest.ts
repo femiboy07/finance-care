@@ -1,5 +1,6 @@
 import { MutationFunction, MutationKey, QueryFunction } from "@tanstack/react-query";
 import axios from "axios";
+import { apiClient } from "./axios";
 
 
 
@@ -27,13 +28,9 @@ interface updateTransactionParams {
 
 
 export async function getAccountsName({queryKey}:any){
-  const [_key,token]=queryKey
+  const [_key]=queryKey
     try{
-    const res=axios.get("http://localhost:5000/api/account/get",{
-           headers:{
-            'Authorization':`Bearer ${token}`
-           }
-      });
+    const res=apiClient.get("/account/get");
 
       const data=(await res).data;
 
@@ -51,13 +48,9 @@ export async function getAccountsName({queryKey}:any){
 
 
 export async function fetchTransactions({queryKey}:any){
-  const [_key,token]=queryKey;
+  const [_key]=queryKey;
   try{
-    const res=axios.get("http://localhost:5000/api/transactions/latesttransaction",{
-           headers:{
-            'Authorization':`Bearer ${token}`
-           }
-      });
+    const res=apiClient.get("/transactions/latesttransaction");
 
       const data=(await res).data;
 
@@ -72,8 +65,9 @@ export async function fetchTransactions({queryKey}:any){
 
 
 
+
 export async function fetchTransaction({queryKey}:any){
-  const [_key,token,{name,category,year,month,page}]=queryKey;
+  const [_key,{name,category,year,month,page}]=queryKey;
   console.log(_key,name)
   const numbers=[1,2,3,4,5,6,7,8,9];
   
@@ -82,20 +76,12 @@ export async function fetchTransaction({queryKey}:any){
 
   try{
     if(name || category || page ){
-      const res= await axios.get(`http://localhost:5000/api/transactions/listtransactions/${year}/${convert}?page=${page}&name=${name}&category=${category}`,{
-        headers:{
-         'Authorization':`Bearer ${token}`
-        }
-   });
+      const res= await apiClient.get(`/transactions/listtransactions/${year}/${convert}?page=${page}&name=${name}&category=${category}`);
    const data= res.data;
    
    return data;
     }
-    const res=axios.get(`http://localhost:5000/api/transactions/listtransactions/${year}/${convert}?page=${page}`,{
-           headers:{
-            'Authorization':`Bearer ${token}`
-           }
-      });
+    const res=axios.get(`/transactions/listtransactions/${year}/${convert}?page=${page}`);
     const data=(await res).data;
     
 
@@ -107,19 +93,28 @@ export async function fetchTransaction({queryKey}:any){
     }
 }
 
+// export async function refreshToken({queryKey}:any){
+//   const [_key,token]=queryKey;
+//      try{
+//            const res=await apiClient.post("/api/auth/refreshToken",{
+//               refreshToken:token
+//            })
+//             localStorage.setItem("userAuthToken",JSON.stringify(res.data))
+//            return res.data;
+//      }catch(err){
+//             console.log(err)
+//      }
+// }
+
 
 
 export async function getMetrics({queryKey}:any):Promise<Metrics | any>{
-  const [_key,token]=queryKey;
+  const [_key]=queryKey;
 
   try{
-  const res= await axios.get('http://localhost:5000/api/transactions/metrics',{
-      headers:{
-          "Authorization":`Bearer ${token}`
-      }
-   });
+  const res= await apiClient.get('/transactions/metrics');
 
-   const data=(await res).data;
+   const data= res.data;
 
 
    return data;
@@ -130,13 +125,9 @@ export async function getMetrics({queryKey}:any):Promise<Metrics | any>{
 
 
 export async function getAccounts({queryKey}:any){
-  const [_key,token]=queryKey
+  const [_key]=queryKey
     try{
-    const res=axios.get("http://localhost:5000/api/account/get",{
-           headers:{
-            'Authorization':`Bearer ${token}`
-           }
-      });
+    const res=apiClient.get("/account/get");
 
       const data=(await res).data;
 
@@ -159,13 +150,7 @@ export async function deleteTransaction({queryKey,variable}:DeleteTransactionPar
      const token=queryKey;
      console.log(token,variable)
     try{
-    const res=axios.delete(`http://localhost:5000/api/transactions/delete/${variable}`,{
-      
-      headers:{
-        'Authorization':`Bearer ${token}`,
-         "Content-Type":'application/x-www-form-urlencoded'
-       }  
-      });
+    const res=apiClient.delete(`/transactions/delete/${variable}`);
 
       const data=(await res).data;
 
@@ -186,22 +171,7 @@ export async function updateTransaction({queryKey,variable,id}:updateTransaction
 
   
 
- const res=await axios.put(`http://localhost:5000/api/transactions/update/${id}`,
-    //  type:variable.type,
-    //  category:variable.category,
-    //  date:variable.date,
-    //  amount:variable.amount,
-    //  accountId:variable.accountId,
-    //  description:variable.description,
-     variable
-   
- ,{
-   
-   headers:{
-     'Authorization':`Bearer ${token}`,
-      "Content-Type":'application/x-www-form-urlencoded'
-    }  
-   });
+ const res=await apiClient.put(`/transactions/update/${id}`,variable);
 
    const data= res.data;
 
@@ -215,14 +185,10 @@ export async function updateTransaction({queryKey,variable,id}:updateTransaction
 }
 
 export async function getUser({queryKey}:any){
-  const [_key,token]=queryKey;
+  const [_key]=queryKey;
   try{
     
- const res=await axios.get(`http://localhost:5000/api/transactions/getusername`,{headers:{
-   'Authorization':`Bearer ${token}`,
-   
-  }  
- });
+ const res=await apiClient.get(`/transactions/getusername`);
 
  const data= res.data;
 
@@ -235,31 +201,35 @@ export async function getUser({queryKey}:any){
 }
 
 export async function createTransaction({queryKey,variable}:CreateTransactionParams){
-  const [_key,token]=queryKey;
+  const [_key]=queryKey;
   const data1=variable.newValues;
-  console.log(variable,token);
+  console.log(variable);
   console.log(variable.type)
   try{
-    const res=await axios.post(`http://localhost:5000/api/transactions/create`,{
+    if(!variable) return;
+    const res=await apiClient.post(`/transactions/create`,{
        type:variable.type,
+       date:variable.date,
        category:variable.category,
        description:variable.description,
        amount:variable.amount,
        accountId:variable.accountId,
-    },{
-      
-      headers:{
-        'Authorization':`Bearer ${token}`,
-         "Content-Type":'application/x-www-form-urlencoded'
-       }  
-      });
+    });
 
       const data= res.data;
       return data;
   }catch(err){
+    console.log(err);
     return err;
+    
     
   }
 }
+
+interface LoginParams{
+  queryKey: string;
+  variable: any;
+}
+
 
 

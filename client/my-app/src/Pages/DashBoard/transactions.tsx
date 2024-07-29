@@ -3,20 +3,23 @@ import MonthPicker from "../../components/Transaction/monthPicker";
 import SearchTransactions from "../../components/Transaction/searchTransactions";
 import { Select, SelectItem, SelectTrigger, SelectValue,SelectContent } from "../../@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
-import { fetchTransaction, getAccountsName } from "../../api/apiRequest";
+import { fetchTransaction } from "../../api/apiRequest";
 import SelectAccount from "../../components/Transaction/selectAccount";
 import { TransactionTable, transactionColumns } from "../../components/Transaction/transactionData";
 import { Card } from "../../@/components/ui/card";
 import { Button, buttonVariants } from "../../@/components/ui/button";
 import {  useLocation, useNavigate, useOutletContext, useParams, useSearchParams } from "react-router-dom";
 import { ContextType } from "../../Layouts/DashboardLayout";
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "../../@/components/ui/pagination";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "../../@/components/ui/pagination";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../../@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
 import EditTransaction from "../../components/Transaction/EditTransaction";
 import AddTransaction from "../../components/Transaction/AddTransaction";
 import SearchFilterSkeleton from "../../components/Skeleton/SearchFiterSkeleton";
 import TransactionSkeleton from "../../components/Skeleton/TransactionSkeleton";
+import CardTransaction from "../../components/Transaction/CardTransaction";
+import { useInnerWidthState } from "../../hooks/useInnerWidthState";
+import { createPortal } from "react-dom";
 
 
 
@@ -45,31 +48,38 @@ export default function TransactionPage(){
     const [isAddTransaction,setIsAddTransaction]=useState(false);
     const [selectedTransaction, setSelectedTransaction] = useState(null);
     const [searchParam,setSearchParam]=useSearchParams();
-  
-  
+    const [width]=useInnerWidthState();
+
    
-   const {data,isPending,error}=useQuery({
-      queryKey:['alltransactions',token.access_token,{name,category,year,month,page}],
+  
+    const {data,isPending,error}=useQuery({
+      queryKey:['alltransactions',{name,category,year,month,page}],
       queryFn:fetchTransaction,
+    
     })
     
-   
-
-    useEffect(()=>{
-      
+     useEffect(()=>{
       if (category) searchParam.set('category',category);
       if (name) searchParam.set('name', name);
       if(page) searchParam.set('page',page.toString())
        setSearchParam(searchParam);
-
-      
-     
-    },[category, name, page, searchParam, setSearchParam]);
+      },[category, name, page, searchParam, setSearchParam]);
 
     useEffect(()=>{
      
     },[location.search,navigate])
 
+    
+    function clearFilters(){
+      // let param;
+      
+      const newParams = new URLSearchParams();
+    
+      // Set the new (empty) parameters
+      setSearchParam(newParams,{replace:true});
+      setCategory('');
+      setName("")
+      }
     
 
   const handleOpenSideBar=()=>{
@@ -145,7 +155,7 @@ export default function TransactionPage(){
       setSelectedTransaction(null); // Clear selected transaction
     };
 
-    const columns = transactionColumns.map((col) => {
+   const columns = transactionColumns.map((col) => {
       if (col.id === 'actions') {
         return {
           ...col,
@@ -194,17 +204,18 @@ export default function TransactionPage(){
           
             </div>
             
-            <div className="filters-searches max-w-full  w-full  ">
+           {width >= 1024 &&  <div className="filters-searches max-w-full  w-full  ">
               {isPending && <SearchFilterSkeleton/>}
               {data &&
                <div className="filter-container shadow-md rounded-md bg-white h-24  flex items-center px-3">
                <SearchTransactions/>
+               {searchParam.size > 1 && <Button className={buttonVariants({variant:'default',className:" bg-slate-100 text-slate-400 py-2 rounded-full"})} onClick={clearFilters}>Clearfilters</Button>}
                <div className="ml-auto   flex items-center">
                 <SelectAccount name={name} accountName={name} setAccountName={setName}/>
                  <Select value={category} onValueChange={setCategory} >
                     <SelectTrigger className="w-[180px] ml-2 h-12  bg-white">
                         <SelectValue placeholder="Category"/>
-                      <SelectContent className=" h-36 overflow-y-auto"> 
+                      <SelectContent className=" h-36 overflow-y-auto border-0 border-none outline-none"> 
                       {dataCategory.map((item)=>{
                         return (
                           <SelectItem  value={item} defaultValue={"all"}>
@@ -217,14 +228,16 @@ export default function TransactionPage(){
                  </Select>
                  </div>
                </div>} 
-               </div>
-               {isAddTransaction && ( 
-              <div className="fixed right-0  top-0 left-0 z-[9999] scrollbar w-full h-full flex justify-end "> 
+               </div>}
+               {isAddTransaction && 
+               (
+              createPortal(   
+              <div className="fixed right-0  top-0 left-0 z-[48] lg:z[9999]  w-full h-full flex justify-end "> 
              <AddTransaction setIsAddTransaction={setIsAddTransaction}/>
-             </div>
+             </div>,document.body)
            )}  
                {isSidebarOpen && ( 
-              <Card className="fixed right-0  top-0 bottom-0 z-[48] w-96 px-5 h-full scrollbar-hide overflow-hidden scroll-m-0 overflow-y-auto"> 
+              <Card className="fixed right-0  top-0 bottom-0 z-[48] lg:w-96 w-full px-5 h-full scrollbar-hide overflow-hidden scroll-m-0 overflow-y-auto"> 
               <EditTransaction transaction={selectedTransaction} closeSideBar={closeSidebar}/>
              </Card>
            )} 
@@ -234,7 +247,7 @@ export default function TransactionPage(){
           
           {data  && month && year && (
             <>
-          <TransactionTable columns={columns} data={data.listTransactions} listData={data} isPending={isPending}/>
+          {width < 768 ? <CardTransaction handleEditTransaction={handleEditTransaction} data={data.listTransactions}/>:<TransactionTable columns={columns} data={data.listTransactions} listData={data} isPending={isPending}/>}
                <Pagination className="mt-2 ">
              <PaginationContent className=" py-2  rounded-md ml-auto">
         <PaginationItem className=" bg-transparent  cursor-pointer rounded-md " >

@@ -58,17 +58,75 @@ export async function signInUser(req:Request,res:Response){
         if(!existingUser) return res.status(400).json({ msg: 'Invalid credentials' });
         const isMatch = await existingUser.comparePassword(password)
         if (!isMatch) return res.status(400).json({ msg: 'Invalid credentials' });
-        const payload = { id: existingUser.id };
-        const access_token=jwt.sign(payload,process.env.SECRET_KEY!,{expiresIn:'4h'})
+        const payload = { id: existingUser._id ,email:existingUser.email};
+        const access_token=jwt.sign(payload,process.env.SECRET_KEY!,{expiresIn:'60s'})
         const refresh_token=jwt.sign(payload, process.env.SECRET_KEY!,{expiresIn:'7d'});
+        const expiresIn=Math.floor(Date.now() / 1000 ) * 60 * 60    
         existingUser.userRefreshTokens.push(refresh_token);
         await existingUser.save();
-       return res.json({access_token,refresh_token}).status(200);
+       return res.json({access_token,refresh_token,expiresIn}).status(200);
        
      }catch(err){
       return res.send(err).status(500);
     }
  
+}
+
+
+export async function refreshToken(req:Request,res:Response){
+    const  {refreshToken}  = req.body;
+    console.log('Received refreshToken:', refreshToken);
+    console.log('Secret Key:', process.env.SECRET_KEY!);
+     console.log(process.env.SECRET_KEY!,"seddddfff")
+  
+    try {
+        console.log(refreshToken)
+        if (!refreshToken) {
+            return res.status(401).json({message:'Refresh Token Required'});
+          } 
+      // Verify the refresh token
+      const decoded = jwt.verify(refreshToken, process.env.SECRET_KEY!) as {id:string,email:string};
+      console.log(decoded,"decoded")
+      console.log(decoded.id)
+      const users = await user.findById(decoded.id);
+      console.log(users)
+  
+      if (!users) {
+        return res.status(403).json({message:'Invalid Refresh Token'});
+      }
+  
+      // remove-old userRefreshtoken;
+
+      const tokenIndex=users.userRefreshTokens.indexOf(refreshToken);
+
+      if (tokenIndex === -1) {
+        return res.status(403).json({ message: 'Invalid Refresh Token' });
+    }
+
+    // Remove the old refresh token from the user's array
+    users.userRefreshTokens.splice(tokenIndex, 1);
+
+      // Generate a new access token
+      const access_token = jwt.sign(
+        { id: users._id, email: users.email },
+        process.env.SECRET_KEY!,
+        { expiresIn: '1h' }
+      );
+
+      const refresh_token = jwt.sign(
+        { id: users._id, email: users.email },
+        process.env.SECRET_KEY!,
+        { expiresIn: '7h' }
+      );
+     
+
+      users.userRefreshTokens.push(refresh_token);
+      await users.save();
+  
+     return  res.status(200).json({ access_token ,refresh_token});
+    } catch (err) {
+      return res.status(403).json({message:err});
+    }
 }
 
 export async function getUserName(req:CreateTransactionRequest,res:Response){

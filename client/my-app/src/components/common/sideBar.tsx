@@ -4,17 +4,19 @@ import { Link, NavLink, useLocation, useNavigate, useOutletContext } from "react
 import CustomNavLinks from "./CustomNavLinks";
 import peerIcon from "../../assets/peercoin.png"
 import { useInnerWidthState } from "../../hooks/useInnerWidthState";
+import ProtectedPage from "../../Pages/Protected/Protected";
+import AuthProvider from "../../context/userAutthContext";
 
 
 
 
 
 export default function SideBar({open,setOpen}:{open:boolean,setOpen:any}){
-      
-
+  
 
     return(
-        <div  style={{height:`100%`}} className={` hidden   lg:fixed shadow-md   lg:flex-col  border-black w-64     justify-between rounded-bl-lg  z-50 bg-white text-black pb-5  overflow-y-auto       lg:flex  left-0   bottom-0 `}>
+        
+        <div  style={{height:`100%`}} className={` hidden   xl:fixed shadow-md   lg:flex-col  border-black w-64     justify-between rounded-bl-lg  z-50 bg-white text-black pb-5  overflow-y-auto       xl:flex  left-0   bottom-0 `}>
              <div className="h-16 w-full  left-[12px]  border-black bg-white   p-[18px] flex  gap-2 items-center">
              <div className=" relative w-10 h-10">
              <img src={peerIcon} alt="my-img" className="absolute  inset-0"/>
@@ -24,7 +26,7 @@ export default function SideBar({open,setOpen}:{open:boolean,setOpen:any}){
            </div>
             <div className=" flex-[1_1_auto] p-[12px] w-full space-y-2  mt-5 mb-auto " id="sections">
             <div className="items px-3 rounded-md">
-                 <CustomNavLinks title="dashboard"  to="/dashboard">
+                 <CustomNavLinks title="dashboard"  to="/dashboard" >
                   <>
                   <LayoutDashboardIcon className={`mr-[24px]`} />
                   <span className={``}>Dashboard</span>
@@ -52,21 +54,19 @@ export default function SideBar({open,setOpen}:{open:boolean,setOpen:any}){
       
             <div className="items px-3">
            
-            <NavLink   title="transaction" reloadDocument={true}  className={({ isActive, isPending, isTransitioning }) =>
+            <NavLink   title="transaction"   className={({ isActive, isPending, isTransitioning }) =>
             [
             isPending ? "" : "",
             isActive ? "text-orange-300" : "",
             isTransitioning ? "" : "",
            ].join(`min-h-[40px]  px-3  py-2  rounded-md cursor-pointer flex items-center w-full justify-start  ${isActive ? 'bg-orange-300 text-orange-600':''} `)
-            }  to={`/dashboard/transactions`}   >
-                
-              
-                {({ isActive  }) => (
+            }  to={`transactions`}   >
+            {({ isActive  }) => (
                   <>
                    <LucideTerminalSquare  className="mr-[24px]" />
                    <span className="  ">Transactions</span>
                  </>
-                )}
+            )}
                
                
                 </NavLink>
@@ -110,5 +110,7 @@ export default function SideBar({open,setOpen}:{open:boolean,setOpen:any}){
             </div> 
            
         </div>
+       
+      
     )
 }

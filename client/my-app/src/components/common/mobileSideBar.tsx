@@ -15,7 +15,7 @@ export default function MobileSideBar({open,setOpen}:{open:boolean,setOpen:any})
 
 
   return(
-      <div  style={{height:`100%`}} className={` transition-opacity  duration-1000  ${open ? 'fixed  opacity-100' : 'hidden  translate-x-1/2'} shadow-md   flex-col  border-black w-64     justify-between rounded-bl-lg  z-50 bg-white text-black pb-5  overflow-y-auto       flex  left-0   bottom-0 `}>
+      <div  style={{height:`100%`}} className={` transition-opacity max-[450px]:w-full right-0  duration-1000  ${open ? 'fixed  opacity-100' : 'hidden  translate-x-1/2'} shadow-md   flex-col  border-black sm:w-64     justify-between rounded-bl-lg  z-50 bg-white text-black pb-5  overflow-y-auto       flex  left-0   bottom-0 `}>
            <div className="h-16 w-full  left-[12px]  border-black bg-white   p-[18px] flex  gap-2 items-center">
            <div className=" relative w-10 h-10">
            <img src={peerIcon} alt="my-img" className="absolute  inset-0"/>
