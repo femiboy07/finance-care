@@ -66,6 +66,10 @@ module.exports = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "sidebar-animate":{
+            from:{"transform":"translateX(250px)",opacity:"0"},
+            to:{"transform":"translateX(0)",opacity:"1"}
+        },
 
         "shadow-move":{
           '0%':{
@@ -88,7 +92,8 @@ module.exports = {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "shadow-move":"shadow-move 0.7s ease-in-out infinite alternate ",
-        "logo-bounce":"logo-bounce 0.7s linear infinite alternate",
+        "sidebar-animate":"sidebar-animate 0.7s ease-in-out ",
+        "logo-bounce":"logo-bounce 0.9s linear infinite alternate",
       },
     },
   },
@@ -96,8 +101,7 @@ module.exports = {
 
     function({addUtilities}){
       addUtilities({
-
-        '.scrollbar-widths':{
+          '.scrollbar-widths':{
           '&::-webkit-scrollbar-width': {
             display: 'none',
           },

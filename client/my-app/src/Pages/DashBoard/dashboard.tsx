@@ -143,7 +143,7 @@ return (
           </Card> */}
 
           <ReacentTransactions/>
-          <Card className=" w-[60%] order-1 lg:px-3 px-0 flex-1 py-7 ">
+          <Card className=" w-[60%] h-96 order-1 lg:px-3 px-3 flex-1 py-7 ">
             <CardTitle className="mb-5">Statistics</CardTitle>
             <StatsGraph/>
           </Card>

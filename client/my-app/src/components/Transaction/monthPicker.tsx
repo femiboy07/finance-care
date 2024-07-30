@@ -9,7 +9,7 @@ import { ContextType } from '../../Layouts/DashboardLayout';
 
 
 
-export default function MonthPicker({params}:{params:any}){ 
+export default function MonthPicker({params,page,setPage}:{params:any,page:number,setPage:any}){ 
 
   const {PrevMonth,NextMonth,months,monthString,month,year}=useOutletContext<ContextType>();
   const navigate=useNavigate();
@@ -17,23 +17,25 @@ export default function MonthPicker({params}:{params:any}){
  
   const handlePrevClick = useCallback(() => {
     PrevMonth();
+    setPage(1)
     const targetPath = `/dashboard/transactions/${year}/${convert}`;
     if (params) {
       navigate(`${targetPath}?${params}`);
     } else {
       navigate(targetPath);
     }
-  },[PrevMonth, convert, navigate, params, year]);
+  },[PrevMonth, convert, navigate, params, year,setPage]);
 
   const handleNextClick = useCallback(() => {
     NextMonth();
+    setPage(1)
     const targetPath = `/dashboard/transactions/${year}/${convert}`;
     if (params) {
       navigate(`${targetPath}?${params}`);
     } else {
       navigate(targetPath);
     }
-  },[NextMonth, convert, navigate, params, year]);
+  },[NextMonth, convert, navigate, params, year,setPage]);
 
   useEffect(()=>{
   if (year && convert) {

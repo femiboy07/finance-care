@@ -14,7 +14,8 @@ const LoadingOverlay: React.FC = () => {
       <div className="spinner animate-spin">
        <LoaderCircleIcon/>
       </div>
-      <p>Refreshing your session...</p>
+      
+      <p className='text-white bg-black px-3  py-3'>Refreshing your session...</p>
     </div>
   );
 };

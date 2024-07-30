@@ -1,6 +1,6 @@
 import { MutationFunction, MutationKey, QueryFunction } from "@tanstack/react-query";
 import axios from "axios";
-import { apiClient } from "./axios";
+import { apiClient } from "../context/LoadingContext";
 
 
 

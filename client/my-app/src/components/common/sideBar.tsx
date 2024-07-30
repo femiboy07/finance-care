@@ -20,8 +20,7 @@ export default function SideBar({open,setOpen}:{open:boolean,setOpen:any}){
              <div className="h-16 w-full  left-[12px]  border-black bg-white   p-[18px] flex  gap-2 items-center">
              <div className=" relative w-10 h-10">
              <img src={peerIcon} alt="my-img" className="absolute  inset-0"/>
-            
-             </div>
+            </div>
              <span className="block  font-mono">TrackKIT</span>
            </div>
             <div className=" flex-[1_1_auto] p-[12px] w-full space-y-2  mt-5 mb-auto " id="sections">
@@ -42,7 +41,7 @@ export default function SideBar({open,setOpen}:{open:boolean,setOpen:any}){
             isActive ? "text-orange-300" : "",
             isTransitioning ? "" : "",
            ].join(`min-h-[40px]  px-3  py-2  cursor-pointer flex items-center w-full justify-start  ${isActive ? 'bg-orange-300 text-orange-600':''} `)
-            }  to={`budget`}   >
+            }  to={`/dashboard/budgets`}   >
               {({ isActive  }) => (
                   <>
                    <Backpack  color={`${isActive ? 'orange':'black'}`}   className="mr-[24px]" />
@@ -67,9 +66,7 @@ export default function SideBar({open,setOpen}:{open:boolean,setOpen:any}){
                    <span className="  ">Transactions</span>
                  </>
             )}
-               
-               
-                </NavLink>
+             </NavLink>
             </div>
       
             <div className="items px-3">

@@ -10,6 +10,7 @@ import { useAuth } from "../context/userAutthContext";
 import useRequireAuth from "../hooks/useRequireAuth";
 import UserLoggedOut from "../components/Modals/UserLoggedOut";
 import { createPortal } from "react-dom";
+import LoadingOverlay from "../components/common/LoadingOverlay";
 
 
 
@@ -90,7 +91,7 @@ export default function DashBoardLayout(){
          <NavBar handleOpenSideBar={handleOpenSideBar}/>  
          <SideBar setOpen={setOpen} open={open}/> 
         {width  < 1280 && <MobileSideBar open={open} setOpen={setOpen}/>}
-         
+         <LoadingOverlay/>
         <div className={ `flex flex-col h-full w-full   mx-auto xl:ml-64 `}>
         <Outlet 
         context=

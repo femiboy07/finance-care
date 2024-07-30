@@ -22,6 +22,8 @@ import ProtectedPage from './Pages/Protected/Protected';
 import EditTransaction from './components/Transaction/EditTransaction';
 import AuthProvider from './context/userAutthContext';
 import { LoadingProvider } from './context/LoadingContext';
+import LoadingOverlay from './components/common/LoadingOverlay';
+import BudgetsPage from './Pages/DashBoard/budgets';
 
 
 export const queryClient=new QueryClient();
@@ -35,18 +37,13 @@ const root = ReactDOM.createRoot(
 const router=createBrowserRouter([
   {
     path:'/',
-    element:
-   
-     <App/>
+    // index:true,
+    element:<App/>
     
   },
   {
-    path:'auth',
-    element:
-   
-     <AuthLayout/>
-   
-    ,
+    path:'/auth',
+    element:<AuthLayout/>,
 
     children:[
           {
@@ -67,7 +64,11 @@ const router=createBrowserRouter([
   
            
     path:"dashboard",
-    element:<DashBoardLayout/>,
+    element:
+  
+    <DashBoardLayout/>
+  
+    ,
     children:[
           {
         index:true,
@@ -84,10 +85,14 @@ const router=createBrowserRouter([
         <TransactionPage/>,
           },
 
-      {
+        {
         path:"accounts",
         element:<AccountPage/>
-          }
+        },
+        {
+          path:"budgets",
+          element:<BudgetsPage/>
+        }
         ]
       }
 

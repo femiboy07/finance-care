@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { LineChart,Line,CartesianGrid,XAxis,YAxis, ResponsiveContainer, Legend, Tooltip, Area,AreaChart, CartesianAxis, Bar,BarChart} from 'recharts';
-import { apiClient } from '../../api/axios';
+import { apiClient } from '../../context/LoadingContext';;
 // import { BarChart } from 'lucide-react';
 
 
@@ -44,18 +44,18 @@ export default function StatsGraph(){
     
     return (
          <ResponsiveContainer width="100%" height={300}  className="">
-             <BarChart width={500}  height={300}  data={data} margin={{top: 20, right: 20, bottom: 20, left: 20}}  >
+             <LineChart   data={data} margin={{top: 20, right: 20, bottom: 20, left: 20}}  >
        
-             <CartesianAxis stroke="#ccc" strokeDasharray="3 3" />
+             <CartesianGrid  strokeDasharray="2 2" />
              <XAxis dataKey="name"/>
-             <YAxis dataKey="expense"/> 
+             {/* <YAxis dataKey="expense"/>  */}
              <Tooltip/>
             
              <Legend/> 
-             <Bar dataKey="expense"  fill="#8884d8" barSize={54}/>
-             <Bar dataKey="income" fill="#82ca9d" className=' w-full'  barSize={800}/>
-          </BarChart>
-       </ResponsiveContainer>
+             <Line dataKey="expense"  fill="#8884d8" />
+             <Line dataKey="income" fill="#82ca9d"   />
+          </LineChart>
+        </ResponsiveContainer>
          
         
     )

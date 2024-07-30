@@ -1,15 +1,16 @@
 import mongoose
 , { model, models }from "mongoose";
+import { transcationCategory } from "./Transcation";
 
 
 export interface IBudgets{
         accountId:mongoose.Schema.Types.ObjectId,
         userId: mongoose.Schema.Types.ObjectId,          // ID of the user who owns the budget
-        category: string,        // Category the budget is for (e.g., "food", "entertainment")
-        amount: any,          // Budgeted amount
-        period: string,          // Budget period: "monthly" or "yearly"
-        startDate:Date,      // Start date of the budget period
-        endDate: Date,        // End date of the budget period
+        category: transcationCategory  | "",        // Category the budget is for (e.g., "food", "entertainment")
+        amount: mongoose.Types.Decimal128,          // Budgeted amount
+        period: 'monthly' | "yearly" | "custom",          // Budget period: "monthly" or "yearly"
+        startDate?:Date,      // Start date of the budget period
+        endDate?: Date,        // End date of the budget period
         createdAt:Date,      // Date when the budget was created
         updatedAt: Date       // Date when the budget was last updated
 }
@@ -28,25 +29,29 @@ const userBudgets=new mongoose.Schema<IBudgets>({
         ref:"User",
         required:true,
        },
-       category:String,
+       category:{
+        type:String,
+        enum:transcationCategory || "",
+        required:true,
+        default:"",
+     },
        amount:{
            type:mongoose.Types.Decimal128,
            required:true,
-           
-       },
+           },
 
        period:{
         type:"String",
         required:true,
-        enum:["daily","weekly",'monthly','year'],
+        enum:["monthly","yearly","custom"],
        },
        startDate:{
         type:Date,
-        required:true
+        
        },
        endDate:{
         type:Date,
-        required:true
+        
        },
        createdAt:{
         type:Date,

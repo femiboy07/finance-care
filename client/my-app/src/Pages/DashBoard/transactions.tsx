@@ -160,7 +160,7 @@ export default function TransactionPage(){
         return {
           ...col,
           cell: ({row}:any) => (
-            <DropdownMenu >
+            <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">
                   <span className="sr-only">Open menu</span>
@@ -190,11 +190,11 @@ export default function TransactionPage(){
 
     // if (error) return <div>Error loading transactions</div>;
     return (
-        <div className="w-full h-full px-2 md:px-4 xl:px-9 mt-20 mb-10 text-black max-w-full">
+        <div className="w-full h-full px-2 md:px-4 xl:px-9 mt-20 mb-10 text-black max-w-full overflow-y-hidden">
           <h1 className="text-black text-2xl text-center lg:text-left">Transactions</h1>
           <div className="mt-1">
             <div className="date-table-filters w-full flex h-24 items-center  max-w-full ">
-                <MonthPicker params={searchParam}/>
+                <MonthPicker params={searchParam} page={page} setPage={setPage}/>
                 <div className="ml-auto" >
                  <Button onClick={handleOpenSideBar} className={buttonVariants({variant:"default",className:" bg-orange-400"})}>
                    Add Transaction

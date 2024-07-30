@@ -22,6 +22,7 @@ import budgets from "./models/Budgets";
 
 
 
+
 const app=express();
 const httpServer=createServer(app);
 const io=new Server(httpServer,{cors:{
@@ -45,6 +46,12 @@ app.use((req:CreateTransactionRequest,res,next)=>{
     req.io=io;
     next();
 })
+
+function onlyForHandShake(middleware:any){
+   return (req:Request,res:Response,next:NextFunction)=>{
+         const isHandShake=req.query.sid
+   }  
+}
 
 //connect to mongoDb database finance;
 
@@ -106,7 +113,9 @@ app.get('/', (req, res:Response) => {
 app.get('/dashboard',passport.authenticate("jwt",{session:false}),(req,res:Response)=>{
     console.log(req.user)
    return res.send("Welcome to the dashboard");
-})
+});
+
+
 
 io.on("connection",(socket)=>{
   // getting the namespace  
