@@ -22,7 +22,17 @@ interface updateTransactionParams {
   id:any
 }
 
+interface CreateBudgetParams {
+  queryKey: [string, string];
+  variable: any;
+}
 
+
+interface updateBudgetParams {
+  queryKey: [string, string];
+  variable: any;
+  id:any
+}
 
 // export interface getMetrics extends QueryFunction{}
 
@@ -67,7 +77,7 @@ export async function fetchTransactions({queryKey}:any){
 
 
 export async function fetchTransaction({queryKey}:any){
-  const [_key,{name,category,year,month,page}]=queryKey;
+  const [_key,{name,category,year,month,page,search}]=queryKey;
   console.log(_key,name)
   const numbers=[1,2,3,4,5,6,7,8,9];
   
@@ -75,13 +85,13 @@ export async function fetchTransaction({queryKey}:any){
  const convert = month > 0  &&  month <= 9 ? `0${month}` : `${month}`
 
   try{
-    if(name || category || page ){
-      const res= await apiClient.get(`/transactions/listtransactions/${year}/${convert}?page=${page}&name=${name}&category=${category}`);
+    if(name || category || page || search ){
+      const res= await apiClient.get(`/transactions/listtransactions/${year}/${convert}?page=${page}&name=${name}&category=${category}&search=${search}`);
    const data= res.data;
    
    return data;
     }
-    const res=axios.get(`/transactions/listtransactions/${year}/${convert}?page=${page}`);
+    const res=apiClient.get(`/transactions/listtransactions/${year}/${convert}?page=${page}`);
     const data=(await res).data;
     
 
@@ -93,18 +103,46 @@ export async function fetchTransaction({queryKey}:any){
     }
 }
 
-// export async function refreshToken({queryKey}:any){
-//   const [_key,token]=queryKey;
-//      try{
-//            const res=await apiClient.post("/api/auth/refreshToken",{
-//               refreshToken:token
-//            })
-//             localStorage.setItem("userAuthToken",JSON.stringify(res.data))
-//            return res.data;
-//      }catch(err){
-//             console.log(err)
-//      }
-// }
+export async function fetchBudgets({queryKey}:any){
+  const [_key,{category,year,month,page}]=queryKey;
+  console.log(_key)
+  
+  
+
+ const convert = month > 0  &&  month <= 9 ? `0${month}` : `${month}`
+
+  try{
+    if(category || page){
+      const res= await apiClient.get(`/budgets/listbudgets/${year}/${convert}?page=${page}&category=${category}`);
+   const data= res.data;
+   
+   return data;
+    }
+    const res=apiClient.get(`/budgets/listbudgets/${year}/${convert}?page=${page}`);
+    const data=(await res).data;
+    
+
+    return data;
+      
+
+    }catch(err){
+        console.log(err);
+    }
+}
+
+
+
+export async function logOutUser(){
+  try{
+   const res=await apiClient.post('/auth/logout');
+
+   const data=res.data;
+
+   return data;
+  }catch(err){
+     return err;
+  }
+}
 
 
 
@@ -119,7 +157,9 @@ export async function getMetrics({queryKey}:any):Promise<Metrics | any>{
 
    return data;
   }catch(err){
+    
       console.log(err);
+      return err;
   }
 }
 
@@ -137,6 +177,7 @@ export async function getAccounts({queryKey}:any){
 
     }catch(err){
         console.log(err);
+        return err;
     }
 }
 
@@ -168,19 +209,11 @@ export async function updateTransaction({queryKey,variable,id}:updateTransaction
   console.log(token,variable)
   console.log(id)
  try{
-
-  
-
  const res=await apiClient.put(`/transactions/update/${id}`,variable);
-
-   const data= res.data;
-
-   
-   return data;
-  
-
- }catch(err){
-     console.log(err);
+ const data= res.data;
+ return data;
+}catch(err){
+  console.log(err);
  }
 }
 
@@ -225,6 +258,69 @@ export async function createTransaction({queryKey,variable}:CreateTransactionPar
     
   }
 }
+
+
+export async function createBudget({queryKey,variable}:CreateBudgetParams){
+  const [_key]=queryKey;
+  const data1=variable.newValues;
+  console.log(variable);
+  console.log(variable.type)
+  try{
+    if(!variable) return;
+    const res=await apiClient.post(`/budgets/create`,variable);
+    const data= res.data;
+      return data;
+  }catch(err){
+    console.log(err);
+    return err;
+    
+    
+  }
+}
+
+
+export async function deleteBudget({queryKey,variable}:DeleteTransactionParams){
+  const token=queryKey;
+  console.log(token,variable)
+ try{
+ const res=apiClient.delete(`/budgets/delete/${variable}`);
+
+   const data=(await res).data;
+
+   
+   return data;
+
+
+ }catch(err){
+     console.log(err);
+ }
+}
+
+
+export async function updateBudget({queryKey,variable,id}:updateTransactionParams){
+  const [_key,token]=queryKey;
+  console.log(token,variable)
+  console.log(id)
+ try{
+
+  
+
+ const res=await apiClient.put(`/budgets/update/${id}`,variable);
+
+   const data= res.data;
+
+   
+   return data;
+  
+
+ }catch(err){
+     console.log(err);
+ }
+}
+
+
+
+
 
 interface LoginParams{
   queryKey: string;

@@ -7,6 +7,9 @@ import peerIcon from "../../assets/peercoin.png"
 import { AccountTable, columns } from "../../components/Account/accountsTable";
 import AddAccounts from "../../components/Account/addAccounts";
 import { AlignLeftIcon, ArrowLeftToLine, ArrowRightIcon, HomeIcon, LucideArrowLeft, MoveLeft, MoveLeftIcon, MoveRightIcon, PanelLeftIcon } from "lucide-react";
+import { useInnerWidthState } from "../../hooks/useInnerWidthState";
+import { useOutletContext } from "react-router-dom";
+import { ContextType } from "../../Layouts/DashboardLayout";
 
 
 
@@ -15,7 +18,9 @@ import { AlignLeftIcon, ArrowLeftToLine, ArrowRightIcon, HomeIcon, LucideArrowLe
 
 export default function AccountPage(){
     const token = JSON.parse(localStorage.getItem('userAuthToken') || '{}');
-    const [hideOver,setHideOver]=useState(false);
+    const {hideOver,setHideOver}=useOutletContext<ContextType>()
+    // const [hideOver,setHideOver]=useState(false);
+    const [width]=useInnerWidthState()
     const {data,isPending,error}=useQuery({
          queryKey:['allaccounts'],
          queryFn:getAccounts
@@ -49,14 +54,18 @@ export default function AccountPage(){
         return item;
     })
     
-       function handleHideOver(){setHideOver((prev:boolean)=>!prev)}
+       function handleHideOver(){
+        setHideOver((prev:boolean)=>!prev);
+
+      
+    }
     return (
     <div className="w-full px-3 h-full lg:px-9 mt-20 mb-10">
         <h1 className="text-black text-4xl">Accounts</h1>
         <div className="mt-10 ">
         <div className="flex w-full justify-between"> 
             <AddAccounts/>
-           <Button className={buttonVariants({variant:"default",className:" px-4 bg-orange-400"})} onClick={handleHideOver}>
+           <Button className={buttonVariants({variant:"default",className:` px-4 bg-orange-400  hidden md:flex ${hideOver ? 'md:flex':'hidden'}`})} onClick={handleHideOver}>
              <MoveLeftIcon className=" w-4 h-4"/>
            </Button>
           </div>
@@ -66,22 +75,22 @@ export default function AccountPage(){
           <AccountTable columns={columns} data={modifiedData}/>
           </Card>
          </div>  
-          <div style={{minWidth:`calc(260px + 1rem)`}} className={`${hideOver ? `flex`:`hidden`} flex flex-col items-end pl-[1rem]`}>
+         {width >= 768 && <div style={{minWidth:`calc(260px + 1rem)`}} className={`${hideOver ? `flex`:`hidden`} flex flex-col items-end pl-[1rem]`}>
           <div className="w-full bg-red-300 h-0"></div>
           <div id="sticky mb-[4rem]">
-          <Card className="flex relative flex-col leading-7 items-center mb-[1em] mx-auto max-w-[260px] w-[260px] p-[0.75em]">
+          <Card className=" relative flex-col hidden md:flex leading-7 items-center mb-[1em] mx-auto max-w-[260px] w-[260px] p-[0.75em]">
             <HomeIcon/>
             <h1>REVIEW ACCOUNTS</h1>
             <h6>Everything looks good</h6> 
           </Card>
 
-          <Card className="flex relative flex-col leading-7 items-center mb-[1em] mx-auto max-w-[260px] w-[260px] p-[0.75em]">
+          <Card className="relative flex-col hidden md:flex leading-7 items-center mb-[1em] mx-auto max-w-[260px] w-[260px] p-[0.75em]">
             <HomeIcon/>
             <h1>REVIEW ACCOUNTS</h1>
             <h6>Everything looks good</h6> 
           </Card>
           </div>
-         </div>
+         </div>}
           </div>
           
          

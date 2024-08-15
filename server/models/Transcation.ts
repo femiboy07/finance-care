@@ -83,7 +83,7 @@ const userTranscations=new mongoose.Schema<ITranscations>({
      },
      description:{
         type:String,
-        required:true,
+      //   required:true,
         
      },
      date:{

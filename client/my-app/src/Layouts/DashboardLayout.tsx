@@ -1,15 +1,12 @@
-import React, { SetStateAction, Suspense, useEffect, useState } from "react";
+import React, {useEffect, useState } from "react";
 import SideBar from "../components/common/sideBar";
-import { Navigate, Outlet, useNavigate, useSearchParams } from "react-router-dom";
+import { Outlet, useNavigate, useSearchParams } from "react-router-dom";
 import NavBar from "../components/common/NavBar";
 import { Toaster } from "../@/components/ui/toaster";
 import { addMonths, subMonths } from "date-fns";
 import { useInnerWidthState } from "../hooks/useInnerWidthState";
 import MobileSideBar from "../components/common/mobileSideBar";
-import { useAuth } from "../context/userAutthContext";
 import useRequireAuth from "../hooks/useRequireAuth";
-import UserLoggedOut from "../components/Modals/UserLoggedOut";
-import { createPortal } from "react-dom";
 import LoadingOverlay from "../components/common/LoadingOverlay";
 
 
@@ -21,13 +18,18 @@ export type ContextType={
     monthString?:string;
     months:Date;
     month:any;
+    nextMonth:any
     year:any;
+    hideOver:any;
+    setHideOver:any;
     setMonth:any;
     searchParams:any;
     setSearchParams:any;
     category:any;
     name:any;
+    search:any;
     setCategory:any;
+    setSearch:any
     setName:any;
     page:number;
     currentPage:number;
@@ -43,14 +45,14 @@ export default function DashBoardLayout(){
     const [searchParams, setSearchParams] = useSearchParams();
     const [name,setName]=useState(searchParams.get('name') || "");
     const [category,setCategory]=useState(searchParams.get("category") || "");
+    const [search,setSearch]=useState(searchParams.get("search") || "");
+    const [hideOver,setHideOver]=useState(false);
     const [width]=useInnerWidthState();
     const [page,setPage]=useState(1);
     const navigate=useNavigate();
     const [currentPage,setCurrentPage]=useState<number>(page);
-    // const {auth}=useAuth();
-    // const token = localStorage.getItem("userAuthToken");
-    const {token,removeToken,isLoading,setLoading} =useRequireAuth();
-    // const token=JSON.stringify(auth)
+    const {token} =useRequireAuth();
+   
     
      useEffect(()=>{
       if(token === null){
@@ -86,7 +88,7 @@ export default function DashBoardLayout(){
    
     return(
   
-    <div className="h-full w-full flex  relative ">
+    <div className="h-full w-full flex  relative dark:bg-background bg-background " >
            {/* so this is for the side bar */}
          <NavBar handleOpenSideBar={handleOpenSideBar}/>  
          <SideBar setOpen={setOpen} open={open}/> 
@@ -98,9 +100,12 @@ export default function DashBoardLayout(){
         {{PrevMonth,
         NextMonth,
         months,
+        nextMonth,
         monthString,
         month,year,
         setMonth,
+        hideOver,
+        setHideOver,
         searchParams,
         setSearchParams,
         category
@@ -108,8 +113,10 @@ export default function DashBoardLayout(){
         ,setCategory
         ,setName,
          setCurrentPage,
+         setSearch,
          setPage,
          page,
+         search,
          currentPage,
         } satisfies ContextType}  /> 
        <Toaster/>

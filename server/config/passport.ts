@@ -33,7 +33,7 @@ passport.use(new Strategy(options, async function(req:Request,payload,done){
     }
 
     req.user=currentUser;
-    console.log(req.user);
+    console.log(req.user,"passport authenticate");
     // req.user.id=payload.id;
     
 

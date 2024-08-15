@@ -33,12 +33,16 @@ export async function register(req:Request,res:Response,next:NextFunction):Promi
          const payload={id:newUser.id,email}
          const access_token=jwt.sign(payload,process.env.SECRET_KEY!,{expiresIn:'4h'})
          const refresh_token=jwt.sign(payload, process.env.SECRET_KEY!,{expiresIn:'7d'});
-
+         const expiresIn=Math.floor(Date.now() / 1000 ) * 60 * 60  
          newUser.userRefreshTokens.push(refresh_token);
 
          newUser.save();
-         
-        return res.json({access_token,refresh_token,message:"registerd succesfully"});
+         res.cookie('refreshToken',refresh_token,{
+            httpOnly:true,
+            secure:process.env.NODE_ENV! === "development",
+            sameSite:'strict'
+         }) 
+        return res.json({access_token,message:"registerd succesfully"});
          
 }
 
@@ -59,12 +63,19 @@ export async function signInUser(req:Request,res:Response){
         const isMatch = await existingUser.comparePassword(password)
         if (!isMatch) return res.status(400).json({ msg: 'Invalid credentials' });
         const payload = { id: existingUser._id ,email:existingUser.email};
-        const access_token=jwt.sign(payload,process.env.SECRET_KEY!,{expiresIn:20})
+        const access_token=jwt.sign(payload,process.env.SECRET_KEY!,{expiresIn:5})
         const refresh_token=jwt.sign(payload, process.env.SECRET_KEY!,{expiresIn:'7d'});
         const expiresIn=Math.floor(Date.now() / 1000 ) * 60 * 60    
         existingUser.userRefreshTokens.push(refresh_token);
         await existingUser.save();
-       return res.json({access_token,refresh_token,expiresIn}).status(200);
+         res.cookie('refreshToken',refresh_token,{
+            httpOnly:true,
+            secure:false,
+            sameSite:'strict',
+            path:'/',
+            domain:"localhost"
+         }) 
+       return res.json({access_token,expiresIn}).status(200);
        
      }catch(err){
       return res.send(err).status(500);
@@ -74,7 +85,9 @@ export async function signInUser(req:Request,res:Response){
 
 
 export async function refreshToken(req:Request,res:Response){
-    const  {refreshToken}  = req.body;
+    console.log(req.headers.cookie,"cookies")
+    console.log(req.cookies.refreshToken,"refresh")
+    const  refreshToken = req.cookies['refreshToken'];
     console.log('Received refreshToken:', refreshToken);
     console.log('Secret Key:', process.env.SECRET_KEY!);
      console.log(process.env.SECRET_KEY!,"seddddfff")
@@ -86,18 +99,23 @@ export async function refreshToken(req:Request,res:Response){
           } 
       // Verify the refresh token
       const decoded = jwt.verify(refreshToken, process.env.SECRET_KEY!) as {id:string,email:string};
+
+    
       console.log(decoded,"decoded")
       console.log(decoded.id)
       const users = await user.findById(decoded.id);
       console.log(users)
   
-      if (!users) {
-        return res.status(403).json({message:'Invalid Refresh Token'});
+      if (!users ) {
+           return res.status(403).json({message:'Invalid Refresh Token'});
       }
+
+    
   
       // remove-old userRefreshtoken;
 
-      const tokenIndex=users.userRefreshTokens.indexOf(refreshToken);
+      const tokenIndex=users.userRefreshTokens.findIndex((token)=>token === refreshToken);
+      console.log(tokenIndex,'tokenIndexxxxxxxxxxxxxxx')
 
       if (tokenIndex === -1) {
         return res.status(403).json({ message: 'Invalid Refresh Token' });
@@ -105,6 +123,7 @@ export async function refreshToken(req:Request,res:Response){
 
     // Remove the old refresh token from the user's array
     users.userRefreshTokens.splice(tokenIndex, 1);
+    await users.save();
 
       // Generate a new access token
       const access_token = jwt.sign(
@@ -118,17 +137,79 @@ export async function refreshToken(req:Request,res:Response){
         process.env.SECRET_KEY!,
         { expiresIn: '7h' }
       );
-     
 
+
+     
+     console.log(access_token,"Acesssssstoken second")
       users.userRefreshTokens.push(refresh_token);
       await users.save();
+
+      res.cookie('refreshToken',refresh_token,{
+        httpOnly:true,
+        secure:false,
+        sameSite:'strict',
+        path:'/',
+        domain:"localhost"
+     }) 
   
-     return  res.status(200).json({ access_token ,refresh_token});
-    } catch (err) {
-      return res.status(403).json({message:err});
+     return  res.status(200).json({ access_token});
+    } catch (err:any) {
+        if (err.name === 'TokenExpiredError') {
+            // Handle expired refresh token
+            res.clearCookie('refreshToken');
+            return res.status(401).json({ message: 'Session expired, please log in again' });
+        }
+      return res.status(403).json({message:err})
     }
 }
+export async function logOutUser(req: Request, res: Response) {
+    const refreshToken = req.cookies['refreshToken'];
+    
+    console.log(refreshToken);
+    
 
+    try {
+        if (!refreshToken) {
+            return res.status(401).json({ message: 'No refresh token found' });
+        }
+
+        // Verify and process the refresh token
+        // Use your existing logic to verify and remove the token
+        const decoded = jwt.verify(refreshToken, process.env.SECRET_KEY!) as { id: string,email:string};
+        if (!decoded.id) {
+            return res.status(403).json({ message: 'Invalid refresh token' });
+        }
+
+        const currentUser = await user.findById(decoded.id);
+        if (!currentUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        const tokenIndex = currentUser.userRefreshTokens.findIndex(token => token === refreshToken);
+
+        if (tokenIndex === -1) {
+            return res.status(403).json({ message: 'Invalid Refresh Token' });
+        }
+        // Clear all refresh tokens
+        currentUser.userRefreshTokens.splice(tokenIndex,1);
+        // currentUser.userRefreshTokens=[];
+       
+        await currentUser.save();
+        // Clear the refresh token cookie
+        res.clearCookie('refreshToken', {
+            httpOnly: true,
+            secure: false, // Use secure cookies in production
+            sameSite: 'strict',
+            path: '/'
+        });
+
+       
+
+        return res.status(200).json({ message: 'Logged out successfully' });
+    } catch (err) {
+        console.error('Error during logout:', err);
+        return res.status(500).json({ message: 'An error occurred during logout' });
+    }
+}
 export async function getUserName(req:CreateTransactionRequest,res:Response){
 
   try{
@@ -147,7 +228,7 @@ interface IncomeByExpense{
 }
 
 export async function getTotalIncomeAndExpense(req: Request<{}, {}, {}, IncomeByExpense>, res: Response) {
-    const { year } = req.query;
+    const { year} = req.query;
 
     // Ensure the year is a number and valid
     if (!year || isNaN(year) || year < 1000 || year > 9999) {

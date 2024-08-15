@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { addMonths, subMonths } from 'date-fns';
 import { Button, buttonVariants } from '../../@/components/ui/button';
 import { ArrowBigRightDash, ArrowDownRightIcon, LucideArrowLeftToLine, MoveLeft, MoveLeftIcon, MoveRightIcon } from 'lucide-react';
-import { Link, useNavigate, useOutletContext, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { ContextType } from '../../Layouts/DashboardLayout';
 
 
@@ -13,36 +13,38 @@ export default function MonthPicker({params,page,setPage}:{params:any,page:numbe
 
   const {PrevMonth,NextMonth,months,monthString,month,year}=useOutletContext<ContextType>();
   const navigate=useNavigate();
+  const location=useLocation();
+  const path=location.pathname === '/dashboard/budgets' ? 'budgets' : 'transactions';
   const convert = useMemo(()=>month + 1 > 0 && month + 1 <= 9 ? `0${month + 1}` : `${month + 1}`,[month]);
- 
+ console.log(location.pathname,"location.pathname")
   const handlePrevClick = useCallback(() => {
     PrevMonth();
     setPage(1)
-    const targetPath = `/dashboard/transactions/${year}/${convert}`;
+    const targetPath = `/dashboard/${path}/${year}/${convert}`;
     if (params) {
       navigate(`${targetPath}?${params}`);
     } else {
       navigate(targetPath);
     }
-  },[PrevMonth, convert, navigate, params, year,setPage]);
+  },[PrevMonth, convert, navigate, params, year,setPage,path]);
 
   const handleNextClick = useCallback(() => {
     NextMonth();
     setPage(1)
-    const targetPath = `/dashboard/transactions/${year}/${convert}`;
+    const targetPath = `/dashboard/${path}/${year}/${convert}`;
     if (params) {
       navigate(`${targetPath}?${params}`);
     } else {
       navigate(targetPath);
     }
-  },[NextMonth, convert, navigate, params, year,setPage]);
+  },[NextMonth, convert, navigate, params, year,setPage,path]);
 
   useEffect(()=>{
   if (year && convert) {
-       const targetPath = `/dashboard/transactions/${year}/${convert}`;
+       const targetPath = `/dashboard/${path}/${year}/${convert}`;
        navigate(targetPath);
     }
-  },[year,convert,navigate])
+  },[year,convert,navigate,path])
   
      
     return (
@@ -57,7 +59,7 @@ export default function MonthPicker({params,page,setPage}:{params:any,page:numbe
            </Button>
          </div>
          <div className="date-picker date-title ml-2">  
-            <span className=" text-black text-lg lg:text-3xl">{monthString}{year}</span>
+            <span className=" text-slate-700 font-bold text-lg lg:text-3xl">{monthString}{" "}{year}</span>
          </div>
         </div>
     )

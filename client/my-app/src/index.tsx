@@ -37,7 +37,7 @@ const root = ReactDOM.createRoot(
 const router=createBrowserRouter([
   {
     path:'/',
-    // index:true,
+   
     element:<App/>
     
   },
@@ -49,9 +49,7 @@ const router=createBrowserRouter([
           {
         path:'login',
         element:<LoginPage/>,
-        // action:action,
-        // loader:LoginLoader,
-        // errorElement:<InvalidUser/>
+        
           },
           {
         path:'register',
@@ -70,11 +68,13 @@ const router=createBrowserRouter([
   
     ,
     children:[
-          {
+      {
         index:true,
+       
         element: <DashBoard/>
       },
           {
+        
         path:"transactions",
         element:
         <TransactionPage/>,
@@ -89,8 +89,13 @@ const router=createBrowserRouter([
         path:"accounts",
         element:<AccountPage/>
         },
+
         {
-          path:"budgets",
+         path:"budgets",
+         element:<BudgetsPage/>
+        },
+        {
+          path:"budgets/:year?/:month?",
           element:<BudgetsPage/>
         }
         ]

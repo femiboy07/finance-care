@@ -22,7 +22,7 @@ export default function CardTransaction({data,handleEditTransaction}:{data:any,h
     return (
     <div className="mt-5 mb-5">
         {data.length > 0   ? data.map((item: any)=>(
-           <Card className="w-full max-w-w-full h-64 mb-2 relative  border-l-4 border-l-orange-700">
+           <Card className="w-full max-w-w-full min-h-64 mb-2 relative  border-l-4 border-l-orange-700">
               <div className="flex flex-col justify-center  relative h-full px-2 py-3 space-y-6">
               <div className="absolute right-5 top-5">
                 <div>
@@ -35,9 +35,9 @@ export default function CardTransaction({data,handleEditTransaction}:{data:any,h
                  <Clock10Icon className="mr-2"/>
                  <h1>{formatDate(item.date,"P")}</h1>
                 </div>
-                <div className="flex flex-wrap text-wrap">
-                 <NotebookIcon className="mr-2"/>
-                 <p>{item.description}</p>
+                <div className="flex items-center ">
+                 <NotebookIcon className="mr-2 flex-shrink-0"/>
+                 <p className="self-start">{item.description}</p>
                 </div>
                 <div className="flex">
                  <CarrotIcon className="mr-2"/>

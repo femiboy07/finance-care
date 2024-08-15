@@ -9,12 +9,12 @@ interface BaseMessage {
 }
     
 export interface TransactionMessage extends BaseMessage {
-        details: {
+    details: {
             amount: mongoose.Types.Decimal128;
             category: string;
             date: Date;
             description: string;
-        };
+    };
  }
     
  export interface BudgetAlertMessage extends BaseMessage {
@@ -37,8 +37,8 @@ export  interface UpcomingBillMessage extends BaseMessage {
    
 
 export interface Notifications{
-        userId: mongoose.Schema.Types.ObjectId,       // ID of the user to whom the notification is sent
-        type: string,                              // Type of notification (e.g., "budget_alert", "upcoming_bill","transcation_alert")
+        userId: mongoose.Schema.Types.ObjectId,   // ID of the user to whom the notification is sent
+        type: string,                            // Type of notification (e.g., "budget_alert", "upcoming_bill","transcation_alert")
         message: TransactionMessage | BudgetAlertMessage | UpcomingBillMessage,         // Notification message content
         status: string,          // Status of the notification: "unread", "read"
         createdAt: Date,      // Date when the notification was created

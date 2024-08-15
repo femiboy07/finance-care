@@ -31,9 +31,9 @@ export const columns:ColumnDef<Accounts>[]=[
         header:"Balance",
         cell({row,cell}) {
             const amount = row.original.balance.$numberDecimal;
-          const formatted = new Intl.NumberFormat("en-US", {
+          const formatted = new Intl.NumberFormat("en-NG", {
         style: "currency",
-        currency: "USD",
+        currency: "NGN",
       }).format(amount)
             return <span className="w-full">{`${formatted}`}</span>
         },
@@ -60,8 +60,8 @@ export const columns:ColumnDef<Accounts>[]=[
                   Copy payment ID
                 </DropdownMenuItem>
                 <DropdownMenuSeparator/>
-                <DropdownMenuItem>Edit customer transaction</DropdownMenuItem>
-                <DropdownMenuItem>View transaction</DropdownMenuItem>
+                <DropdownMenuItem>Edit Accounts</DropdownMenuItem>
+                <DropdownMenuItem>View Accounts</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           )

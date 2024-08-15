@@ -10,6 +10,7 @@ import { sendNotificationMessage } from "./notifications";
 import accounts from "../models/Account";
 import { Server } from "socket.io";
 import decimal, { Decimal } from "decimal.js";
+import budgets from "../models/Budgets";
 
 
 
@@ -31,6 +32,13 @@ export interface CreateTransactionRequest extends Request {
      } // Assuming userId is added to the request object by authentication middleware
 }
 
+export const convertToNumber = (value: any) => {
+  if (value && typeof value.toString === 'function') {
+      return parseFloat(value.toString());
+  }
+  return value;
+};
+
 
 export async function createTranscation(req:CreateTransactionRequest,res:Response):Promise <ITranscations | any>{
         const {type,amount,description,category,accountId,date}=req.body;
@@ -38,9 +46,9 @@ export async function createTranscation(req:CreateTransactionRequest,res:Respons
      
 
         try{
-          // if(  !amount || !description || !category){
-          //   return res.status(400).json({message:"those values are needed"})
-          //  }
+         
+
+         
 
           if (!type) {
             return res.status(400).json({ message: "Transaction type is required" });
@@ -71,12 +79,7 @@ export async function createTranscation(req:CreateTransactionRequest,res:Respons
             return res.status(400).json({ message: "Transaction type must be 'income' or 'expense'" });
         }
          console.log(account.balance ,"accountBalnce");
-         const convertToNumber = (value: any) => {
-          if (value && typeof value.toString === 'function') {
-              return parseFloat(value.toString());
-          }
-          return value;
-      };
+        
         if (type.toLowerCase() === 'expense' && amount > convertToNumber(account.balance)) {
           return res.status(400).json({ message: "Insufficient funds for this transaction" });
        } 
@@ -98,12 +101,30 @@ export async function createTranscation(req:CreateTransactionRequest,res:Respons
              const currentBalance = new Decimal(account.balance.toString());
              await deductBalance(accountId,amount,currentBalance,type);
              newtransaction.status="cleared";
-            //  newtransaction.amount=mongoose.Types.Decimal128.fromString(.toFixed(2));
-           
+            
+             await newtransaction.save();
            
 
-            await newtransaction.save();
            
+            const budget = await budgets.findOne({ userId:req.user?._id, category:category } );
+            console.log(budget,"budgets.....")
+
+            if (!budget) {
+              throw new Error("No budget found for this category");
+            }
+
+          
+            // if (convertToNumber(budget.remaining) < amount) {
+            //   throw new Error('Transaction exceeds remaining budget');
+            // }
+
+            budget.spent = convertToNumber(budget.spent) + convertToNumber(amount);
+            let remaining=   convertToNumber(budget.remaining) 
+            remaining= convertToNumber(budget.amount) - convertToNumber(budget.spent);
+           budget.remaining=remaining;
+        
+            await budget.save();
+            
             sendNotificationMessage(req.io,req.user?._id!,newtransaction,"transaction_alert");
 
             return res.json({data:newtransaction,message:"new transcation created succesfully "}).status(200);
@@ -115,7 +136,7 @@ export async function createTranscation(req:CreateTransactionRequest,res:Respons
 
 
 
-export async function updateTransaction(req: Request, res: Response) {
+export async function updateTransaction(req: CreateTransactionRequest, res: Response) {
   const { id } = req.params;
   const { category, type, amount, description, date, accountId } = req.body;
  console.log(req.body)
@@ -131,23 +152,47 @@ export async function updateTransaction(req: Request, res: Response) {
         transaction.category = category;
         await transaction.save()
       }
+      if (description){
+        transaction.description = description;
+        await transaction.save()
+     }
+   
       if (type){
          transaction.type = type;
          await transaction.save()
       }
       if (date) {
-        // const parsedDate = new Date(date);
-        // if (isNaN(parsedDate.getTime())) {
-        //   return res.status(400).json({ message: "Invalid date format" });
-        // }
+        const parsedDate = new Date(date);
+        if (isNaN(parsedDate.getTime())) {
+          return res.status(400).json({ message: "Invalid date format" });
+        }
         transaction.date = date;
+        await transaction.save();
       }
-      if (amount) transaction.amount = amount;
-      if (description){
-         transaction.description = description;
-
-         await transaction.save()
+      if (amount){
+        
+        transaction.amount = amount;
+        await transaction.save();
+        const budget = await budgets.findOne({ userId:req.user?._id, category:category } );
+        console.log(budget,"budgets.....")
+  
+        if (!budget) {
+          throw new Error("No budget found for this category");
+        }
+  
+      
+        // if (convertToNumber(budget.remaining) < amount) {
+        //   throw new Error('Transaction exceeds remaining budget');
+        // }
+  
+        budget.spent = convertToNumber(budget.spent) + convertToNumber(amount);
+        let remaining=   convertToNumber(budget.remaining) 
+        remaining= convertToNumber(budget.amount) - convertToNumber(budget.spent);
+       budget.remaining=remaining;
+    
+        await budget.save();
       }
+     
 
       // If accountId is provided, find the account by ID
       if (accountId) {
@@ -167,6 +212,7 @@ export async function updateTransaction(req: Request, res: Response) {
 
       // Save the updated transaction
       await transaction.save();
+      
 
       return res.status(200).json({ data: transaction, message: "Successfully updated" });
   } catch (err) {
@@ -192,6 +238,8 @@ interface QueryParams {
   type?: string;
   name?:string;
   amount?: string;
+  description?:string;
+  search?:string;
   startDate?: string;
   endDate?: string;
   page?:number;
@@ -205,15 +253,14 @@ interface QueryParams {
 export async function getLatestTranscations(req:CreateTransactionRequest,res:Response){
     try{
       const transactions = await transcation.aggregate([
-        { $match: { userId: req.user?._id! } }, // Filter by user ID if needed
+        { $match: { userId: req.user?._id } }, // Filter by user ID if needed
         { $sort: { date:  -1} }, // Sort by date in descending order1
         { $limit: 3 } // Limit to the specified number of latest transactions
     ]);
     
-       
-       if(!transactions){
+    if(!transactions){
         return res.status(403).send("your not found in the user record")
-       }
+    }
        return res.json({transactions,message:"succesfully gotten latest transcations"}).status(200)
     }catch(err){
       return res.status(500).send("Error cant reach the server");
@@ -227,7 +274,7 @@ interface ParamsFill{
 
 export async function getTranscations(req:Request<{},{},{},QueryParams>,res:Response){
   
-  const {category,type,amount,startDate,endDate,pageLimit,page,name} =req.query as QueryParams;
+  const {category,type,amount,startDate,endDate,pageLimit,page,name,description,search} =req.query as QueryParams;
   const {year,month}=req.params as any;
   try{
     const userId:any=req.user;
@@ -235,16 +282,27 @@ export async function getTranscations(req:Request<{},{},{},QueryParams>,res:Resp
       return res.json({message:"cant proceed you need to be authenticated pls login again"}).status(400)
     }
     console.log(userId,'ssssssssssss');
-    // const userObjectId = new Types.ObjectId(userId._id);
-  
     let query:any = {userId:userId._id};
   
    // Dynamically add properties to the query object based on the presence of query parameters
-    if (category) {
+   
+    if(search){
+      const searchRegex = new RegExp(search, 'i'); // Case-insensitive search
+      query.$or = [
+        { name: searchRegex },
+        { description: searchRegex },
+        { category: searchRegex }
+      ];
+    }
+
+    if (category && !search) {
       query.category = category;
     }
     if(name){
-        query.name=name;
+        query.name= name;
+    }
+    if(description && !search){
+      query.description=new RegExp(description,'i')
     }
     if (type) {
       query.type = type;
@@ -274,7 +332,7 @@ export async function getTranscations(req:Request<{},{},{},QueryParams>,res:Resp
     const skip = (pageNumber - 1) * limitNumber;
    
     
-    const listTransactions=await transcation?.find(query).skip(skip).limit(limitNumber);
+    const listTransactions=await transcation?.find(query).skip(skip).limit(limitNumber).sort({date:-1});
 
     const totalItems = await transcation.countDocuments(query);
     const totalPages = Math.ceil(totalItems / limitNumber);
@@ -300,6 +358,7 @@ export async function getTranscations(req:Request<{},{},{},QueryParams>,res:Resp
 export async function metrics(req:CreateTransactionRequest,res:Response){
          try{
           const userId:any=req.user;
+          
           const balanceAggregation = accounts.aggregate([
             {$match:{userId:userId._id}},
             {$group:{_id:null,totalBalance:{$sum:"$balance"}}}
@@ -324,6 +383,11 @@ export async function metrics(req:CreateTransactionRequest,res:Response){
             { $group: { _id: null, totalExpense: { $sum: '$amount' } } },
         ]);
 
+        const budgetAggregation=budgets.aggregate([
+          { $match: {  createdAt: { $gte: startOfMonth, $lt: startOfNextMonth }, userId: userId._id } },
+          { $group: { _id: null, totalBudget: { $sum: '$amount' } } },
+        ])
+
         const convertToNumber = (value: any) => {
           if (value && typeof value.toString === 'function') {
               return parseFloat(value.toString());
@@ -331,15 +395,17 @@ export async function metrics(req:CreateTransactionRequest,res:Response){
           return value;
       };
 
-        const [balance,income,expense]=await Promise.all([balanceAggregation,incomeAggregation,expenseAggregation]);
+        const [balance,income,expense,budget]=await Promise.all([balanceAggregation,incomeAggregation,expenseAggregation,budgetAggregation]);
          const totalBalance=balance.length > 0 ? convertToNumber(balance[0].totalBalance) :0;
          const totalIncome = income.length > 0 ? convertToNumber(income[0].totalIncome) : 0;
          const totalExpense = expense.length > 0 ? convertToNumber(expense[0].totalExpense) : 0;
+         const totalBudget = budget.length > 0 ? convertToNumber(budget[0].totalBudget) : 0;
 
          return res.json({ 
           totalBalance:totalBalance,
           totalIncome: totalIncome, 
           totalExpense: totalExpense, 
+          totalBudget:totalBudget,
           message: "Monthly totals retrieved successfully" 
       });
          }catch(err){

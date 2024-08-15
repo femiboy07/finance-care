@@ -15,10 +15,7 @@ import { Loader } from 'lucide-react';
 
 export default function UserLoggedOut(){
 
-    
-
-    
-     return(
+  return(
         <>
         <div className='fixed top-0 lef-0 right-0 bottom-0 bg-gray-300 w-full h-full opacity-15  z-50'></div>
         <div className="fixed   mx-auto container w-full x-3 lg:px-9 top-1/2 flex flex-col items-center -translate-x-1/2 left-1/2 -translate-y-1/2 ">

@@ -1,10 +1,11 @@
 import express, { NextFunction, Request, Response } from "express";
-import { getUserName, refreshToken, register, signInUser } from "../controllers/user";
+import { getUserName, logOutUser, refreshToken, register, signInUser } from "../controllers/user";
 import { redirectIfAuthenticated } from "../middlewares/redirectIfAuthenticated";
 import oauth2Client from "../middlewares/googleauthClient";
 import user from "../models/User";
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import  passport from "../config/passport";
+import { CreateTransactionRequest } from "../controllers/transcation";
 
 const router=express.Router(); // instance of a mini app router
 
@@ -38,10 +39,12 @@ router.get('/register',redirectIfAuthenticated);
 router.post('/register',register);
 router.get('/logIn',redirectIfAuthenticated);
 router.post('/logIn',signInUser);
+router.post('/refreshtoken',refreshToken);
+router.post('/logout',logOutUser);
 
 
 
-router.post('/refreshtoken',refreshToken); 
+
 
 
 router.get('/google', passport.authenticate('jwt', { session: false }), (req:Request | any, res) => {

@@ -5,17 +5,19 @@ import * as dotenv from "dotenv";
 dotenv.config({ path: __dirname + '/.env' });
 import mongoose from "mongoose";
 import cors from 'cors';
-import passport from "./config/passport"
+import expresscookie from "cookie-parser";
+import passport from "./config/passport";
+import jwt from "jsonwebtoken";
 import userRouter, { validateOrigin } from './routes/userroutes';
 import transcationRouter from './routes/routetranscations';
 import accountsRouter from "./routes/routeaccounts";
 import budgetsRouter from "./routes/routebudgets";
-import jwt from "jsonwebtoken";
 import oauth2Client from "./middlewares/googleauthClient";
 import user from "./models/User";
+import budgets from "./models/Budgets";
 import { CreateTransactionRequest } from "./controllers/transcation";
 import { getTotalIncomeAndExpense } from "./controllers/user";
-import budgets from "./models/Budgets";
+
 
 
 
@@ -29,19 +31,21 @@ const io=new Server(httpServer,{cors:{
     origin:["http://localhost:3000","http://localhost:5000"]
 }})
 const port=5000;
+app.use(expresscookie());
+app.use(express.json());
 
+app.use(express.urlencoded({extended:true}));
+app.use(passport.initialize())
 app.use(cors({
-    origin:[
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://localhost:5000"
-    ],
+    origin:["http://localhost:3000","http://localhost:3001"],
+
+    credentials:true,
+    
     
 }));
 
-app.use(passport.initialize())
-app.use(express.json());
-app.use(express.urlencoded({extended:true}))
+
+
 app.use((req:CreateTransactionRequest,res,next)=>{
     req.io=io;
     next();
@@ -68,7 +72,7 @@ mongoose.connect(process.env.MONGODB_URI!,{dbName:"financeApp"}).then((data)=>{
 app.use('/api/auth',userRouter);
 app.use('/api/transactions',transcationRouter);
 app.use('/api/account',accountsRouter);
-app.use('api/budgets',budgetsRouter);
+app.use('/api/budgets',budgetsRouter);
 app.get('/oauth2callback', async (req:Request,res:Response)=>{
 
     const {code,state}=req.query as {code:string|any,state:string|any};
@@ -112,7 +116,7 @@ app.get('/', (req, res:Response) => {
 
 app.get('/dashboard',passport.authenticate("jwt",{session:false}),(req,res:Response)=>{
     console.log(req.user)
-   return res.send("Welcome to the dashboard");
+   return res.send("Welcome to the dashboard")
 });
 
 

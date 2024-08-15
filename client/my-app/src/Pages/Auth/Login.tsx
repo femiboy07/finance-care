@@ -129,6 +129,7 @@ const LoginPage:React.FC=()=>{
       email:values.email,
       password:values.password,
     },{
+      withCredentials:true,
       headers:{
         'Content-Type':"application/x-www-form-urlencoded"
       }

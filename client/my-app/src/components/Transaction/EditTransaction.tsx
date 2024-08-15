@@ -27,11 +27,20 @@ const formSchema=z.object({
     date:z.string(z.date()),
     type:z.string(),
     category:z.string(),
-    description:z.string(),
+    description:z.string().optional(),
     amount:z.string(),
     // status:z.string(),
     accountId:z.string()
- });
+ }).refine((data)=>{
+  const parsedDate = parse(data.date,'PPP' , new Date());
+
+  // Check if the parsed date is valid
+  return isValid(parsedDate);
+ },{
+  message:"Invalid date",
+  path:['date']
+
+ });;
 
 
 
@@ -53,6 +62,7 @@ export default function EditTransaction({transaction,closeSideBar}:{transaction:
           mutationFn:updateTransaction,
           onSuccess:()=>{
               queryClient.invalidateQueries({queryKey:['alltransactions']})
+              queryClient.invalidateQueries({queryKey:['editTransactionsmobile']})
               queryClient.invalidateQueries({ queryKey: ['accounts'] })
               queryClient.invalidateQueries({queryKey:['allaccounts']})
         }
@@ -89,8 +99,9 @@ const handleFormatValue=(e:React.ChangeEvent<HTMLInputElement>)=>{
     const parsedDate = parse(e.target.value, "PPP", new Date());
     if (isValid(parsedDate)) {
       setSelectedDate(parsedDate);
+      form.setValue('date',e.target.value)
       //  setNewValue(parsedDate)
-      setMonth(parsedDate);
+      // setMonth(parsedDate);
     } else {
       setSelectedDate(undefined);
       setNewValue('')
@@ -98,37 +109,18 @@ const handleFormatValue=(e:React.ChangeEvent<HTMLInputElement>)=>{
 }
 const originalValuesRef = useRef(form.formState.defaultValues);
   
-  // useEffect(() => {
-  //   originalValuesRef.current = form.formState.defaultValues;
-  //   Object.keys(transaction).forEach((key:any) => {
-  //     form.setValue(key, transaction[key]);
-  //   });
-  // }, [transaction, form.setValue, form]);
-
-  // const watchedValues = useWatch({ control:form.control });
-
-  // const getChangedFields = (original:any, current:any) => {
-  //   const changedFields:any = {};
-  //   for (const key in current) {
-  //     if (current[key] !== original[key]) {
-  //       changedFields[key] = current[key];
-  //     }
-  //   }
-  //   return changedFields;
-  // };
+ 
 
 
 const handleOnSubmit=async(values:z.infer<typeof formSchema>)=>{
    
   try{
     const newamount=parseFloat(values?.amount).toFixed(2);
-   
     const parsed=parse(newValue,'MMMM do, y', new Date());
     const defaultDate=parse(values.date,'MMMM do, y', new Date());
    
     const newValues={...values,amount:newamount,date: newValue === '' ? formatISO(defaultDate) : formatISO(parsed)}
-   
-     await mutation.mutateAsync({ queryKey: ['editTransaction', token.access_token], variable:newValues,id:transaction._id});
+   await mutation.mutateAsync({ queryKey: ['editTransaction', token.access_token], variable:newValues,id:transaction._id});
   }catch(err){
     toast({
       description:"cannot update ryt now",
@@ -141,8 +133,8 @@ const handleOnSubmit=async(values:z.infer<typeof formSchema>)=>{
    toast({
        description:"transaction sucessfully updated",
        className:"text-black bg-white"
-   })
-}
+      })
+  }
 }
 const handleOnClick=()=>{
     setShowDate(true);

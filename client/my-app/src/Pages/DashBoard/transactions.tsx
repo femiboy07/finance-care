@@ -12,7 +12,7 @@ import {  useLocation, useNavigate, useOutletContext, useParams, useSearchParams
 import { ContextType } from "../../Layouts/DashboardLayout";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "../../@/components/ui/pagination";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../../@/components/ui/dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, MoveLeftIcon, PlusIcon } from "lucide-react";
 import EditTransaction from "../../components/Transaction/EditTransaction";
 import AddTransaction from "../../components/Transaction/AddTransaction";
 import SearchFilterSkeleton from "../../components/Skeleton/SearchFiterSkeleton";
@@ -20,6 +20,7 @@ import TransactionSkeleton from "../../components/Skeleton/TransactionSkeleton";
 import CardTransaction from "../../components/Transaction/CardTransaction";
 import { useInnerWidthState } from "../../hooks/useInnerWidthState";
 import { createPortal } from "react-dom";
+import ReviewTransactions from "../../components/Transaction/ReviewTransaction";
 
 
 
@@ -34,8 +35,8 @@ export const dataCategory:string[]=["Food","Rent","Salary","Entertainment","Bank
 
 
 export default function TransactionPage(){
-    const token = JSON.parse(localStorage.getItem('userAuthToken') || '{}');
-    const {category,name,setCategory,setName,setSearchParams}=useOutletContext<ContextType>()
+  
+    const {category,name,setCategory,setName,setSearchParams,months,search,setSearch,hideOver,setHideOver}=useOutletContext<ContextType>()
     const navigate=useNavigate()
     const {year,month}=useParams();
     const [active,setActive]=useState(false);
@@ -53,7 +54,7 @@ export default function TransactionPage(){
    
   
     const {data,isPending,error}=useQuery({
-      queryKey:['alltransactions',{name,category,year,month,page}],
+      queryKey:['alltransactions',{name,category,year,month,page,search}],
       queryFn:fetchTransaction,
     
     })
@@ -61,25 +62,23 @@ export default function TransactionPage(){
      useEffect(()=>{
       if (category) searchParam.set('category',category);
       if (name) searchParam.set('name', name);
-      if(page) searchParam.set('page',page.toString())
+      if(page) searchParam.set('page',page.toString());
+      if(search) searchParam.set('search',search);
        setSearchParam(searchParam);
-      },[category, name, page, searchParam, setSearchParam]);
+      },[category, name, page, searchParam, setSearchParam,search]);
 
-    useEffect(()=>{
+      useEffect(()=>{
      
-    },[location.search,navigate])
+      },[location.search,navigate])
 
     
     function clearFilters(){
-      // let param;
-      
       const newParams = new URLSearchParams();
-    
-      // Set the new (empty) parameters
       setSearchParam(newParams,{replace:true});
       setCategory('');
+      setSearch('')
       setName("")
-      }
+    }
     
 
   const handleOpenSideBar=()=>{
@@ -151,7 +150,6 @@ export default function TransactionPage(){
   
     const closeSidebar = () => {
       setIsSidebarOpen(false);
-      
       setSelectedTransaction(null); // Clear selected transaction
     };
 
@@ -190,24 +188,28 @@ export default function TransactionPage(){
 
     // if (error) return <div>Error loading transactions</div>;
     return (
-        <div className="w-full h-full px-2 md:px-4 xl:px-9 mt-20 mb-10 text-black max-w-full overflow-y-hidden">
-          <h1 className="text-black text-2xl text-center lg:text-left">Transactions</h1>
+        <div className="w-full h-full px-2 md:px-4 xl:px-9 mt-20 mb-10 text-black  ">
+          <h1 className="text-slate-700 font-bold text-2xl text-center lg:text-left">Transactions</h1>
           <div className="mt-1">
             <div className="date-table-filters w-full flex h-24 items-center  max-w-full ">
                 <MonthPicker params={searchParam} page={page} setPage={setPage}/>
-                <div className="ml-auto" >
-                 <Button onClick={handleOpenSideBar} className={buttonVariants({variant:"default",className:" bg-orange-400"})}>
-                   Add Transaction
-                 </Button>
+                <div className="ml-auto flex items-center gap-2" >
+                 <Button onClick={handleOpenSideBar} className={buttonVariants({className:" bg-orange-400 lg:py-6 hover:bg-slate-300 flex justify-center rounded-full items-center hover:opacity-45 lg:h-13  py-7   lg:rounded-md"})}>
+                 <PlusIcon className="w-[25px]  h-[25px] self-center"/>
+                 <span className=" lg:block hidden">Add</span> 
+                </Button>
+
+                <Button className={buttonVariants({variant:"default",className:` px-4 bg-orange-400  hidden md:flex ${hideOver ? 'md:flex':'hidden'}`})} onClick={()=>setHideOver(true)}>
+                <MoveLeftIcon className=" w-4 h-4"/>
+                </Button>
                 </div>
             </div>
           
             </div>
             
-           {width >= 1024 &&  <div className="filters-searches max-w-full  w-full  ">
-              {isPending && <SearchFilterSkeleton/>}
-              {data &&
-               <div className="filter-container shadow-md rounded-md bg-white h-24  flex items-center px-3">
+           {width >= 1024 &&  <div className="filters-searches    ">
+              {/* {isPending && <SearchFilterSkeleton/>} */}
+              <div className="filter-container shadow-md rounded-md bg-white h-24  flex items-center px-3">
                <SearchTransactions/>
                {searchParam.size > 1 && <Button className={buttonVariants({variant:'default',className:" bg-slate-100 text-slate-400 py-2 rounded-full"})} onClick={clearFilters}>Clearfilters</Button>}
                <div className="ml-auto   flex items-center">
@@ -227,13 +229,13 @@ export default function TransactionPage(){
                     </SelectTrigger>
                  </Select>
                  </div>
-               </div>} 
+               </div>
                </div>}
                {isAddTransaction && 
                (
               createPortal(   
               <div className="fixed right-0  top-0 left-0 z-[48] lg:z[9999]  w-full h-full flex justify-end "> 
-             <AddTransaction setIsAddTransaction={setIsAddTransaction}/>
+             <AddTransaction setIsAddTransaction={setIsAddTransaction} months={months}/>
              </div>,document.body)
            )}  
                {isSidebarOpen && ( 
@@ -242,13 +244,25 @@ export default function TransactionPage(){
              </Card>
            )} 
               
-        <div className=" h-full">
+        <div className=" h-full ">
         {isPending && <TransactionSkeleton/>}
           
           {data  && month && year && (
             <>
-          {width < 768 ? <CardTransaction handleEditTransaction={handleEditTransaction} data={data.listTransactions}/>:<TransactionTable columns={columns} data={data.listTransactions} listData={data} isPending={isPending}/>}
-               <Pagination className="mt-2 ">
+          {width < 768 ?
+          <CardTransaction handleEditTransaction={handleEditTransaction} data={data.listTransactions}/>:
+          <div className="flex">
+             <div className=" px-3 py-4 mt-5 h-fit bg-white rounded-md flex-grow "> 
+          <TransactionTable columns={columns} data={data.listTransactions} listData={data} isPending={isPending}/>
+          </div>
+          {width >= 768 && <div style={{minWidth:`calc(260px + 1rem)`}} className={`${hideOver ? `flex`:`hidden`} flex flex-grow flex-col items-end pl-[1rem]`}>
+          <div className="w-full bg-red-300 h-0"></div>
+          <ReviewTransactions/>
+          </div>}
+          </div>}
+        
+        {data && page >= 1 && (       
+        <Pagination className="mt-2 ">
              <PaginationContent className=" py-2  rounded-md ml-auto">
         <PaginationItem className=" bg-transparent  cursor-pointer rounded-md " >
           <PaginationPrevious  className=" hover:bg-transparent"  onClick={handlePrevious} />
@@ -258,7 +272,7 @@ export default function TransactionPage(){
         <PaginationNext className=" hover:bg-transparent" onClick={handleNext}  />
         </PaginationItem>
       </PaginationContent>
-      </Pagination>
+      </Pagination>)}
       </>)}
      </div>
     </div>

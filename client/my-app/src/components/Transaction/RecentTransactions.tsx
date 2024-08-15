@@ -64,7 +64,7 @@ export default function ReacentTransactions(){
           <CardContent>
            {newData && Object.keys(newData).map((category)=>(
              <div key={category} className='flex font-bold flex-col mb-3 '>
-             <h2 className='pb-3 text-gray-400 text-md'>{category}</h2>
+             <h2 className='pb-3 text-gray-500 text-md'>{category}</h2> 
                <ul className='space-y-3'>
                  {newData[category].map((transaction:any)=>(
                     <li key={transaction._id} className='flex justify-between w-full'>

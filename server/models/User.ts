@@ -64,16 +64,14 @@ const userModel=new mongoose.Schema<IUser,UserModel,IUserMethods>({
     }],
      passwordHash:{
         type:String,
-      //   maxlength:[15,"cant take more than 15 characters"],
-      //   minLength:[9,"pass cant be lower than 9 characters"],
-        required:true
+      required:true
 
      },
    
-     userRefreshTokens:[{
-      type:String,
+     userRefreshTokens:{
+      type:[String],
       default:[],
-     }],
+     },
      tokens:{
       google_access_token:{
          type:String,

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { redirect } from 'react-router-dom';
 
 interface LoadingContextType {
   isLoading: boolean;
@@ -8,6 +9,7 @@ interface LoadingContextType {
 
 export const apiClient=axios.create({
     baseURL:"http://localhost:5000/api",
+    withCredentials:true,
     headers:{
         "Content-Type":"application/x-www-form-urlencoded",
 
@@ -19,11 +21,16 @@ const LoadingContext = createContext<LoadingContextType | undefined>(undefined);
 export const LoadingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   
+  
 
 
 
 
 apiClient.interceptors.request.use(config=>{
+  if (config.url === '/auth/logout') {
+    return config;
+}
+
     const token = JSON.parse(localStorage.getItem('userAuthToken') || "{}")?.access_token;
   if (token) {
     config.headers['Authorization'] = `Bearer ${token}`;
@@ -35,18 +42,31 @@ apiClient.interceptors.request.use(config=>{
 
 apiClient.interceptors.response.use(response => response, async error => {
     const originalRequest = error.config;
+
+     if (error.config.url === '/auth/logout') {
+            return Promise.reject(error);
+        }
     
-    const token = JSON.parse(localStorage.getItem('userAuthToken') || "{}")?.expiresIn;
+    const expiresIn = JSON.parse(localStorage.getItem('userAuthToken') || "{}")?.expiresIn;
+
+    if(error.response.status === 401 && error.response.data.message === "Refresh Token Required"){
+         originalRequest._retry=false;
+         setIsLoading(false)
+         console.log("pls your session is expired login again");
+         localStorage.removeItem("userAuthToken")
+         window.location.href='/auth/login'
+         return;
+    }
     
     // If the error is due to token expiration
-    if ((error.response.status === 401 && !originalRequest._retry) || Date.now() >= token * 1000 )  {
+    if ((error.response.status === 401 && !originalRequest._retry) )  {
       originalRequest._retry = true;
       setIsLoading(true);
       try {
         // Refresh the token
         const refreshToken = JSON.parse(localStorage.getItem('userAuthToken') || "{}")?.refresh_token;
         console.log(refreshToken,"34");
-        const { data } = await axios.post('http://localhost:5000/api/auth/refreshToken', {refreshToken});
+        const { data } = await axios.post('http://localhost:5000/api/auth/refreshtoken', null, {withCredentials:true});
         
         // Save the new toke
         console.log(data)
@@ -55,6 +75,7 @@ apiClient.interceptors.response.use(response => response, async error => {
         apiClient.defaults.headers['Authorization'] = `Bearer ${data.access_token}`;
         originalRequest.headers['Authorization'] = `Bearer ${data.access_token}`;
   
+        window.location.reload();
         // Set the new token in the original request's headers
         // apiClient.defaults.headers['Authorization'] = `Bearer ${data.access_token}`;
         

@@ -9,9 +9,9 @@ import { DayPicker } from 'react-day-picker';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../@/components/ui/select';
 import { dataCategory } from '../../Pages/DashBoard/transactions';
 import { Button, buttonVariants } from '../../@/components/ui/button';
-import { format, formatISO, isValid, parse } from 'date-fns';
+import { format, formatISO, isBefore, isValid, parse } from 'date-fns';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { createTransaction, getAccountsName } from '../../api/apiRequest';
+import { createBudget, createTransaction, getAccountsName } from '../../api/apiRequest';
 import { queryClient } from '../..';
 import {  useToast } from '../../@/components/ui/use-toast';
 
@@ -19,6 +19,11 @@ import {  useToast } from '../../@/components/ui/use-toast';
 
 
 
+
+
+const removeOrdinalSuffix = (dateString:any) => {
+  return dateString.replace(/(\d+)(st|nd|rd|th)/g, '$1');
+};
 
 
 function isValidDate(dateString:any,formatString:any) {
@@ -29,30 +34,15 @@ function isValidDate(dateString:any,formatString:any) {
   return isValid(parsedDate);
 }
 
+const MyEnum = ['monthly', 'yearly', 'custom'];
 
 
 const formSchema=z.object({
-    type:z.string({
-        required_error:"pls type is required",
-        message:"type is required"
-    }).min(5,{message:"type required"}),
-    date:z.string(z.date()).refine((data)=>{
-      const parsedDate = parse(data,'PPP',new Date());
-     
-      // Check if the parsed date is valid
-      return isValid(parsedDate);
-     },{
-      message:"Invalid date",
-      path:['date']
-    
-     }),
-    category:z.string({
+   period:z.string(z.enum(["monthly","yearly","custom"])),
+   category:z.string({
       required_error:'category is required',
       message:'category needed'
     }).min(1,{message:'required'}),
-    description:z.string({
-      required_error:"description is required"
-    }).min(1,{message:"required"}),
     amount:z.string({
       required_error:"amount is required"
     }).min(1,{message:"required"}).max(6,{message:"cannot exceed this limit"}).refine((val)=>{
@@ -66,136 +56,206 @@ const formSchema=z.object({
 
     accountId:z.string({
       required_error:"pls select account"
-    }).min(5,{message:'account name is required'})
- }).refine((data)=>{
-  const parsedDate = parse(data.date,'PPP',new Date());
- 
-  // Check if the parsed date is valid
-  return isValidDate(data.date,"PPP");
- },{
-  message:"Invalid date",
-  path:['date']
+    }).min(5,{message:'account name is required'}),
+    startDate:z.string(z.date()).optional(),
+    endDate:z.string(z.date()).optional(),
+ }).refine((data) => {
+    // Check if startDate and endDate are both defined
+    const { startDate, endDate } = data;
 
- });
-
-
-export default function AddTransaction({setIsAddTransaction,months}:{setIsAddTransaction:any,months:any}){
-    const token = JSON.parse(localStorage.getItem('userAuthToken') || '{}');
+  if (startDate  && endDate ) {
+    const dateFormat = 'MMMM d, yyyy';
    
-    const [showDate,setShowDate] =useState(false);
-    const [month, setMonth] = useState(new Date());
+
+    if (!isValidDate(startDate,dateFormat) || !isValidDate(endDate,dateFormat)) {
+      return false;
+    }
+
+    return isBefore(startDate,endDate)
+  }
+
+  return true;
+    // Return true if dates are not both defined (optional)
+
+}, {
+  path:["startDate"],
+  message: 'Start date must be before end date',
+    
+    
+  });
+
+
+export default function AddBudgets({setIsAddBudget}:{setIsAddBudget:any}){
+    const token = JSON.parse(localStorage.getItem('userAuthToken') || '{}');
+    const [showStartDate,setShowStartDate] =useState(false);
+    const [showEndDate,setShowEndDate]=useState(false)
+    const [month1, setMonth1] = useState(new Date());
+    const [month2, setMonth2] = useState(new Date());
     const divRef=useRef<HTMLDivElement | null>(null);
     const {toast}=useToast()
-    const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-    const [newValue,setNewValue]=useState('');
-    const type:string[]=["income","expense"];
+    const [selectedStartDate, setSelectedStartDate] = useState<Date | undefined>(undefined);
+    const [selectedEndDate, setSelectedEndDate] = useState<Date | undefined>(undefined);
+    const [newStartValue,setStartNewValue]=useState('');
+    const [newEndValue,setEndNewValue]=useState('');
+    const type:string[]=["yearly","monthly","custom"];
     const {error,data}=useQuery({
         queryKey:['accounts',token.access_token],
         queryFn:getAccountsName
       })    
     const mutation=useMutation({
-        mutationFn:createTransaction,
+        mutationFn:createBudget,
         onSuccess:()=>{
-            queryClient.invalidateQueries({queryKey:['alltransactions']})
-            queryClient.invalidateQueries({ queryKey: ['accounts'] })
-            queryClient.invalidateQueries({ queryKey: ['latesttransaction'] })
+          queryClient.invalidateQueries({queryKey:['allBudgets']})
+           
       },
-      onError:()=>{
+      onError:(err)=>{
         toast({
-          description:"transaction succesfully created",
+          description:`budget ${err} succesfully created`,
           variant:"destructive",
           className:"text-black h-24"
       }) 
       }
     })
-    const currentDate:any=format(months,'PPP')
+    const currentDate:any=format(Date.now(),'MMMM d, yyyy');
+
+    
    
     const form=useForm<z.infer<typeof formSchema>>({
         resolver:zodResolver(formSchema),
         defaultValues:{
         accountId:"",  
-        type:type[0],
-        date:currentDate,
+        period:'',
         category:"",
-        description:"",
         amount:"",
+        startDate:"",
+        endDate:""
        
     },
     mode:"onSubmit"
   }) 
 
-  // const [newValue,setNewValue]=useState(''); 
-  const handleDayPickerSelect = (date: Date | undefined) => {
+  // formSchema.refine((data)=>{
+
+  // })
+
+  
+  const period=form.watch('period');
+
+  
+  const handleDayPickerSelectOne = (date: Date | undefined) => {
     if (!date) {
-      setNewValue("");
-      setSelectedDate(undefined);
+      setStartNewValue("");
+      setSelectedStartDate(undefined);
+    
     } else {
-      setSelectedDate(date);
-      // setMonth(date);
-      form.setValue('date',format(date,"PPP"));
-      setNewValue(format(date, "PPP"));
+      setSelectedStartDate(date);
+     
+      setMonth1(date);
+      form.setValue('startDate',format(date,"MMMM d, yyyy"));
+      setStartNewValue(format(date, "MMMM d, yyyy"));
+    }
+  };
+
+  const handleDayPickerSelectTwo = (date: Date | undefined) => {
+    if (!date) {
+      setEndNewValue("");
+    
+      setSelectedEndDate(undefined)
+    } else {
+    
+      setSelectedEndDate(date);
+      setMonth2(date);
+      form.setValue('endDate',format(date,"MMMM d, yyyy"));
+      setEndNewValue(format(date, "MMMM d, yyyy"));
     }
   };
   
   const handleFormatValue=(e:React.ChangeEvent<HTMLInputElement>)=>{
-       setNewValue(e.target.value);
-        form.setValue('date',e.target.value)
-       const parsedDate = parse(e.target.value, "PPP", new Date());
+       setStartNewValue(e.target.value);
+       form.setValue('startDate',e.target.value)
+    
+      const parsedDate = parse(e.target.value, "MMMM d, yyyy", new Date());
       if (isValid(parsedDate)) {
-        setSelectedDate(parsedDate);
-        // form.setValue('date',e.target.value)
-        //  setNewValue(e.target.value);
-        // setMonth(parsedDate);
+        setSelectedStartDate(parsedDate);
+       
       } else {
-        // form.setValue('date','')
-        setSelectedDate(undefined);
-        setNewValue('')
+        setSelectedStartDate(undefined);
+       
+        setStartNewValue('');
+       
       }
   }
 
-  const handleOnClick=()=>{
-      setShowDate(true);
+  const handleFormatValue2=(e:React.ChangeEvent<HTMLInputElement>)=>{
+    // setStartNewValue(e.target.value);
+   setEndNewValue(e.target.value)
+   form.setValue('endDate',e.target.value)
+   const parsedDate = parse(e.target.value, "MMMM d, yyyy", new Date());
+   if (isValid(parsedDate)) {
+    
+     setSelectedEndDate(parsedDate)
+    
+   } else {
+    
+     setSelectedEndDate(undefined);
+    
+     setEndNewValue("");
+   }
+}
+
+  const handleOnClick=(name:string)=>{
+    if(name === 'startDate'){
+      setShowStartDate(true);
+      return;
+    }
+
+    if(name === 'endDate'){
+        setShowEndDate(true);
+        return;
+    }
+
   }
+         
+ 
 
  async function handleOnSubmit(values:z.infer<typeof formSchema>){
-    
-        if(!values) return;
-        
+    if(!values) return;
+    try{
+       
         const newamount=parseFloat(values.amount).toFixed(2)
-        const parsed=parse(newValue,'MMMM do, y', new Date());
-        const defaultDate=parse(values.date,'MMMM do, y', new Date());
-         const newValues={...values,amount:newamount,date:newValue === '' ? formatISO(defaultDate) : formatISO(parsed)}
-         console.log(newValues)
-         await mutation.mutateAsync({ queryKey: ['addtransaction', token.access_token], variable:newValues}).then((res)=>{
-        
-            new Promise((resolve)=>setTimeout(resolve,5000))
-            setIsAddTransaction(false);
-            toast({
-              description:`transaction successfull`,
-              className:"bg-green-500 text-white h-16"
-          }) 
-          
-        }).catch((err)=>{
-          setIsAddTransaction(false);
-          toast({
-            description:`${err.response.data.message} pls credit your account pls `,
-            className:"text-white h-16",
-            variant:"destructive"
-        })
-        })
-        
-        
-        
-     
-      
-      
-     
+        const parsed=parse(newStartValue,'MMMM d, yyyy', new Date());
+        const parsed1=parse(newEndValue,'MMMM d, yyyy', new Date());
+
+         const result=formSchema.parse(values)
+      const newValues={...values,amount:newamount,startDate:values.period === 'custom' ? values.startDate : undefined, endDate:values.period === 'custom' ? values.endDate : undefined}
+       const res=await mutation.mutateAsync({ queryKey: ['allBudgets', token.access_token], variable:newValues});  
+       console.log(res); 
+       
+  }catch(error){
+    toast({
+      description:`${error} pls you already have a budget created for this just edit it  `,
+      className:"text-white h-16",
+      variant:"destructive"
+  })
+  }finally{
+    toast({
+      description:`budget succesfully created`,
+      // variant:"destructive",
+      className:"text-black h-24 bg-green-500"
+  }) 
   }
 
-  const {isPending}=mutation;
+  
+ }
+ const {isPending,isSuccess,isError}=mutation;
+
+  if(isError){
+    console.log("errror")
+  }
   const handleClickOutside = (event:any) => {
     if (divRef.current && !divRef.current.contains(event.target)) {
-      setShowDate(false);
+      setShowStartDate(false);
+      setShowEndDate(false);
     }
   }; 
 
@@ -210,7 +270,7 @@ useEffect(() => {
         <Form {...form}>
          <RouterForm className=" bg-white w-full max-w-full p-[0rem] relative border-l flex flex-col md:w-[33%] md:max-w-[450px] lg:w-96  text-black " onSubmit={form.handleSubmit(handleOnSubmit)}>
           <div className="header text-black w-full pt-[2.5em]  px-6 text-2xl ">
-             <h1 >Add Transaction</h1>
+             <h1 >Set Budget</h1>
           </div> 
              <div className=" p-[1.5em] overflow-y-auto overflow-x-hidden scrollbar-widths flex-1    mt-3  ">
                 
@@ -219,18 +279,18 @@ useEffect(() => {
                  <h1 className='border-b'>Details</h1>
                 <FormField  
                 control={form.control}
-                name="type"
+                name="period"
                 render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">TYPE</FormLabel>
+                  <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">PERIOD</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value} >
                   <FormControl>
                   <SelectTrigger className="bg-white">
-                        <SelectValue  placeholder="income or expense" />
+                        <SelectValue  placeholder="set period" />
                     </SelectTrigger>
                     </FormControl>
                         <SelectContent className=" z-[9999]"> 
-                          {type?.map((item:string)=>(
+                          {type && type?.map((item:string)=>(
                             <SelectItem key={item}  value={item}>
                                 {item}
                             </SelectItem>
@@ -241,31 +301,68 @@ useEffect(() => {
                  </FormItem>
               )}
                 />
-                 <FormField
+          {period === 'custom' &&
+             <>
+             <FormField
                 control={form.control}
-                name="date"
+                name="startDate"
                 render={({ field:{onChange,value}}) => (
                 <FormItem >
-                  <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">DATE</FormLabel>
+                  <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">START DATE</FormLabel>
                   <FormControl>
-                    <Input type='string' onClick={handleOnClick}  placeholder={value.toString()} onChange={handleFormatValue} className="bg-white"  value={value}     />
+                    <Input type='string' onClick={()=>handleOnClick('startDate')}  placeholder={value?.toString()} onChange={handleFormatValue} className="bg-white"  value={value}     />
                    </FormControl>
                 <FormMessage/>
                 </FormItem>
               )}
-                /> 
-                 {showDate && (
-                     <div className=" relative  w-full" ref={divRef}>
+                />
+            
+                </>  
+                
+            }
+                {showStartDate && (
+                     <div className=" relative w-full " ref={divRef}>
+                        <DayPicker 
+                        id='startDate'
+                        mode="single"
+                        onMonthChange={setMonth1}
+                        month={month1}
+                        className=" absolute left-1/2 z-[14526]  bg-orange-300 px-3 py-3  -translate-x-1/2  rounded-md shadow-md "
+                        selected={selectedStartDate}
+                        onSelect={handleDayPickerSelectOne}
+                        />
+                    </div>
+            )} 
+
+            {period === "custom" &&  <FormField
+                control={form.control}
+                name="endDate"
+                render={({ field:{onChange,value}}) => (
+                <FormItem >
+                  <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">END DATE</FormLabel>
+                  <FormControl>
+                    <Input type='string' onClick={()=>handleOnClick('endDate')}  placeholder={value?.toString()} onChange={handleFormatValue2} className="bg-white"  value={value}     />
+                   </FormControl>
+                <FormMessage/>
+                </FormItem>
+              )}
+                />}
+                 {showEndDate && (
+                     <div className=" relative w-full " ref={divRef}>
                         <DayPicker 
                         mode="single"
-                        onMonthChange={setMonth}
-                        month={month}
-                        className=" absolute left-1/2  -translate-x-1/2 bg-white rounded-md shadow-md "
-                        selected={selectedDate}
-                        onSelect={handleDayPickerSelect}
+                        id='form2'
+                        onMonthChange={setMonth2}
+                         month={month2}
+                        className=" absolute left-1/2 z-[445577] bg-orange-300 px-3 py-3  -translate-x-1/2  rounded-md shadow-md "
+                        selected={selectedEndDate}
+                        onSelect={handleDayPickerSelectTwo}
                         />
                         </div>
-                    )}
+            )}
+
+            
+                
                  <FormField
                 control={form.control}
                 name="category"
@@ -305,19 +402,7 @@ useEffect(() => {
               )}
                 />
 
-                  <FormField
-                control={form.control}
-                name="description"
-                render={({ field}) => (
-                <FormItem >
-                  <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">DESCRIPTION</FormLabel>
-                  <FormControl>
-                    <Input type="string"  placeholder='write a note' className="bg-white"  {...field}/>
-                   </FormControl>
-                <FormMessage/>
-                </FormItem>
-              )}
-                />
+        
                <FormField
                 control={form.control}
                 name="accountId"
@@ -350,11 +435,11 @@ useEffect(() => {
 
              <div className="close-button   pt-[1.5em] m-[1.5em] border-t flex items-center justify-between border-top    ">
              
-               <Button  className={buttonVariants({variant:"default",className:"px-3  bg-orange-400 hover:bg-orange-500 "})} onClick={()=>setIsAddTransaction(false)}>
+               <Button  className={buttonVariants({variant:"default",className:"px-3  bg-orange-400 hover:bg-orange-500 "})} onClick={()=>setIsAddBudget(false)}>
                  CLOSE
                </Button>
                <Button className="ml-auto" type='submit'>
-               {isPending ? "Loading..." : "CREATE TRANSACTION"}
+               {isPending ? "Loading..." : "SET BUDGETS"}
                 </Button>
              
              </div>
