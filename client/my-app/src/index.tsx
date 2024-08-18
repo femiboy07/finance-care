@@ -24,6 +24,7 @@ import AuthProvider from './context/userAutthContext';
 import { LoadingProvider } from './context/LoadingContext';
 import LoadingOverlay from './components/common/LoadingOverlay';
 import BudgetsPage from './Pages/DashBoard/budgets';
+import FilterProvider from './context/TableFilterContext';
 
 
 export const queryClient=new QueryClient();
@@ -106,12 +107,13 @@ const router=createBrowserRouter([
 
 root.render(
   <React.StrictMode>
-
-  <QueryClientProvider client={queryClient}>
+<QueryClientProvider client={queryClient}>
     <LoadingProvider>
+    <FilterProvider> 
    <AuthProvider>
    <RouterProvider router={router} />
  </AuthProvider>
+ </FilterProvider>
  </LoadingProvider>
  </QueryClientProvider>
   </React.StrictMode>

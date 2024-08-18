@@ -26,10 +26,10 @@ export default function SearchTransactions(){
            autoCapitalize="off"
            name="transaction" 
            onChange={(e)=>setSearch(e.target.value)}
-           placeholder="Search transactions..."
+           placeholder="Quick Search..."
           className="absolute inset-0  w-full  border outline-none border-slate-100  h-full pl-8      bg-white "
           />
-          <SearchIcon className="absolute top-1/2 -translate-y-1/2 left-2 text-black" size={18} />
+          <SearchIcon className="absolute top-1/2 -translate-y-1/2 left-2 text-slate-300" size={18} />
         </div>
     )
 }

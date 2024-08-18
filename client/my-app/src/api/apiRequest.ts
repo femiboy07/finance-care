@@ -34,6 +34,13 @@ interface updateBudgetParams {
   id:any
 }
 
+
+interface DeleteTransactionParams {
+  queryKey: string; // Adjust this based on the actual structure of your queryKey
+  variable: string | string[];
+}
+
+
 // export interface getMetrics extends QueryFunction{}
 
 
@@ -181,17 +188,15 @@ export async function getAccounts({queryKey}:any){
     }
 }
 
-interface DeleteTransactionParams {
-  queryKey: string; // Adjust this based on the actual structure of your queryKey
-  variable: string;
-}
 
 
 export async function deleteTransaction({queryKey,variable}:DeleteTransactionParams){
      const token=queryKey;
      console.log(token,variable)
+     const ids=typeof variable === 'string' ? [variable] : variable;
+     console.log(ids)
     try{
-    const res=apiClient.delete(`/transactions/delete/${variable}`);
+    const res=apiClient.post(`/transactions/delete`,{ids:ids});
 
       const data=(await res).data;
 

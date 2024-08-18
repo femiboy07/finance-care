@@ -50,9 +50,7 @@ const formSchema=z.object({
       required_error:'category is required',
       message:'category needed'
     }).min(1,{message:'required'}),
-    description:z.string({
-      required_error:"description is required"
-    }).min(1,{message:"required"}),
+    description:z.string().optional(),
     amount:z.string({
       required_error:"amount is required"
     }).min(1,{message:"required"}).max(6,{message:"cannot exceed this limit"}).refine((val)=>{
@@ -266,6 +264,7 @@ useEffect(() => {
                         />
                         </div>
                     )}
+                  
                  <FormField
                 control={form.control}
                 name="category"

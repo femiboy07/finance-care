@@ -56,9 +56,9 @@ export async function createTranscation(req:CreateTransactionRequest,res:Respons
         if (!amount) {
             return res.status(400).json({ message: "Transaction amount is required" });
         }
-        if (!description) {
-            return res.status(400).json({ message: "Transaction description is required" });
-        }
+        // if (!description) {
+        //     return res.status(400).json({ message: "Transaction description is required" });
+        // }
         if (!category) {
             return res.status(400).json({ message: "Transaction category is required" });
         }
@@ -89,7 +89,7 @@ export async function createTranscation(req:CreateTransactionRequest,res:Respons
                 type,
                 name:account.name,
                 amount,
-                description,
+                description:description,
                 category,
                 date:date
              });
@@ -139,7 +139,7 @@ export async function createTranscation(req:CreateTransactionRequest,res:Respons
 export async function updateTransaction(req: CreateTransactionRequest, res: Response) {
   const { id } = req.params;
   const { category, type, amount, description, date, accountId } = req.body;
- console.log(req.body)
+  console.log(req.body,"bodyyyyyyyyy")
   try {
       // Find the transaction by ID
       let transaction = await transcation.findById(id);
@@ -150,16 +150,16 @@ export async function updateTransaction(req: CreateTransactionRequest, res: Resp
       // Update transaction fields
       if (category) {
         transaction.category = category;
-        await transaction.save()
+      
       }
       if (description){
         transaction.description = description;
-        await transaction.save()
+       
      }
    
       if (type){
          transaction.type = type;
-         await transaction.save()
+         
       }
       if (date) {
         const parsedDate = new Date(date);
@@ -167,7 +167,7 @@ export async function updateTransaction(req: CreateTransactionRequest, res: Resp
           return res.status(400).json({ message: "Invalid date format" });
         }
         transaction.date = date;
-        await transaction.save();
+      
       }
       if (amount){
         
@@ -181,9 +181,7 @@ export async function updateTransaction(req: CreateTransactionRequest, res: Resp
         }
   
       
-        // if (convertToNumber(budget.remaining) < amount) {
-        //   throw new Error('Transaction exceeds remaining budget');
-        // }
+        
   
         budget.spent = convertToNumber(budget.spent) + convertToNumber(amount);
         let remaining=   convertToNumber(budget.remaining) 
@@ -203,8 +201,8 @@ export async function updateTransaction(req: CreateTransactionRequest, res: Resp
           transaction.accountId = account._id;
           transaction.name = account.name;
 
-          await transaction.save();
-          // return res.status(200).json({ data: transaction, message: "Successfully updated" });
+          // await transaction.save();
+          
           
       } 
       // If name is provided and accountId is not, find the account by name
@@ -221,10 +219,18 @@ export async function updateTransaction(req: CreateTransactionRequest, res: Resp
 }
 
 export async function deleteTranscation(req:Request,res:Response){
-    const {id}=req.params;
+    const {ids}=req.body;
 
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: 'No IDs provided' });
+    }
     try{
-       const cancelItem=await transcation.findOneAndDelete({_id:id});
+       const cancelItem=await transcation.deleteMany({
+        _id:{$in:ids}
+       })
+       if (cancelItem.deletedCount === 0) {
+        return res.status(404).json({ message: 'No transactions found with the provided IDs' });
+      } 
 
        return res.json({cancelItem}).status(200);
     }catch(err){
@@ -328,7 +334,7 @@ export async function getTranscations(req:Request<{},{},{},QueryParams>,res:Resp
     console.log(start.toISOString(),end.toISOString())
     query.date = { $gte: start, $lte: end };
     const pageNumber = parseInt(page as unknown as string) || 1; // Default to page 1
-    const limitNumber = parseInt(pageLimit as unknown as string) || 5;
+    const limitNumber = parseInt(pageLimit as unknown as string) || 30;
     const skip = (pageNumber - 1) * limitNumber;
    
     

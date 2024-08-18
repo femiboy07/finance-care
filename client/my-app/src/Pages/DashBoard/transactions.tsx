@@ -12,7 +12,7 @@ import {  useLocation, useNavigate, useOutletContext, useParams, useSearchParams
 import { ContextType } from "../../Layouts/DashboardLayout";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "../../@/components/ui/pagination";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../../@/components/ui/dropdown-menu";
-import { MoreHorizontal, MoveLeftIcon, PlusIcon } from "lucide-react";
+import { CheckCircleIcon, MoreHorizontal, MoveLeftIcon, PlusIcon } from "lucide-react";
 import EditTransaction from "../../components/Transaction/EditTransaction";
 import AddTransaction from "../../components/Transaction/AddTransaction";
 import SearchFilterSkeleton from "../../components/Skeleton/SearchFiterSkeleton";
@@ -21,6 +21,8 @@ import CardTransaction from "../../components/Transaction/CardTransaction";
 import { useInnerWidthState } from "../../hooks/useInnerWidthState";
 import { createPortal } from "react-dom";
 import ReviewTransactions from "../../components/Transaction/ReviewTransaction";
+import SelectedTransactions from "../../components/Transaction/SelectedTransactions";
+import { useSelectedFilter } from "../../context/TableFilterContext";
 
 
 
@@ -50,6 +52,7 @@ export default function TransactionPage(){
     const [selectedTransaction, setSelectedTransaction] = useState(null);
     const [searchParam,setSearchParam]=useSearchParams();
     const [width]=useInnerWidthState();
+    const {rowSelection}=useSelectedFilter()
 
    
   
@@ -158,14 +161,20 @@ export default function TransactionPage(){
         return {
           ...col,
           cell: ({row}:any) => (
+          
+          <div className="flex items-center  justify-center w-full text-center">
+               
+         <div className={` flex  justify-center  text-center ${row.original.status === 'cleared' ? ' text-green':''} `}>
+          {row.original.status === 'cleared' ? <CheckCircleIcon color="green" enableBackground={"green"} width={14}  fontSize={14}/> :<CheckCircleIcon  width={14}  fontSize={14}/> }
+        </div>
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
+              <DropdownMenuTrigger asChild className="flex ">
+                <Button variant="ghost" className="h-8 w-8 p-0 ">
                   <span className="sr-only">Open menu</span>
-                  <MoreHorizontal className="h-4 w-4" />
+                  <MoreHorizontal className="h-4 w-full" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="z-10">
+              <DropdownMenuContent align="end" className="z-[1] ">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                 <DropdownMenuItem
                   onClick={() => navigator.clipboard.writeText(row.original.category)}
@@ -179,6 +188,7 @@ export default function TransactionPage(){
                 <DropdownMenuItem>View transaction</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            </div>
           ),
         };
       }
@@ -244,7 +254,7 @@ export default function TransactionPage(){
              </Card>
            )} 
               
-        <div className=" h-full ">
+        <div className=" h-full w-full ">
         {isPending && <TransactionSkeleton/>}
           
           {data  && month && year && (
@@ -252,11 +262,12 @@ export default function TransactionPage(){
           {width < 768 ?
           <CardTransaction handleEditTransaction={handleEditTransaction} data={data.listTransactions}/>:
           <div className="flex">
-             <div className=" px-3 py-4 mt-5 h-fit bg-white rounded-md flex-grow "> 
+            <div className=" px-3 py-4 mt-5 h-fit  overflow-y-hidden bg-white rounded-md flex-grow "> 
           <TransactionTable columns={columns} data={data.listTransactions} listData={data} isPending={isPending}/>
           </div>
-          {width >= 768 && <div style={{minWidth:`calc(260px + 1rem)`}} className={`${hideOver ? `flex`:`hidden`} flex flex-grow flex-col items-end pl-[1rem]`}>
+          {width >= 768 && <div style={{minWidth:`calc(260px + 1rem)`}} className={`${hideOver ? `flex`:`hidden`} flex  flex-col items-end `}>
           <div className="w-full bg-red-300 h-0"></div>
+         {Object.keys(rowSelection).length > 0  && <SelectedTransactions/>}
           <ReviewTransactions/>
           </div>}
           </div>}

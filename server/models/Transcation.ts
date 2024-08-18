@@ -34,7 +34,7 @@ export interface ITranscations{
   type: typeTranscation | string,              // Type of transaction: "income" or "expense"
   amount:mongoose.Types.Decimal128,                              // Amount of the transaction
   category:transcationCategory | string,     // Category of the transaction (e.g., "food", "rent")
-  description: string,                      // Optional description for the transaction
+  description?: string,                      // Optional description for the transaction
   status:statusTranscation | string,
   name:string,
   date: Date,                               // Date of the transaction
@@ -83,6 +83,8 @@ const userTranscations=new mongoose.Schema<ITranscations>({
      },
      description:{
         type:String,
+        
+        required:false
       //   required:true,
         
      },
