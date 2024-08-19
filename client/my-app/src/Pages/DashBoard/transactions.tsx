@@ -254,20 +254,20 @@ export default function TransactionPage(){
              </Card>
            )} 
               
-        <div className=" h-full w-full ">
+    <div className=" h-full w-full ">
         {isPending && <TransactionSkeleton/>}
-          
-          {data  && month && year && (
-            <>
+          <>
           {width < 768 ?
-          <CardTransaction handleEditTransaction={handleEditTransaction} data={data.listTransactions}/>:
+          <>
+          {data && month && year && <CardTransaction handleEditTransaction={handleEditTransaction} data={data.listTransactions}/>}
+          </>:
           <div className="flex">
-            <div className=" px-3 py-4 mt-5 h-fit  overflow-y-hidden bg-white rounded-md flex-grow "> 
-          <TransactionTable columns={columns} data={data.listTransactions} listData={data} isPending={isPending}/>
+          <div className=" px-3 py-4 mt-5 h-fit  overflow-y-hidden bg-white rounded-md flex-grow "> 
+         {data && month && year && <TransactionTable columns={columns} data={data.listTransactions} listData={data} isPending={isPending}/>}
           </div>
           {width >= 768 && <div style={{minWidth:`calc(260px + 1rem)`}} className={`${hideOver ? `flex`:`hidden`} flex  flex-col items-end `}>
           <div className="w-full bg-red-300 h-0"></div>
-         {Object.keys(rowSelection).length > 0  && <SelectedTransactions/>}
+          {Object.keys(rowSelection).length > 0  && <SelectedTransactions/>}
           <ReviewTransactions/>
           </div>}
           </div>}
@@ -284,7 +284,8 @@ export default function TransactionPage(){
         </PaginationItem>
       </PaginationContent>
       </Pagination>)}
-      </>)}
+      </>
+    
      </div>
     </div>
        

@@ -327,7 +327,7 @@ useEffect(() => {
                   I want to...
                 </div>
                 <div className="space-buttons mt-5">
-                 <DeleteTransactionButton transactionId={transaction._id} closeSideBar={closeSideBar} icon={true} />
+                 <DeleteTransactionButton transactionId={transaction._id} closeSideBar={closeSideBar}  />
                 </div>
                
              </div>

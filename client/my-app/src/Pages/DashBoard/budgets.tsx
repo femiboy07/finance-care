@@ -190,28 +190,14 @@ export default function BudgetsPage(){
             </div>
             {width >= 1024 &&  <div className="filters-searches max-w-full  w-full  ">
               {isPending && <SearchFilterSkeleton/>}
-              {data &&
+              {/* {data &&
                <div className="filter-container shadow-md rounded-md bg-white h-24  flex items-center px-3">
                <SearchBudgets/>
                {searchParam.size > 1 && <Button className={buttonVariants({variant:'default',className:" bg-slate-100 text-slate-400 py-2 rounded-full"})} onClick={clearFilters}>Clearfilters</Button>}
                <div className="ml-auto   flex items-center">
-                {/* <SelectAccount name={name} accountName={name} setAccountName={setName}/> */}
-                 {/* <Select value={category} onValueChange={setCategory} >
-                    <SelectTrigger className="w-[180px] ml-2 h-12  bg-white">
-                        <SelectValue placeholder="Category"/>
-                      <SelectContent className=" h-36 overflow-y-auto border-0 border-none outline-none"> 
-                      {dataCategory.map((item)=>{
-                        return (
-                          <SelectItem  value={item} defaultValue={"all"}>
-                          {item}
-                          </SelectItem>
-                        )
-                      })}  
-                     </SelectContent>
-                    </SelectTrigger>
-                 </Select> */}
+             
                  </div>
-               </div>} 
+               </div>}  */}
                </div>}
                {isAddBudget && 
                (

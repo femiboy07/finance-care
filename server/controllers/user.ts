@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import { CreateTransactionRequest } from "./transcation";
 import transcation from "../models/Transcation";
 import mongoose, { isValidObjectId } from "mongoose";
+import {startOfWeek,startOfMonth,startOfYear,endOfWeek,endOfMonth,endOfYear} from "date-fns"
 
 
 export async function register(req:Request,res:Response,next:NextFunction):Promise<unknown>{
@@ -221,61 +222,73 @@ export async function getUserName(req:CreateTransactionRequest,res:Response){
      console.log(err);
   }
 }
-
-interface IncomeByExpense{
-    year:number;
-
+interface IncomeByExpenseQuery {
+    interval: 'weekly' | 'monthly' | 'yearly';
 }
 
-export async function getTotalIncomeAndExpense(req: Request<{}, {}, {}, IncomeByExpense>, res: Response) {
-    const { year} = req.query;
+export async function getTotalIncomeAndExpense(req: Request<{}, {}, {}, IncomeByExpenseQuery>, res: Response) {
+    const { interval } = req.query;
 
-    // Ensure the year is a number and valid
-    if (!year || isNaN(year) || year < 1000 || year > 9999) {
-        return res.status(400).json({ message: "Invalid year provided. Please provide a valid year." });
+    if (!['weekly', 'monthly', 'yearly'].includes(interval)) {
+        return res.status(400).json({ message: "Invalid interval provided. Please provide 'weekly', 'monthly', or 'yearly'." });
     }
 
     try {
-        const userId: any = req.user; // Assuming req.user contains the authenticated user's ID
+        const userId: any = req.user;
         if (!userId) {
             return res.status(401).json({ message: "You need to be authenticated. Please log in again." });
         }
 
-        console.log(`Fetching totals for user: ${userId._id}, year: ${year}`);
+        const now = new Date();
+        let startDate: Date;
+        let endDate: Date;
+        let groupBy: any;
+        let labels: string[];
 
-        // Construct the date range for the specified year
-        const startOfYear = new Date(Date.UTC(year, 0, 1)); // UTC date for January 1st of the given year
-        const endOfYear = new Date(Date.UTC(year + 1, 0, 1)); // UTC date for January 1st of the following year
-        console.log(startOfYear, endOfYear);
+        switch (interval) {
+            case 'weekly':
+                startDate = startOfWeek(now);
+                endDate = endOfWeek(now);
+                groupBy = { $dayOfWeek: '$date' }; // 1=Sun, 2=Mon, ..., 7=Sat
+                labels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+                break;
+            case 'monthly':
+                startDate = startOfMonth(now);
+                endDate = endOfMonth(now);
+                groupBy = { $dayOfMonth: '$date' }; // Group by day of the month
+                labels = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
+                break;
+            case 'yearly':
+                startDate = startOfYear(now);
+                endDate = endOfYear(now);
+                groupBy = { $month: '$date' }; // 1=Jan, 2=Feb, ..., 12=Dec
+                labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                break;
+        }
 
-        // Aggregate income by month
+        // Aggregate income by the selected interval
         const incomeAggregation = transcation.aggregate([
-            { $match: { type: 'income', date: { $gte: startOfYear, $lt: endOfYear }, userId: userId._id } },
-            { $project: { month: { $month: '$date' }, amount: 1 } },
-            { $group: { _id: '$month', totalIncome: { $sum: '$amount' } } },
-            { $sort: { _id: 1 } } // Sort by month
+            { $match: { type: 'income', date: { $gte: startDate, $lt: endDate }, userId: userId._id } },
+            { $group: { _id: groupBy, totalIncome: { $sum: '$amount' } } },
+            { $sort: { _id: 1 } } // Sort by the grouping
         ]);
 
-        // Aggregate expense by month
+        // Aggregate expense by the selected interval
         const expenseAggregation = transcation.aggregate([
-            { $match: { type: 'expense', date: { $gte: startOfYear, $lt: endOfYear }, userId: userId._id } },
-            { $project: { month: { $month: '$date' }, amount: 1 } },
-            { $group: { _id: '$month', totalExpense: { $sum: '$amount' } } },
-            { $sort: { _id: 1 } } // Sort by month
+            { $match: { type: 'expense', date: { $gte: startDate, $lt: endDate }, userId: userId._id } },
+            { $group: { _id: groupBy, totalExpense: { $sum: '$amount' } } },
+            { $sort: { _id: 1 } } // Sort by the grouping
         ]);
 
         // Wait for both aggregations to complete
         const [incomeResult, expenseResult] = await Promise.all([incomeAggregation, expenseAggregation]);
 
-        console.log('Income aggregation result:', incomeResult);
-        console.log('Expense aggregation result:', expenseResult);
-
-        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        const combinedResults = monthNames.map((month, index) => ({
-            name: month,
+        const combinedResults = labels.map((label, index) => ({
+            name: label,
             income: 0,
             expense: 0
         }));
+
         // Create an object to store combined results
         const convertToNumber = (value: any) => {
             if (value && typeof value.toString === 'function') {
@@ -286,15 +299,16 @@ export async function getTotalIncomeAndExpense(req: Request<{}, {}, {}, IncomeBy
 
         // Update the combined results with actual data
         incomeResult.forEach(item => {
-            const monthIndex = item._id - 1;
-            combinedResults[monthIndex].income = convertToNumber(item.totalIncome);
+            const index = item._id - 1;
+            combinedResults[index].income = convertToNumber(item.totalIncome);
         });
 
         expenseResult.forEach(item => {
-            const monthIndex = item._id - 1;
-            combinedResults[monthIndex].expense = convertToNumber(item.totalExpense);
+            const index = item._id - 1;
+            combinedResults[index].expense = convertToNumber(item.totalExpense);
         });
-       // Send the results as a JSON response
+
+        // Send the results as a JSON response
         return res.json({ data: combinedResults, message: "Stats retrieved successfully" });
     } catch (err) {
         console.error('Error calculating income and expense:', err);

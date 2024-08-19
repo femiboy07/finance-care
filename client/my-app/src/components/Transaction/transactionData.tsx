@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import {ColumnDef, flexRender, getCoreRowModel, RowSelectionState, useReactTable} from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../@/components/ui/table";
 import { formatDate } from "date-fns";
@@ -162,7 +162,8 @@ export interface DataTableProps<TData,Tvalue>{
 
 export function TransactionTable<TData,TValue>({columns,data,isPending,listData}:DataTableProps<TData,TValue>){
  
-  const {rowSelection,setRowSelection,setSelectedTotal}=useSelectedFilter()
+  const {rowSelection,setRowSelection,setSelectedTotal,selectedTotal}=useSelectedFilter();
+ 
     
    const table=useReactTable({
     data:data,
@@ -177,26 +178,30 @@ export function TransactionTable<TData,TValue>({columns,data,isPending,listData}
     state:{
       rowSelection,
       
+      
     },
     getCoreRowModel:getCoreRowModel(),
-   })
+   });
 
-   console.log(rowSelection)
+   console.log(rowSelection);
 
    const totalAmountForSelectedRow=useCallback(()=>{
-      const filterSelectedCells=table.getRowModel().rows.filter((item)=>item.getIsSelected());
+      const filterSelectedCells=table.getSelectedRowModel().rows.filter((item)=>item.getIsSelected());
       const totalamount=filterSelectedCells.reduce((acc:number,currentValue:any)=>{
         return acc + parseFloat(currentValue.original.amount.$numberDecimal)
       },0);
-      setSelectedTotal(totalamount)
+      setSelectedTotal((prevTotal) => prevTotal + totalamount);
+     
       console.log(totalamount);
-   },[table,setSelectedTotal])
-  useEffect(()=>{
-    if(rowSelection){
+   },[setSelectedTotal, table])
+ 
+
+useEffect(()=>{
+  if(rowSelection){
     totalAmountForSelectedRow()
-    }
-  },[totalAmountForSelectedRow,rowSelection])
    
+  }
+},[rowSelection, totalAmountForSelectedRow])
   
 
     return (

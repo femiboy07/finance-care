@@ -4,6 +4,7 @@ import { Button, buttonVariants } from '../../@/components/ui/button';
 import { ArrowBigRightDash, ArrowDownRightIcon, LucideArrowLeftToLine, MoveLeft, MoveLeftIcon, MoveRightIcon } from 'lucide-react';
 import { Link, useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { ContextType } from '../../Layouts/DashboardLayout';
+import { useSelectedFilter } from '../../context/TableFilterContext';
 
 
 
@@ -12,21 +13,30 @@ import { ContextType } from '../../Layouts/DashboardLayout';
 export default function MonthPicker({params,page,setPage}:{params:any,page:number,setPage:any}){ 
 
   const {PrevMonth,NextMonth,months,monthString,month,year}=useOutletContext<ContextType>();
+  const {selectedTotal,setSelectedTotal}=useSelectedFilter();
   const navigate=useNavigate();
   const location=useLocation();
   const path=location.pathname === '/dashboard/budgets' ? 'budgets' : 'transactions';
   const convert = useMemo(()=>month + 1 > 0 && month + 1 <= 9 ? `0${month + 1}` : `${month + 1}`,[month]);
- console.log(location.pathname,"location.pathname")
+  
+ 
+  useEffect(() => {
+    localStorage.setItem("currentYear", year.toString());
+    localStorage.setItem("currentDay", convert);
+  }, [convert, year]);
+ 
+  
   const handlePrevClick = useCallback(() => {
     PrevMonth();
     setPage(1)
     const targetPath = `/dashboard/${path}/${year}/${convert}`;
+   
     if (params) {
       navigate(`${targetPath}?${params}`);
     } else {
       navigate(targetPath);
     }
-  },[PrevMonth, convert, navigate, params, year,setPage,path]);
+  },[PrevMonth, setPage, path, year, convert, params, navigate]);
 
   const handleNextClick = useCallback(() => {
     NextMonth();
@@ -39,13 +49,18 @@ export default function MonthPicker({params,page,setPage}:{params:any,page:numbe
     }
   },[NextMonth, convert, navigate, params, year,setPage,path]);
 
-  useEffect(()=>{
-  if (year && convert) {
-       const targetPath = `/dashboard/${path}/${year}/${convert}`;
-       navigate(targetPath);
-    }
-  },[year,convert,navigate,path])
   
+  useEffect(() => {
+    
+   
+  
+    if (year && month) {
+     
+      const targetPath = `/dashboard/${path}/${year}/${convert}`;
+      navigate(targetPath);
+      
+    }
+  }, [navigate, path, convert, year, month]);
      
     return (
         

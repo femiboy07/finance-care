@@ -32,7 +32,7 @@ const formSchema=z.object({
 })
 
 
-export default function AddAccounts(){
+export default function AddAccounts({isAddAccounts,setIsAddAccounts}:{isAddAccounts:any,setIsAddAccounts:any}){
     const token = JSON.parse(localStorage.getItem('userAuthToken') || '{}');
     const [reveal,setReveal]=useState(false);
     const {toast}=useToast();
@@ -49,6 +49,8 @@ export default function AddAccounts(){
         onSuccess:()=>{
               queryClient.invalidateQueries({queryKey:['allaccounts']})
         }
+
+        
     })
      const  onHandleReveal=()=>{
         setReveal((prev)=>!prev);
@@ -63,7 +65,7 @@ export default function AddAccounts(){
     });
 
     const onSubmit=async(values:z.infer<typeof formSchema>)=>{
-           console.log(values);
+          console.log(values);
          try{
          await mutation.mutateAsync(values);
          }catch(error){
@@ -79,67 +81,82 @@ export default function AddAccounts(){
          }
     }
 
+    const {isPending}=mutation;
     return (
-        <Form {...form}>
-        <Dialog open={reveal} onOpenChange={onHandleReveal}>
-          <DialogTrigger asChild>
-          <Button className={buttonVariants({variant:"default",className:" bg-orange-400"})}>Add accounts</Button>
-          </DialogTrigger>
-          <DialogContent className="w-full max-w-sm ">
-            
-            <DialogHeader>
-               <DialogTitle> Add Account</DialogTitle>
-            </DialogHeader>
-            <RouterForm onSubmit={form.handleSubmit(onSubmit)} >
-            <div className="flex w-full gap-2"> 
-            <FormField
-            
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-            <FormItem className="w-full">
-              <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">Account Name</FormLabel>
-              <FormControl >
-                <Input   {...field} placeholder="Account Name..." />
-              </FormControl>
-            <FormMessage />
-            </FormItem>
-          )}
-        />
+      <Form {...form}>
+      <RouterForm className=" bg-white w-full max-w-full p-[0rem] relative border-l flex flex-col md:w-[33%] md:max-w-[450px] lg:w-96  text-black " onSubmit={form.handleSubmit(onSubmit)}>
+       <div className="header text-black w-full pt-[2.5em]  px-6 text-2xl ">
+          <h1 >Add New Accounts</h1>
+       </div> 
+          <div className=" p-[1.5em] overflow-y-auto overflow-x-hidden scrollbar-widths flex-1    mt-3  ">
+             
+             <div className='mb-[1em] flex flex-col '>
+             <div className=" form-header border px-[1em] space-y-4 mb-[24px] pt-[1em] rounded-md  pb-[1em]">
+              <h1 className='border-b'>Details</h1>
+           
+              <FormField
+             control={form.control}
+             name="name"
+             render={({ field}) => (
+             <FormItem >
+               <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">NAME</FormLabel>
+               <FormControl>
+                 <Input type="string" className="bg-white"  {...field}   />
+                
+               </FormControl>
+             <FormMessage/>
+             </FormItem>
+           )}
+             />
+              <FormField
+             control={form.control}
+             name="balance"
+             render={({ field}) => (
+             <FormItem >
+               <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">BALANCE</FormLabel>
+               <FormControl>
+                 <Input type="string" className="bg-white"  {...field}   />
+                
+               </FormControl>
+             <FormMessage/>
+             </FormItem>
+           )}
+             />
 
-            <FormField
-            control={form.control}
-            name="type"
-            render={({ field }) => (
-            <FormItem>
-              <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">Account Type</FormLabel>
-              <FormControl >
-                <Input   {...field} placeholder="acc type" />
-              </FormControl>
-            <FormMessage />
-            </FormItem>
-          )}
-        />
-        </div>
-        <FormField
-            control={form.control}
-            name="balance"
-            render={({ field }) => (
-            <FormItem>
-              <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">Account Balance</FormLabel>
-              <FormControl >
-                <Input   {...field} placeholder="input account balance..." />
-              </FormControl>
-            <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button className={buttonVariants({variant:"default",className:" bg-orange-400 mt-7 "})} type="submit">
-         {mutation.isPending ? 'Creating acc...' : "create Account"}
-        </Button>
-            </RouterForm>
-          </DialogContent>
-        </Dialog>
-        </Form>
+               <FormField
+             control={form.control}
+              name="type"
+             render={({ field}) => (
+             <FormItem >
+               <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">TYPE</FormLabel>
+               <FormControl>
+                 <Input type="string"  placeholder='write a note' className="bg-white"  {...field}/>
+                </FormControl>
+             <FormMessage/>
+             </FormItem>
+           )}
+             />
+           
+             </div>
+            </div>
+          </div>
+
+         
+
+          <div className="close-button   pt-[1.5em] m-[1.5em] border-t flex items-center justify-between border-top    ">
+          
+            <Button  className={buttonVariants({variant:"default",className:"px-3  bg-orange-400 hover:bg-orange-500 "})} onClick={()=>setIsAddAccounts(false)}>
+              CLOSE
+            </Button>
+            <Button className="ml-auto" type='submit'>
+            {isPending ? "Loading..." : "CREATE TRANSACTION"}
+             </Button>
+          
+          </div>
+     
+      
+     </RouterForm>
+   
+     </Form>
     )
 }

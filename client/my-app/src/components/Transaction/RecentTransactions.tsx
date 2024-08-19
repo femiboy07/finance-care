@@ -53,8 +53,8 @@ export default function ReacentTransactions(){
     return (
         <Card className=' w-full lg:w-[50%]'>
          <CardHeader>
-          <CardTitle className='flex justify-between items-center'>
-          <h1>Transaction History</h1>
+          <CardTitle className='flex justify-between items-center text-md md:text-xl'>
+          <span>Transaction History</span>
             <Button onClick={()=>navigate('transactions',{replace:true,state:'love'})} className={buttonVariants({variant:'ghost',className:'bg-transparent text-orange-300'})}>
                 {/* view all */}
               <ArrowRightSquareIcon className='ml-2'/>
@@ -64,7 +64,7 @@ export default function ReacentTransactions(){
           <CardContent>
            {newData && Object.keys(newData).map((category)=>(
              <div key={category} className='flex font-bold flex-col mb-3 '>
-             <h2 className='pb-3 text-gray-500 text-md'>{category}</h2> 
+             <h2 className='pb-3 text-gray-500 text-sm'>{category}</h2> 
                <ul className='space-y-3'>
                  {newData[category].map((transaction:any)=>(
                     <li key={transaction._id} className='flex justify-between w-full'>

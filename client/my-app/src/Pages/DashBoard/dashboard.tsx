@@ -14,6 +14,7 @@ import { ContextType } from "../../Layouts/DashboardLayout";
 import useRequireAuth from "../../hooks/useRequireAuth";
 import { createPortal } from "react-dom";
 import UserLoggedOut from "../../components/Modals/UserLoggedOut";
+import SelectTypeByIncomeAndExpense from "../../components/Transaction/SelectTypeByIncomeAndExpense";
 
 
 
@@ -22,6 +23,7 @@ import UserLoggedOut from "../../components/Modals/UserLoggedOut";
 export default function DashBoard(){
             const [loading,setLoading]=useState(false);
             const {removeToken,isLoading}=useRequireAuth();
+            const [intervals,setIntervals]=useState('weekly')
         
             const {isPending,error,data}=useQuery({
               queryKey:['metrics'],
@@ -55,7 +57,7 @@ export default function DashBoard(){
 
 return (
   <Suspense fallback={<div className="text-black bg-blue-600 h-64">Loading...</div>}>
-    <div className=" w-full px-3 lg:px-9 h-full mt-20  mb-10 " style={{clipPath: `rectangle(0 20%, 50% 0, 100% 80%, 0 100%)`}}>
+    <div className=" w-full px-3 lg:px-9 min-h-screen mt-20  mb-10 " style={{clipPath: `rectangle(0 20%, 50% 0, 100% 80%, 0 100%)`}}>
         <div className=" w-full h-full space-y-8 ">
          
         {usernameData &&  
@@ -136,15 +138,15 @@ return (
          
           </div>
         <div className="last-transcations w-full mt-5 flex h-full flex-wrap  gap-5">
-         {/* <Card className=" w-full  h-full order-2 bg-white  px-5 py-7 ">
-          <CardTitle>Recent Transactions</CardTitle> 
-            <LatestTranscations/>
-          </Card> */}
-
           <ReacentTransactions/>
           <Card className=" w-[60%] h-96 order-1 lg:px-3 px-3 flex-1 py-7 ">
-            <CardTitle className="mb-5">Statistics</CardTitle>
-            <StatsGraph/>
+            <div className="flex w-full justify-between h-9 items-center">
+            <CardTitle className=" self-center flex   text-md md:text-xl">
+              <span className="self-center h-full">Date Overview</span>
+              </CardTitle>
+            <SelectTypeByIncomeAndExpense intervals={intervals} setIntervals={setIntervals}/>
+            </div>
+            <StatsGraph intervals={intervals}/>
           </Card>
         </div>
         <div className="fixed -translate-x-1/2 top-1/2 -translate-y-1/2 left-1/2 w-full">

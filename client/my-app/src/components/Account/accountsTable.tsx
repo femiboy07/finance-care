@@ -20,11 +20,20 @@ const accounts:Accounts[]=[];
 export const columns:ColumnDef<Accounts>[]=[
     {
         accessorKey:"name",
-        header:"DISPLAY NAME"
+        header:()=>{
+          return <div className=" w-full h-[36px] flex items-center whitespace-nowrap overflow-hidden text-ellipsis ">AccountName</div>
+        },
+        cell({row,cell}){
+          return <div className="px-[13px] w-full h-[36px] flex items-center whitespace-nowrap overflow-hidden text-ellipsis">{row.original.name}</div>
+        },
+        size:400
     },
     {
         accessorKey:"type",
-        header:"Type"
+        header:"Type",
+        cell({row,cell}){
+          return <div className="px-[13px] w-full h-[36px] flex items-center whitespace-nowrap overflow-hidden text-ellipsis">{row.original.type}</div>
+        },
     },
     {
         accessorKey:"balance",
@@ -35,19 +44,22 @@ export const columns:ColumnDef<Accounts>[]=[
         style: "currency",
         currency: "NGN",
       }).format(amount)
-            return <span className="w-full">{`${formatted}`}</span>
+            return <span className="w-full px-[13px]  h-[36px] flex items-center whitespace-nowrap overflow-hidden text-ellipsis">{`${formatted}`}</span>
         },
     },
    
       {
         id:'actions',
+        header(props) {
+            return <div className="hidden  w-full text-center "></div>
+        },
         cell: ({ row }) => {
           const payment = row.original
      
           return (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
+            <DropdownMenu >
+              <DropdownMenuTrigger asChild className="w-full text-center flex  justify-center">
+                <Button variant="ghost" className="h-8 w-full p-0  text-center flex  justify-center">
                   <span className="sr-only">Open menu</span>
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
@@ -66,6 +78,7 @@ export const columns:ColumnDef<Accounts>[]=[
             </DropdownMenu>
           )
         },
+        size:32
     }
 ]
 
@@ -87,51 +100,62 @@ export function AccountTable<TData,TValue>({columns,data}:DataTableProps<TData,T
    })
 
     return (
-     <div className="rounded-md ">
-      <Table className=" table-fixed border-separate overflow-x-auto border-spacing-y-2">
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                )
-              })}
+      <Table id="table-lead" className=" border-black text-left overflow-y-hidden overlow-x-auto h-fit w-full table-auto  border-spacing-0">
+      <TableHeader className="sticky">
+        {table.getHeaderGroups().map((headerGroup) => (
+          <TableRow key={headerGroup.id} className=" ">
+            {headerGroup.headers.map((header) => {
+              return (
+                <TableHead key={header.id} style={{width:header.getSize()}} className="leading-[15px] bg-background  border  align-middle px-[13px]  text-ellipsis h-[40px]  pt-[10px] pb-[8px] text-[#aeaeae]">
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                </TableHead>
+              )
+            })}
+          </TableRow>
+        ))}
+      </TableHeader>
+      <TableBody className="border-black overflow-y-hidden ">
+    
+    <>
+        {table.getRowModel().rows?.length ? (
+          table.getRowModel().rows.map((row) => (
+            
+            <TableRow
+               key={row.id}
+              data-state={row.getIsSelected()}
+             className={`py-5  ${row.getIsSelected() ? 'bg-orange-100':''} `}
+            >
+              {row.getVisibleCells().map((cell) => (
+                <TableCell key={cell.id} className=" h-[36px]  border  px-0 py-0      ">
+                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </TableCell>
+               
+              ))}
             </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-                className=" border "
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className=" first-of-type:border-l last-of-type:after:border-black  border-t border-b">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </div>
+
+          ))
+          
+        ) : (
+          <TableRow   className="h-20 w-full ">
+              <TableCell colSpan={table.getHeaderGroups()[0]?.headers?.length || 1}  className="w-full">
+             <div className="w-full flex justify-center items-center text-center ">
+             <span className="w-full">You have no transaction matching this filter</span>
+             </div>
+             </TableCell>
+          
+          </TableRow>
+        )}
+        </>
+      </TableBody>
+    </Table>
+    // </div>
+ 
+
   )
     
 }

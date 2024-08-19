@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
-export enum transcationCategory{
+
+export enum transcationCategory {
     Food='Food',
     Rent='Rent',
     Salary='Salary',

@@ -40,7 +40,14 @@ export type ContextType={
 
 export default function DashBoardLayout(){
     const today=new Date();
-    const nextMonth=addMonths(today , 0);
+    const savedYear = localStorage.getItem("currentYear");
+    const savedDay = localStorage.getItem("currentDay");
+
+  // Initialize state based on saved values or default to the current date
+  const initialDate = savedYear && savedDay
+    ? new Date(parseInt(savedYear), parseInt(savedDay) - 1)
+    : today;
+    const nextMonth=addMonths(initialDate , 0);
     const [months,setMonth]=useState(nextMonth);
     const [searchParams, setSearchParams] = useSearchParams();
     const [name,setName]=useState(searchParams.get('name') || "");
@@ -79,16 +86,18 @@ export default function DashBoardLayout(){
    function PrevMonth(){
      setMonth(subMonths(months,1));
   }
-  
-   const year=months.getFullYear();
+  const year=months.getFullYear();
    const month=months.getMonth();
+  
+  
+   
 
 
   
    
     return(
   
-    <div className="h-full w-full flex  relative dark:bg-background bg-background " >
+    <div className="min-h-full w-full flex  relative dark:bg-background bg-background " >
            {/* so this is for the side bar */}
          <NavBar handleOpenSideBar={handleOpenSideBar}/>  
          <SideBar setOpen={setOpen} open={open}/> 

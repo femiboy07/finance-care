@@ -100,12 +100,15 @@ export default function MyInputMutation({value,type,id,name,placeholder,classNam
     const handleBlur =  async() => {
 
          setSelected(false);
+        //  if(value === text){
+        //   return;
+        //  }
          
 
-        if(name === 'amount' && text === defaultValue){
-            setText(value)
-            return;
-        }
+        // if(name === 'amount' && text === defaultValue){
+        //     setText(value)
+        //     return;
+        // }
          
         if((name === 'amount' && !parseInt(text))){
            setText('');
@@ -113,15 +116,20 @@ export default function MyInputMutation({value,type,id,name,placeholder,classNam
         }
         
        if(text === defaultValue){
-         setText(value)
+        //  setText(value)
          return;
         }
         
     
         if (text !== defaultValue) {
+          
           const newValue = name === 'amount' ? {amount:parseFloat(text)}
            : name === 'description' ? {description:text} : name === 'date' ? {date:text}:
            text;
+           setText(name === 'amount' ? new Intl.NumberFormat('en-NG', {
+            style: 'currency',
+            currency: 'NGN',
+          }).format(defaultValue) : text)
           try {
             await mutation.mutateAsync({ queryKey: ['editTransaction', "token.access_token"],variable:newValue,id:id});
             toast({
@@ -193,8 +201,11 @@ useEffect(()=>{
 },[selected])
 
 useEffect(()=>{
+  if(text === defaultValue){
+    return;
+  }
     setText(value)
- },[value]);
+ },[value,text,defaultValue]);
 
  
    const renderInputField = () => {
@@ -280,10 +291,7 @@ useEffect(()=>{
               <div className="border-none px-[13px] w-full h-[36px] flex items-center whitespace-nowrap overflow-hidden text-ellipsis">
                  
                 {name === 'amount'
-                  ? new Intl.NumberFormat('en-NG', {
-                      style: 'currency',
-                      currency: 'NGN',
-                    }).format(defaultValue)
+                  ? value
                   : text}
               </div>
             )}

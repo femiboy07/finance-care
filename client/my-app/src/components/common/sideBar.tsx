@@ -22,7 +22,7 @@ export default function SideBar({open,setOpen}:{open:boolean,setOpen:any}){
            </div>
             <div className=" flex-[1_1_auto] p-[12px] w-full space-y-2  mt-5 mb-auto " id="sections">
             <div className="items px-3 rounded-md">
-           <CustomNavLinks to='/dashboard' title="dashboard" exact={true}>
+           <CustomNavLinks to='/dashboard' title="dashboard" >
               <>
               <LayoutDashboardIcon  className="mr-[24px]" />
               <span className="">Dashboard</span>
@@ -31,7 +31,7 @@ export default function SideBar({open,setOpen}:{open:boolean,setOpen:any}){
             
            </div>
            <div className="items px-3">
-           <NavLink   title="accounts"   className={({ isActive, isPending, isTransitioning }) =>
+           <NavLink   title="budgets"   className={({ isActive, isPending, isTransitioning }) =>
             [
             isPending ? "" : "",
             isActive ? "text-orange-300" : "",

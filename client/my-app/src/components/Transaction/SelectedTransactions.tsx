@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Card } from "../../@/components/ui/card";
 import { useSelectedFilter } from "../../context/TableFilterContext";
 import DeleteTransactionButton from "./DeleteTransaction";
@@ -12,7 +12,7 @@ import DeleteTransactionButton from "./DeleteTransaction";
 export default function SelectedTransactions(){
 
     const {selectedTotal,rowSelection}=useSelectedFilter();
-    const transactionIds=Object.keys(rowSelection);
+    const transactionIds=useMemo(()=>Object.keys(rowSelection),[rowSelection]);
     
     console.log(Object.keys(rowSelection),"rowselection")
     return (

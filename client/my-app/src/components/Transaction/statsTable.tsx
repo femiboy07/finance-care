@@ -11,7 +11,7 @@ import { apiClient } from '../../context/LoadingContext';;
 // }
 
 
-export default function StatsGraph(){
+export default function StatsGraph({intervals}:{intervals:string}){
              const [loading,setLoading]=useState(false);
              const [error,setError]=useState('');
              const [data,setData]=useState<any | null>(null);
@@ -23,7 +23,7 @@ export default function StatsGraph(){
              useEffect(()=>{
                 if(token.access_token){
                     setLoading(true);
-                    apiClient.get("/transactions/statistics?year=2024").then((res:any)=>{
+                    apiClient.get(`/transactions/statistics?interval=${intervals}`).then((res:any)=>{
                          
                              setLoading(false)
                              console.log(res.data);
@@ -35,20 +35,19 @@ export default function StatsGraph(){
                       });
                
                 }
-             },[token.access_token]);
+             },[token.access_token,intervals]);
 
 
        if(loading){
-         return <div>Loading..</div>
+         return <div className='text-center flex flex-col justify-center items-center h-full'>Loading..</div>
        }      
     
     return (
-         <ResponsiveContainer width="100%" height={300}  className="">
-             <LineChart   data={data} margin={{top: 20, right: 20, bottom: 20, left: 20}}  >
-       
+         <ResponsiveContainer width="100%" height="90%"  className="">
+             <LineChart   data={data} height={500} width={100} margin={{top: 20, bottom: 20,left:20,right:20}}  >
              <CartesianGrid  strokeDasharray="2 2" />
              <XAxis dataKey="name"/>
-             {/* <YAxis dataKey="expense"/>  */}
+            
              <Tooltip/>
             
              <Legend/> 

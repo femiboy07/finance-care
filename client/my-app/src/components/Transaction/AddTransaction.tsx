@@ -87,6 +87,7 @@ export default function AddTransaction({setIsAddTransaction,months}:{setIsAddTra
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
     const [newValue,setNewValue]=useState('');
     const type:string[]=["income","expense"];
+    const [isInput,setIsInput]=useState(false);
     const {error,data}=useQuery({
         queryKey:['accounts',token.access_token],
         queryFn:getAccountsName
@@ -106,7 +107,7 @@ export default function AddTransaction({setIsAddTransaction,months}:{setIsAddTra
       }) 
       }
     })
-    const currentDate:any=format(months,'PPP')
+    const currentDate:any=format(month,'PPP')
    
     const form=useForm<z.infer<typeof formSchema>>({
         resolver:zodResolver(formSchema),
@@ -114,7 +115,7 @@ export default function AddTransaction({setIsAddTransaction,months}:{setIsAddTra
         accountId:"",  
         type:type[0],
         date:currentDate,
-        category:"",
+        category:"others",
         description:"",
         amount:"",
        
@@ -141,7 +142,7 @@ export default function AddTransaction({setIsAddTransaction,months}:{setIsAddTra
        const parsedDate = parse(e.target.value, "PPP", new Date());
       if (isValid(parsedDate)) {
         setSelectedDate(parsedDate);
-        // form.setValue('date',e.target.value)
+        form.setValue('date',e.target.value)
         //  setNewValue(e.target.value);
         // setMonth(parsedDate);
       } else {
@@ -183,12 +184,7 @@ export default function AddTransaction({setIsAddTransaction,months}:{setIsAddTra
         })
         
         
-        
-     
-      
-      
-     
-  }
+    }
 
   const {isPending}=mutation;
   const handleClickOutside = (event:any) => {
@@ -196,6 +192,10 @@ export default function AddTransaction({setIsAddTransaction,months}:{setIsAddTra
       setShowDate(false);
     }
   }; 
+
+  const handleSelectInput=(e:React.ChangeEvent<HTMLSelectElement>)=>{
+       form.setValue('category',e.target.value)
+  }
 
   
 useEffect(() => {
@@ -271,7 +271,7 @@ useEffect(() => {
                 render={({ field }) => (
                 <FormItem>
                   <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">CATEGORY</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}  >
+                  <Select onValueChange={field.onChange} defaultValue={"others"}  >
                   <FormControl>
                   <SelectTrigger className="bg-white">
                         <SelectValue  placeholder="select your category"/>
