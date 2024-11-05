@@ -1,16 +1,19 @@
 import { Request ,Response} from "express";
-import transcation, { ITranscations } from "../models/Transcation";
+import transcation, { ITranscations, transcationCategory } from "../models/Transcation";
 import {google,gmail_v1} from  "googleapis";
 import oauth2Client from "../middlewares/googleauthClient";
 import crypto from 'crypto';
 import jwt from "jsonwebtoken";
-import mongoose, { Query,Types } from "mongoose";
+import mongoose, { Decimal128, ObjectId, Query,Types } from "mongoose";
 import user from "../models/User";
 import { sendNotificationMessage } from "./notifications";
 import accounts from "../models/Account";
 import { Server } from "socket.io";
 import decimal, { Decimal } from "decimal.js";
 import budgets from "../models/Budgets";
+import CategoryModel from "../models/Category";
+import { toDecimal128 } from "../utils/modify";
+import {toZonedTime} from 'date-fns-tz'
 
 
 
@@ -24,6 +27,13 @@ import budgets from "../models/Budgets";
  */
 
 
+export const convertToNumber = (value: any) => {
+  if (value && typeof value.toString === 'function') {
+      return parseFloat(value.toString());
+  }
+  return value;
+};
+
 export interface CreateTransactionRequest extends Request {
   io?:Server;
   userId?: string;
@@ -32,213 +42,376 @@ export interface CreateTransactionRequest extends Request {
      } // Assuming userId is added to the request object by authentication middleware
 }
 
-export const convertToNumber = (value: any) => {
-  if (value && typeof value.toString === 'function') {
-      return parseFloat(value.toString());
-  }
-  return value;
-};
-
-
-export async function createTranscation(req:CreateTransactionRequest,res:Response):Promise <ITranscations | any>{
-        const {type,amount,description,category,accountId,date}=req.body;
-
-     
-
-        try{
-         
-
-         
-
-          if (!type) {
-            return res.status(400).json({ message: "Transaction type is required" });
-          }
-        if (!amount) {
-            return res.status(400).json({ message: "Transaction amount is required" });
-        }
-        // if (!description) {
-        //     return res.status(400).json({ message: "Transaction description is required" });
-        // }
-        if (!category) {
-            return res.status(400).json({ message: "Transaction category is required" });
-        }
-        if (!date) {
-          return res.status(400).json({ message: "Transaction date is required" });
-      }
-       
-        if (!accountId) {
-            return res.status(400).json({ message: "Account ID is required" });
-        }
-          const account = await accounts.findOne({ _id: accountId, userId: req.user?._id });
-        if (!account) {
-            return res.status(404).json({ message: "Account not found or access denied" });
-        }
-
-        // Ensure type is either 'credit' or 'debit'
-        if (!['income', 'expense'].includes(type.toLowerCase())) {
-            return res.status(400).json({ message: "Transaction type must be 'income' or 'expense'" });
-        }
-         console.log(account.balance ,"accountBalnce");
-        
-        if (type.toLowerCase() === 'expense' && amount > convertToNumber(account.balance)) {
-          return res.status(400).json({ message: "Insufficient funds for this transaction" });
-       } 
-           const newtransaction=await transcation.create({
-                userId:req.user?._id!,
-                accountId,
-                type,
-                name:account.name,
-                amount,
-                description:description,
-                category,
-                date:date
-             });
-             
-            
-             console.log(req.user?._id);
-          
-        
-             const currentBalance = new Decimal(account.balance.toString());
-             await deductBalance(accountId,amount,currentBalance,type);
-             newtransaction.status="cleared";
-            
-             await newtransaction.save();
-           
-
-           
-            const budget = await budgets.findOne({ userId:req.user?._id, category:category } );
-            console.log(budget,"budgets.....")
-
-            if (!budget) {
-              throw new Error("No budget found for this category");
-            }
-
-          
-            // if (convertToNumber(budget.remaining) < amount) {
-            //   throw new Error('Transaction exceeds remaining budget');
-            // }
-
-            budget.spent = convertToNumber(budget.spent) + convertToNumber(amount);
-            let remaining=   convertToNumber(budget.remaining) 
-            remaining= convertToNumber(budget.amount) - convertToNumber(budget.spent);
-           budget.remaining=remaining;
-        
-            await budget.save();
-            
-            sendNotificationMessage(req.io,req.user?._id!,newtransaction,"transaction_alert");
-
-            return res.json({data:newtransaction,message:"new transcation created succesfully "}).status(200);
-    
-        }catch(err){
-          return res.json({message:"system down am sorry ",err}).status(500);
-        }
+interface TransactionDTO{
+     type:string;
+     amount:Decimal | Decimal128 | number | any;
+     description?:string;
+     category:transcationCategory;
+     accountId:string;
+     date:Date;
+     month:any;
+     year:any;
 }
 
 
+
+export async function createTranscation(req: CreateTransactionRequest, res: Response): Promise<ITranscations | any> {
+  const { type, amount, description, category, accountId, date,month,year } = req.body as TransactionDTO;
+  console.log(date,"ass")
+
+  // Validate request fields
+  if (!type || !amount || !category || !date || !accountId || !month || !year) {
+      return res.status(400).json({ message: "Missing required fields" });
+  }
+
+  try {
+    const definedYear=year;
+    const definedMonth=month;
+    console.log(definedYear,definedMonth,'year,month');
+      const account =  await accounts.findOne({ _id: accountId, userId: req.user?._id }) || await accounts.findOne({ userId: null, isSystemAccount: true });;
+      if (!account) {
+          return res.status(404).json({ message: "Account not found or access denied" });
+      }
+
+      if (!['income', 'expense'].includes(type.toLowerCase())) {
+          return res.status(403).json({ message: "Transaction type must be 'income' or 'expense'" });
+      }
+      const categoryDoc: mongoose.Types.ObjectId | null = await CategoryModel.findOne({ name: category, userId: null });
+      if (!categoryDoc || !categoryDoc._id) {
+          return res.status(400).json({ message: 'Category not found or invalid' });
+      }
+
+      const categoryId = categoryDoc._id;
+
+      const newTransaction = new transcation({
+          userId: req.user?._id!,
+          accountId,
+          type,
+          name: account.name,
+          amount,
+          description,
+          category:categoryId,
+          date:date,
+          month:parseInt(definedMonth,10) + 1,
+          year:parseInt(definedYear,10),
+      });
+
+      const currentBalance = new Decimal(account.balance.toString());
+      await deductBalance(accountId, amount, currentBalance.toString(), type);
+      newTransaction.status = "cleared";
+      await newTransaction.save();
+
+     
+
+      // Find existing budget to calculate the remaining amount
+      const existingBudget = await budgets.findOne({ userId: req.user?._id, category: categoryId,month:newTransaction.month,year:newTransaction.year });
+      
+      if (existingBudget) {
+          // Calculate updated spent and remaining amounts
+          const updatedSpent = convertToNumber(existingBudget.spent) + convertToNumber(amount);
+          const updatedRemaining = convertToNumber(existingBudget.budget) - updatedSpent;
+
+          // Update the budget entry
+          await budgets.findOneAndUpdate(
+              { _id: existingBudget._id },
+              {
+                  $set: {
+                      spent: updatedSpent,
+                      remaining: updatedRemaining,
+                  },
+              },
+               {new:true,upsert:false}
+          );
+      } else {
+        const newBudget=new budgets({
+             userId:req.user?._id,
+             spent:amount,
+             remaining:new mongoose.Types.Decimal128("0.0"),
+             budget:new mongoose.Types.Decimal128("0.0"),
+             category:categoryId,
+             month:newTransaction.month,
+             year:newTransaction.year,
+
+          })
+          await newBudget.save()
+          // No budget entry exists, so only create the transaction
+          // sendNotificationMessage(req.io, req.user?._id!, newTransaction, "transaction_alert");
+          // return res.status(200).json({ data: newTransaction, message: "New transaction created successfully" });
+      }
+
+      sendNotificationMessage(req.io, req.user?._id!, newTransaction, "transaction_alert");
+
+      return res.status(200).json({ data: newTransaction, message: "Transaction created and budget updated successfully" });
+  } catch (err: any) {
+      console.log(err, 'error');
+      if (err.name === 'ValidationError') {
+          const errors = Object.keys(err.errors).map((key) => ({
+              field: key,
+              message: err.errors[key].message,
+          }));
+          return res.status(400).json({ errors });
+      }
+      return res.status(400).json({ message: "Network error, try again", err });
+  }
+}
 
 export async function updateTransaction(req: CreateTransactionRequest, res: Response) {
   const { id } = req.params;
-  const { category, type, amount, description, date, accountId } = req.body;
-  console.log(req.body,"bodyyyyyyyyy")
+  const { category, type, amount, description, date, accountId } = req.body as Partial<TransactionDTO>;
+
   try {
-      // Find the transaction by ID
-      let transaction = await transcation.findById(id);
-      if (!transaction) {
-          return res.status(404).json({ message: "Transaction not found" });
-      }
+    // Fetch transaction and account details
+    const transaction = await transcation.findById(id);
+    if (!transaction) {
+      return res.status(404).json({ message: "Transaction not found" });
+    }
 
-      // Update transaction fields
-      if (category) {
-        transaction.category = category;
+    const account = await accounts.findById(transaction.accountId);
+    if (!account) {
+      return res.status(404).json({ message: "Account not found" });
+    }
+
+    let accBalance = convertToNumber(account.balance);
+
+    // Reverse the previous transaction's effect on balance
+    accBalance = updateAccountBalanceOnReverse(transaction, accBalance);
+
+    // Handle category change if applicable
+    if (category) {
+      const categoryId:mongoose.Types.ObjectId | null = await CategoryModel.findOne({ name: category, userId: null });
       
+      if (categoryId &&  categoryId._id.toString() !== transaction.category?.toString()) {
+        console.log(categoryId._id.toString(),transaction.category?.toString(),'boths')
+        await handleCategoryChange(transaction, categoryId, amount);
+        await transcation.findByIdAndUpdate({
+          _id:transaction._id
+        },{$set:{
+          category:categoryId._id
+        }},{upsert:true,new:false})
       }
-      if (description){
-        transaction.description = description;
-       
-     }
-   
-      if (type){
-         transaction.type = type;
-         
+    }
+
+    // Handle description update
+    if (description !== undefined) transaction.description = description;
+
+    // Handle type update
+    if (type) transaction.type = type;
+
+    // Handle date update
+    if (date) {
+      const parsedDate = new Date(date);
+      if (isNaN(parsedDate.getTime())) {
+        return res.status(400).json({ message: "Invalid date format" });
       }
-      if (date) {
-        const parsedDate = new Date(date);
-        if (isNaN(parsedDate.getTime())) {
-          return res.status(400).json({ message: "Invalid date format" });
-        }
-        transaction.date = date;
-      
+      transaction.date = parsedDate;
+      transaction.month = parsedDate.getMonth() + 1;
+      transaction.year = parsedDate.getFullYear();
+    }
+
+    // Handle amount change if applicable
+    if (amount) {
+      const numAmount = convertToNumber(amount);
+      if (numAmount >= 1000000000) {
+        return res.status(400).json({ message: "Amount is too large" });
       }
-      if (amount){
-        
-        transaction.amount = amount;
-        await transaction.save();
-        const budget = await budgets.findOne({ userId:req.user?._id, category:category } );
-        console.log(budget,"budgets.....")
-  
-        if (!budget) {
-          throw new Error("No budget found for this category");
-        }
-  
-      
-        
-  
-        budget.spent = convertToNumber(budget.spent) + convertToNumber(amount);
-        let remaining=   convertToNumber(budget.remaining) 
-        remaining= convertToNumber(budget.amount) - convertToNumber(budget.spent);
-       budget.remaining=remaining;
-    
-        await budget.save();
-      }
-     
 
-      // If accountId is provided, find the account by ID
-      if (accountId) {
-          const account = await accounts.findOne({_id:accountId});
-          if (!account) {
-              return res.status(404).json({ message: "Account not found" });
-          }
-          transaction.accountId = account._id;
-          transaction.name = account.name;
+      await handleAmountChange(transaction, numAmount);
 
-          // await transaction.save();
-          
-          
-      } 
-      // If name is provided and accountId is not, find the account by name
-     
+      accBalance = updateAccountBalance(transaction, accBalance, numAmount);
+      transaction.amount = numAmount;
+    }
 
-      // Save the updated transaction
-      await transaction.save();
-      
+    // Update account balance and transaction
+    account.balance = accBalance;
+    await account.save();
+    await transaction.save();
 
-      return res.status(200).json({ data: transaction, message: "Successfully updated" });
-  } catch (err) {
-      return res.status(500).json({ message: "There is an error", error: err });
+    return res.status(200).json({ data: transaction, message: "Successfully updated" });
+  } catch (err: any) {
+    console.error("Error during transaction update: ", err);
+    return res.status(500).json({ message: "An error occurred during the update process", error: err.message });
   }
 }
 
-export async function deleteTranscation(req:Request,res:Response){
-    const {ids}=req.body;
+/**
+ * Reverse the transaction effect on the account balance.
+ */
+function updateAccountBalanceOnReverse(transaction: ITranscations, accBalance: number): number {
+  if (transaction.type.toLowerCase() === 'income') {
+    return accBalance - convertToNumber(transaction.amount); // Subtract old income
+  } else if (transaction.type.toLowerCase() === 'expense') {
+    return accBalance + convertToNumber(transaction.amount); // Add back old expense
+  }
+  return accBalance;
+}
 
-    if (!Array.isArray(ids) || ids.length === 0) {
+/**
+ * Update the account balance after applying the new transaction.
+ */
+function updateAccountBalance(transaction:ITranscations, accBalance: number, newAmount: number): number {
+  if (transaction.type.toLowerCase() === 'income') {
+    return accBalance + newAmount;
+  } else if (transaction.type.toLowerCase() === 'expense') {
+    if (convertToNumber(accBalance) < newAmount) {
+      throw new Error("Insufficient funds for this transaction");
+    }
+    return accBalance - newAmount;
+  }
+  return accBalance;
+}
+
+/**
+ * Handle category change, update the old and new budget.
+ */
+async function handleCategoryChange(transaction: ITranscations, newCategoryId: any, newAmount?: number) {
+  // Update old budget (subtract the amount)
+  console.log(transaction.category,newCategoryId,newAmount,"transaction")
+  if (transaction.category) {
+    const oldBudget = await budgets.findOne({
+      category: transaction.category,
+      month: transaction.month,
+      year: transaction.year
+    });
+
+    if (oldBudget) {
+     
+     await budgets.findOneAndUpdate(
+        {
+          category: transaction.category,
+          month: transaction.month,
+          year: transaction.year
+           
+        },
+        {
+            $set: {
+                
+                spent:  toDecimal128(parseFloat(oldBudget.spent.toString()) - parseFloat(transaction.amount.toString())),
+                remaining:toDecimal128(parseFloat(oldBudget.budget.toString()) - (parseFloat(oldBudget.spent.toString()) - parseFloat(transaction.amount.toString())) )
+            }
+        },
+        { new: true, upsert: false }
+    );
+    }
+  }
+
+  // Update new budget (add the amount)
+  const newBudget = await budgets.findOne({
+    category: newCategoryId._id,
+    month: transaction.month,
+    year: transaction.year
+  });
+
+  if (newBudget) {
+    // newBudget.spent += convertToNumber(newAmount);
+    // let remaining=convertToNumber(newBudget.remaining);
+    // remaining = convertToNumber(newBudget.budget) - convertToNumber(newBudget.spent);
+    // await newBudget.save();
+    await budgets.findOneAndUpdate(
+      {
+        category: newCategoryId._id,
+        month: transaction.month,
+        year: transaction.year
+         
+      },
+      {
+          $set: {
+              
+              spent:  toDecimal128(parseFloat(newBudget.spent.toString()) + parseFloat(transaction.amount.toString())),
+              remaining:toDecimal128(parseFloat(newBudget.budget.toString()) - parseFloat(transaction.amount.toString())) 
+             
+          }
+      },
+      { new: true, upsert: false }
+  );
+  }
+}
+
+/**
+ * Handle amount change, update the related budget.
+ */
+async function handleAmountChange(transaction: ITranscations, newAmount: number) {
+  const budget = await budgets.findOne({
+    category: transaction.category,
+    month: transaction.month,
+    year: transaction.year
+  });
+
+  if (budget) {
+    const amountDifference = newAmount - convertToNumber(transaction.amount);
+    // budget.spent += convertToNumber(amountDifference);
+    // let remaining=convertToNumber(budget.remaining)
+    // remaining = convertToNumber(budget.budget) - convertToNumber(budget.spent);
+    // await budget.save();
+    await budgets.findOneAndUpdate(
+      {
+        category: transaction.category,
+        month: transaction.month,
+        year: transaction.year
+         
+      },
+      {
+          $set: {
+              
+              spent:  toDecimal128(parseFloat(budget.spent.toString()) + parseFloat(amountDifference.toString())),
+              remaining:toDecimal128(parseFloat(budget.budget.toString()) - parseFloat(amountDifference.toString()))
+          }
+      },
+      { new: true, upsert: false }
+  );
+  }
+}
+
+export async function deleteTranscation(req: Request, res: Response) {
+  const { ids } = req.body;
+
+  if (!Array.isArray(ids) || ids.length === 0) {
       return res.status(400).json({ message: 'No IDs provided' });
-    }
-    try{
-       const cancelItem=await transcation.deleteMany({
-        _id:{$in:ids}
-       })
-       if (cancelItem.deletedCount === 0) {
-        return res.status(404).json({ message: 'No transactions found with the provided IDs' });
-      } 
+  }
 
-       return res.json({cancelItem}).status(200);
-    }catch(err){
-       return res.json({message:"something happend pls check your connection"}).status(500);
-    }
+  try {
+      // Fetch transactions to be deleted
+      const transactionsToDelete = await transcation.find({ _id: { $in: ids } });
 
-};
+      // Update budgets based on transactions before deleting
+      for (const transaction of transactionsToDelete) {
+          if (!transaction.amount || !transaction.category) {
+              console.warn(`Transaction with ID ${transaction._id} has missing amount or category. Skipping...`);
+              continue;
+          }
 
+          const transactionAmount = convertToNumber(transaction.amount);
+          const findBudget = await budgets.findOne({ category: transaction.category,year:transaction.year,month:transaction.month });
+
+          if (findBudget) {
+              const budgetAmount = convertToNumber(findBudget.budget);
+              const updatedBudgetAmount = budgetAmount - transactionAmount;
+
+              await budgets.findByIdAndUpdate(
+                  findBudget._id,
+                  {
+                      $set: {
+                           // Update the budget field
+                          spent:convertToNumber(findBudget.spent) - transactionAmount < 0 ? new mongoose.Types.Decimal128("0.0"): convertToNumber(findBudget.spent) - transactionAmount, // Adjust spent field
+                          remaining:convertToNumber(findBudget.remaining)  < 0 ? new mongoose.Types.Decimal128("0.0") : updatedBudgetAmount - convertToNumber(findBudget.spent)
+                      }
+                  },
+                  { new: true }
+              );
+          }
+      }
+
+      // Now delete transactions
+      const cancelItem = await transcation.deleteMany({ _id: { $in: ids } });
+      if (cancelItem.deletedCount === 0) {
+          return res.status(404).json({ message: 'No transactions found with the provided IDs' });
+      }
+
+      return res.status(200).json({ message: 'Transactions deleted and budgets updated successfully' });
+  } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: 'Something happened, please check your connection' });
+  }
+}
 interface QueryParams {
   category?: string;
   type?: string;
@@ -251,28 +424,35 @@ interface QueryParams {
   page?:number;
   year:number;
   month:number;
-  pageLimit?:number
+  pageLimit?:number;
 
 }
-
-
-export async function getLatestTranscations(req:CreateTransactionRequest,res:Response){
-    try{
-      const transactions = await transcation.aggregate([
-        { $match: { userId: req.user?._id } }, // Filter by user ID if needed
-        { $sort: { date:  -1} }, // Sort by date in descending order1
-        { $limit: 3 } // Limit to the specified number of latest transactions
+export async function getLatestTransactions(req: CreateTransactionRequest, res: Response) {
+  try {
+    const transactions = await transcation.aggregate([
+      { $match: { userId: req.user?._id } }, // Filter by user ID if needed
+      { $sort: { date: -1 } },               // Sort by date in descending order
+      { $limit: 3 },                         // Limit to the latest 3 transactions
+      {
+        $lookup: {
+          from: "categories",                // Collection to join with (replace with your collection name)
+          localField: "category",          // Field in the transaction collection
+          foreignField: "_id",               // Field in the categories collection
+          as: "category"              // Output array field
+        }
+      },
+      // { $unwind: "$categoryDetails" }        // Optional: if you expect a single category, not an array
     ]);
-    
-    if(!transactions){
-        return res.status(403).send("your not found in the user record")
-    }
-       return res.json({transactions,message:"succesfully gotten latest transcations"}).status(200)
-    }catch(err){
-      return res.status(500).send("Error cant reach the server");
-    }
-}
 
+    if (!transactions.length) {
+      return res.status(404).json({ message: "No transactions found." });
+    }
+
+    return res.status(200).json({ transactions, message: "Successfully retrieved latest transactions." });
+  } catch (err) {
+    return res.status(500).json({ message: "Error reaching the server", err });
+  }
+}
 interface ParamsFill{
   month:number;
   year:number;
@@ -282,6 +462,7 @@ export async function getTranscations(req:Request<{},{},{},QueryParams>,res:Resp
   
   const {category,type,amount,startDate,endDate,pageLimit,page,name,description,search} =req.query as QueryParams;
   const {year,month}=req.params as any;
+  const timeZone='Africa/Lagos'
   try{
     const userId:any=req.user;
     if(!userId){
@@ -297,12 +478,15 @@ export async function getTranscations(req:Request<{},{},{},QueryParams>,res:Resp
       query.$or = [
         { name: searchRegex },
         { description: searchRegex },
-        { category: searchRegex }
+        { 'category.name': searchRegex }
       ];
     }
 
     if (category && !search) {
-      query.category = category;
+      const categoryDoc = await CategoryModel.findOne({ name: category });
+      if (categoryDoc) {
+        query.category = categoryDoc._id;
+      }
     }
     if(name){
         query.name= name;
@@ -321,24 +505,30 @@ export async function getTranscations(req:Request<{},{},{},QueryParams>,res:Resp
     }
     
     if (startDate && endDate) {
-      query.date = { $gte: new Date(startDate), $lte: new Date(endDate) };
+      query.createdAt = { $gte: new Date(startDate), $lte: new Date(endDate) };
     } else if (startDate) {
-      query.date = { $gte: new Date(startDate) };
+      query.createdAt = { $gte: new Date(startDate) };
     } else if (endDate) {
-      query.date = { $lte: new Date(endDate) };
+      query.createdAt= { $lte: new Date(endDate) };
     }
    
-    const start = new Date(Date.UTC(year, month - 1, 1)); // Start of the specified month in UTC
-    const end = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999)); 
-    console.log(start)
-    console.log(start.toISOString(),end.toISOString())
-    query.date = { $gte: start, $lte: end };
-    const pageNumber = parseInt(page as unknown as string) || 1; // Default to page 1
-    const limitNumber = parseInt(pageLimit as unknown as string) || 30;
+    // const start = new Date(Date.UTC(year, month - 1, 1)); // Start of the specified month in UTC
+    // const end = new Date(Date.UTC(year, month, 1),-1); 
+    const startOfMonthLocal = new Date(year, month - 1, 1); 
+const startOfMonthUtc = toZonedTime(startOfMonthLocal, timeZone);
+
+// End of the month in the local "Africa/Lagos" timezone
+const endOfMonthLocal = new Date(year, month, 0, 23, 59, 59, 999); 
+const endOfMonthUtc = toZonedTime(endOfMonthLocal, timeZone)
+    // console.log(start)
+    // console.log(start.toISOString(),end.toISOString())
+    query.date = { $gte: startOfMonthUtc, $lte: endOfMonthUtc };
+    const pageNumber = parseInt(page as unknown as string) || 5; // Default to page 1
+    const limitNumber = parseInt(pageLimit as unknown as string) || 25;
     const skip = (pageNumber - 1) * limitNumber;
    
     
-    const listTransactions=await transcation?.find(query).skip(skip).limit(limitNumber).sort({date:-1});
+    const listTransactions=await transcation?.find(query).populate({path:'category',select:'name type'}).skip(skip).limit(limitNumber).sort({date:-1})
 
     const totalItems = await transcation.countDocuments(query);
     const totalPages = Math.ceil(totalItems / limitNumber);
@@ -364,9 +554,15 @@ export async function getTranscations(req:Request<{},{},{},QueryParams>,res:Resp
 export async function metrics(req:CreateTransactionRequest,res:Response){
          try{
           const userId:any=req.user;
+
+          const cashAccount=await accounts.findOne({name:"Cash Transaction",type:'def_coin',isSystemAccount:true,userId:null})
+
+          if(!cashAccount){
+            return res.status(403).json({message:"Cash Transaction needs to be present"})
+          }
           
           const balanceAggregation = accounts.aggregate([
-            {$match:{userId:userId._id}},
+            {$match:{userId:userId._id, _id: { $ne: cashAccount._id } },},
             {$group:{_id:null,totalBalance:{$sum:"$balance"}}}
 
           ]);
@@ -378,20 +574,36 @@ export async function metrics(req:CreateTransactionRequest,res:Response){
           const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1)); // Start of the month (e.g., June 1, 2024)
           const startOfNextMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 1)); // Start of the next month (e.g., July 1, 2024)
 
+         
           const incomeAggregation = transcation.aggregate([
-            { $match: { type: 'income', date: { $gte: startOfMonth, $lt: startOfNextMonth }, userId: userId._id } },
-            { $group: { _id: null, totalIncome: { $sum: '$amount' } } },
-        ]);
-
-        // Aggregate expenses for the current month
-        const expenseAggregation = transcation.aggregate([
-            { $match: { type: 'expense', date: { $gte: startOfMonth, $lt: startOfNextMonth }, userId: userId._id } },
-            { $group: { _id: null, totalExpense: { $sum: '$amount' } } },
-        ]);
+            { 
+              $match: { 
+                type: 'income', 
+                date: { $gte: startOfMonth, $lt: startOfNextMonth }, 
+                userId: userId._id,
+                // accountId: { $ne: cashAccount._id } // Exclude Cash Transaction
+              } 
+            },
+            { $group: { _id: null, totalIncome: { $sum: '$amount' } } }
+          ]);
+      
+          // Aggregate expenses, excluding transactions with account "Cash Transaction" and type "def_coin"
+          const expenseAggregation = transcation.aggregate([
+            { 
+              $match: { 
+                type: 'expense', 
+                date: { $gte: startOfMonth, $lt: startOfNextMonth }, 
+                userId: userId._id,
+                // accountId: { $ne: cashAccount._id } // Exclude Cash Transaction
+              } 
+            },
+            { $group: { _id: null, totalExpense: { $sum: '$amount' } } }
+          ]);
+         
 
         const budgetAggregation=budgets.aggregate([
           { $match: {  createdAt: { $gte: startOfMonth, $lt: startOfNextMonth }, userId: userId._id } },
-          { $group: { _id: null, totalBudget: { $sum: '$amount' } } },
+          { $group: { _id: null, totalBudget: { $sum: '$budget' } } },
         ])
 
         const convertToNumber = (value: any) => {
@@ -424,34 +636,64 @@ export async function metrics(req:CreateTransactionRequest,res:Response){
 
 //utils for transcations
 
+async function deductBalance(accountId: string, currentBalance:any, amount: any, type: string) {
+  // Fetch the account by ID
+  const account = await accounts.findById(accountId);
 
-async function deductBalance(accountId:string,amount:Decimal,balance:Decimal,type:string){
+  // Check if the account exists
+  if (!account) {
+    throw new Error('Account not found.');
+  }
 
-   if(type.toLowerCase() === 'expense'){
-  
-    const currentBalance=balance.minus(amount);
-    const account = await accounts.findByIdAndUpdate(accountId,{
-      $set:{balance:balance.minus(amount)},new:true
-    });
-    if(account){
-      account.balance=mongoose.Types.Decimal128.fromString(currentBalance.toFixed(2))
-      await account?.save();
+  // Check if it is a Cash Transaction account of type def_coin
+  const isCashTransaction = account.name === 'Cash Transaction' && account.type === 'def_coin' && account.isSystemAccount === true;
+
+  if (type.toLowerCase() === 'expense') {
+    if (isCashTransaction) {
+      // Handle expense for cash transaction without deducting from a balance
+      // Deduct from balance for non-cash transactions
+      const balance=1000000000000;
+      console.log('Processing cash expense. No balance deduction needed.');
+      await accounts.findByIdAndUpdate(accountId, {
+        $set: { balance:balance}, new: true
+      });
+      account.balance=mongoose.Types.Decimal128.fromString(balance.toFixed(2))
+      // You may want to log the transaction or do some other processing
+    } else {
+      // const currentBalance = convertToNumber(account.balance) - parseFloat(amount.toString());
+      // Deduct from balance for non-cash transactions
+      const balance=parseFloat(currentBalance)
+      await accounts.findByIdAndUpdate(accountId, {
+        $set: { balance:balance - amount}, new: true
+      });
+      account.balance = mongoose.Types.Decimal128.fromString(balance.toString());
+      await account.save();
     }
-   
-   }
+  }
 
-   if(type.toLowerCase() === 'income'){
-    const currentBalance=balance.plus(amount);
-    const account = await accounts.findByIdAndUpdate(accountId,{
-      $set:{balance:currentBalance},new:true
+  if (type.toLowerCase() === 'income') {
+    // const currentBalance = convertToNumber(account.balance) + parseFloat(amount.toString());
+    // Update balance for income
+    if (isCashTransaction) {
+      // Handle expense for cash transaction without deducting from a balance
+      // Deduct from balance for non-cash transactions
+      const balance=1000000000000;
+      console.log('Processing cash expense. No balance deduction needed.');
+      await accounts.findByIdAndUpdate(accountId, {
+        $set: { balance:balance}, new: true
+      });
+      account.balance=mongoose.Types.Decimal128.fromString(balance.toFixed(2))
+      // You may want to log the transaction or do some other processing
+    }else{ 
+      const balance=parseFloat(currentBalance)
+    await accounts.findByIdAndUpdate(accountId, {
+      $set: { balance: balance + amount }, new: true
     });
-    if(account){
-    account.balance=mongoose.Types.Decimal128.fromString(currentBalance.toFixed(2))
-    await account?.save();
-    }
-   }
+    account.balance = mongoose.Types.Decimal128.fromString(balance.toString());
+    await account.save();
+  }
+  }
 }
-
 
 
 export async function totalIncome(req:Request,res:Response){
@@ -472,4 +714,8 @@ export async function totalIncome(req:Request,res:Response){
 
 
 
+
+function zonedTimeToUtc(endOfMonthLocal: Date, timeZone: string) {
+  throw new Error("Function not implemented.");
+}
 

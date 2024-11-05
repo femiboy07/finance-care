@@ -1,4 +1,5 @@
-import mongoose from "mongoose";
+import mongoose,{Document, Schema} from "mongoose";
+import CategoryModel from "./Category";
 
 
 export enum transcationCategory {
@@ -7,7 +8,7 @@ export enum transcationCategory {
     Salary='Salary',
     Entertainment='Entertainment',
     BankFees="Bank Fees",
-    CoffeeShops="CoffeShops",
+    CoffeeShops="CoffeeShops",
     deposit="deposit",
     Income="Income",
     PaymentTransfer="PaymentTransfer",
@@ -17,6 +18,8 @@ export enum transcationCategory {
     Transportation='Transportation',
     Resturants='Resturants',
 }
+
+export const value=['Food',"Rent",'Salary','Entertainment','BankFees','CoffeeShops','deposit','Income','PaymentTransfer','Withdrawal','Travel','Personal Care','Transportation','Resturants'] ;
 
 enum typeTranscation{
     expense='expense',
@@ -29,34 +32,41 @@ enum statusTranscation{
     
 }
 
-export interface ITranscations{
+ export interface ITranscations extends Document{
   userId:mongoose.Schema.Types.ObjectId,       // ID of the user who made the transaction
-  accountId:any,  
+  accountId:mongoose.Types.ObjectId | null,  
   type: typeTranscation | string,              // Type of transaction: "income" or "expense"
   amount:mongoose.Types.Decimal128,                              // Amount of the transaction
-  category:transcationCategory | string,     // Category of the transaction (e.g., "food", "rent")
+  category:mongoose.Types.ObjectId | null,     // Category of the transaction (e.g., "food", "rent")
   description?: string,                      // Optional description for the transaction
   status:statusTranscation | string,
   name:string,
+  month:number,
+  year:number,
   date: Date,                               // Date of the transaction
-  createdAt:Date,                          // Date when the transaction was logged
-  updatedAt: Date,
+
  // Date when the transaction was last updated
 }
 
 
 
 
-const userTranscations=new mongoose.Schema<ITranscations>({
+const userTranscations=new Schema<ITranscations>({
      userId:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User",
         required:true,
      },
      accountId:{
-         type:mongoose.Schema.Types.ObjectId,
+         type:mongoose.Types.ObjectId,
          ref:"Accounts",
          
+     },
+     month:{
+      type:Number,
+     },
+     year:{
+      type:Number,
      },
 
      type:{
@@ -70,12 +80,13 @@ const userTranscations=new mongoose.Schema<ITranscations>({
      amount:{
         type:mongoose.Types.Decimal128,
         required:true,
+        max:15
      },
      category:{
-        type:String,
-        enum:transcationCategory || "",
+        type:mongoose.Types.ObjectId,
+        ref:'Category',
         required:true,
-        default:"",
+        
      },
      status:{
         type:String,
@@ -93,9 +104,8 @@ const userTranscations=new mongoose.Schema<ITranscations>({
         type:Date,
         default:Date.now
      },
-     createdAt:Date,
-     updatedAt:Date,
-},);
+    
+}, { timestamps: true });
 
 
 

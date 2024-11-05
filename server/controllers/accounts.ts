@@ -5,6 +5,7 @@ import budgets from "../models/Budgets";
 import mongoose from "mongoose";
 import { CreateTransactionRequest } from "./transcation";
 import user from "../models/User";
+import CategoryModel from "../models/Category";
 
 
 
@@ -48,26 +49,32 @@ export async function createAccount(req: CreateTransactionRequest, res: Response
 
         // Add the new account's ID to the user's accounts array
         userAccount.accounts.push(newAccount._id);
+        await newAccount.save({session})
         await userAccount.save({ session });
 
         // Create initial transaction if balance > 0
         if (balance > 0) {
-            const initialTransaction = await new transcation({
-                userId:userId,
-                accountId: newAccount._id,
-                category: "deposit",
-                name:userAccount.name,
-                amount: balance,
-                status: "cleared",
-                type: 'income', // Assuming it's an initial deposit
-                description: 'Initial deposit'
-            });
+        const addCategory=await CategoryModel.findOne({name:"deposit"})
+        if(!addCategory){
+            throw new Error('not found')
+        }
+            
+            // const initialTransaction =  new transcation({
+            //     userId:userId,
+            //     accountId: newAccount._id,
+            //     category: addCategory._id,
+            //     name:userAccount.name,
+            //     amount: balance,
+            //     status: "cleared",
+            //     type: addCategory.type, // Assuming it's an initial deposit
+            //     description: 'Initial deposit'
+            // });
 
-            // Save the initial transaction within the transaction
-            (await initialTransaction.save({ session }));
+            // // Save the initial transaction within the transaction
+            // (await initialTransaction.save({ session }));
 
-            // Add the transaction ID to the account's transactions array
-            newAccount.transcations.push(initialTransaction._id);
+            // // Add the transaction ID to the account's transactions array
+            // newAccount.transcations.push(initialTransaction._id);
             await newAccount.save({ session });
         }
 
@@ -90,8 +97,39 @@ export async function createAccount(req: CreateTransactionRequest, res: Response
     }
 }
 
+export async function updateAccount(req:Request,res:Response){
+    const {id}=req.params;
+     const {name,type,balance}=req.body; 
+     if (!id) {
+            return res.status(400).json({ message: "Account ID is required..." });
+        }
+        try {
+                const account = await accounts.findById(id);
+                if (!account) {
+                    return res.status(404).json({ message: "Account not found..." });
+                }
+          
+                // Update the account fields
+
+              
+                if (balance) account.balance = balance;
+                if (name)  account.name = name;
+                if (type) account.type=type
+                
+          
+               await account.save();
+          
+                return res.status(200).json({ data: account, message: "Budget updated successfully..." });
+            } catch (err) {
+                return res.status(500).json({ message: "System error, please try again later", err });
+            }
+
+}
+
+
+
 export async function deleteAccount(req: Request, res: Response) {
-    const { id } = req.body;
+    const { id } = req.params;
   
     if (!id) {
       return res.status(400).json({ message: "Account ID is required" });
@@ -130,21 +168,30 @@ export async function deleteAccount(req: Request, res: Response) {
     }
   }
 
+  export async function getAccounts(req: CreateTransactionRequest, res: Response) {
+    try {
+        const userId: any = req.user;
 
-  export async function getAccounts(req:CreateTransactionRequest,res:Response){
-         try{
-            const userId:any=req.user;
-            const allAccounts=await accounts.find({userId:userId});
+        // Fetch accounts concurrently
+        const [allAccount, defaultAccount] = await Promise.all([
+            accounts.find({ userId: userId }),
+            accounts.findOne({ userId: null, isSystemAccount: true })
+        ]);
 
-            if(!allAccounts){
-                return res.status(403).send("You have no accounts yet please create one");
-            }
-
-            return res.json({allAccounts,message:"list of accounts gotten succesfully"}).status(200);
-         
-        }catch(err){
-          return res.status(500).send("Server Error pls check your connection")
+        if (!allAccount.length && !defaultAccount) {
+            return res.status(403).send("You have no accounts yet, please create one");
         }
-  }
+
+        const allAccounts = [...allAccount, defaultAccount].filter(Boolean); // Ensures no null/undefined values in array
+
+        return res.status(200).json({
+            allAccounts,
+            message: "List of accounts retrieved successfully"
+        });
+    } catch (err) {
+        console.error("Error fetching accounts:", err);
+        return res.status(500).send("Server error, please check your connection");
+    }
+}
 
 

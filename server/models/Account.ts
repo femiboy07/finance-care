@@ -9,6 +9,7 @@ export interface IAccounts{
     balance:mongoose.Types.Decimal128;
     transcations:any;
     budgets:any;
+    isSystemAccount:boolean;
 }
 
 
@@ -17,7 +18,8 @@ const accountsSchema=new mongoose.Schema<IAccounts>({
      userId:{
       type:mongoose.Schema.Types.ObjectId,
       ref:"User",
-      required:true,
+      default:null,
+      
      },
       name:{
         type:String,
@@ -26,13 +28,20 @@ const accountsSchema=new mongoose.Schema<IAccounts>({
       type:{
         type:String,
         required:true,
+        unique:true,
         default:"current",
       },
 
+      isSystemAccount:{
+        type:Boolean,
+        default:false,
+        
+      },
       balance:{
         type:mongoose.Types.Decimal128,
         default:0,
-        required:true
+        required:true,
+        max:15
       },
       transcations:[{
          type:mongoose.Schema.Types.ObjectId,

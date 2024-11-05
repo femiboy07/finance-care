@@ -5,7 +5,8 @@ import jwt from "jsonwebtoken";
 import { CreateTransactionRequest } from "./transcation";
 import transcation from "../models/Transcation";
 import mongoose, { isValidObjectId } from "mongoose";
-import {startOfWeek,startOfMonth,startOfYear,endOfWeek,endOfMonth,endOfYear} from "date-fns"
+import {startOfWeek,startOfMonth,startOfYear,endOfWeek,endOfMonth,endOfYear} from "date-fns";
+import {toZonedTime} from 'date-fns-tz'
 
 
 export async function register(req:Request,res:Response,next:NextFunction):Promise<unknown>{
@@ -51,22 +52,18 @@ export async function register(req:Request,res:Response,next:NextFunction):Promi
 
 export async function signInUser(req:Request,res:Response){
     const {email,password}=req.body;
-
-
     try{
         if(!email && !password){
             return res.status(403).json({message:"Please provide your email and password to login"});
         }
-
         const existingUser=await user.findOne({email});
-
-        if(!existingUser) return res.status(400).json({ msg: 'Invalid credentials' });
+        if(!existingUser) return res.status(400).json({ message: 'Invalid credentials' });
         const isMatch = await existingUser.comparePassword(password)
         if (!isMatch) return res.status(400).json({ msg: 'Invalid credentials' });
         const payload = { id: existingUser._id ,email:existingUser.email};
-        const access_token=jwt.sign(payload,process.env.SECRET_KEY!,{expiresIn:5})
+        const access_token=jwt.sign(payload,process.env.SECRET_KEY!,{expiresIn:60})
         const refresh_token=jwt.sign(payload, process.env.SECRET_KEY!,{expiresIn:'7d'});
-        const expiresIn=Math.floor(Date.now() / 1000 ) * 60 * 60    
+        const expiresIn=Math.floor(Date.now() / 1000 ) + 1 * 60 * 60    
         existingUser.userRefreshTokens.push(refresh_token);
         await existingUser.save();
          res.cookie('refreshToken',refresh_token,{
@@ -79,7 +76,7 @@ export async function signInUser(req:Request,res:Response){
        return res.json({access_token,expiresIn}).status(200);
        
      }catch(err){
-      return res.send(err).status(500);
+      return res.status(500).json({message:"Network Error",err:err});
     }
  
 }
@@ -111,9 +108,7 @@ export async function refreshToken(req:Request,res:Response){
            return res.status(403).json({message:'Invalid Refresh Token'});
       }
 
-    
-  
-      // remove-old userRefreshtoken;
+    // remove-old userRefreshtoken;
 
       const tokenIndex=users.userRefreshTokens.findIndex((token)=>token === refreshToken);
       console.log(tokenIndex,'tokenIndexxxxxxxxxxxxxxx')
@@ -125,22 +120,18 @@ export async function refreshToken(req:Request,res:Response){
     // Remove the old refresh token from the user's array
     users.userRefreshTokens.splice(tokenIndex, 1);
     await users.save();
-
-      // Generate a new access token
-      const access_token = jwt.sign(
+    // Generate a new access token
+    const access_token = jwt.sign(
         { id: users._id, email: users.email },
         process.env.SECRET_KEY!,
         { expiresIn: '1h' }
-      );
+    );
 
       const refresh_token = jwt.sign(
         { id: users._id, email: users.email },
         process.env.SECRET_KEY!,
-        { expiresIn: '7h' }
+        { expiresIn: '1h' }
       );
-
-
-     
      console.log(access_token,"Acesssssstoken second")
       users.userRefreshTokens.push(refresh_token);
       await users.save();
@@ -155,11 +146,13 @@ export async function refreshToken(req:Request,res:Response){
   
      return  res.status(200).json({ access_token});
     } catch (err:any) {
+        console.log(err.name)
         if (err.name === 'TokenExpiredError') {
             // Handle expired refresh token
             res.clearCookie('refreshToken');
             return res.status(401).json({ message: 'Session expired, please log in again' });
         }
+        // res.clearCookie('refreshToken')
       return res.status(403).json({message:err})
     }
 }
@@ -191,7 +184,7 @@ export async function logOutUser(req: Request, res: Response) {
             return res.status(403).json({ message: 'Invalid Refresh Token' });
         }
         // Clear all refresh tokens
-        currentUser.userRefreshTokens.splice(tokenIndex,1);
+        currentUser.userRefreshTokens = []
         // currentUser.userRefreshTokens=[];
        
         await currentUser.save();
@@ -228,6 +221,7 @@ interface IncomeByExpenseQuery {
 
 export async function getTotalIncomeAndExpense(req: Request<{}, {}, {}, IncomeByExpenseQuery>, res: Response) {
     const { interval } = req.query;
+    const timeZone='Africa/Lagos';
 
     if (!['weekly', 'monthly', 'yearly'].includes(interval)) {
         return res.status(400).json({ message: "Invalid interval provided. Please provide 'weekly', 'monthly', or 'yearly'." });
@@ -238,29 +232,31 @@ export async function getTotalIncomeAndExpense(req: Request<{}, {}, {}, IncomeBy
         if (!userId) {
             return res.status(401).json({ message: "You need to be authenticated. Please log in again." });
         }
+        
 
         const now = new Date();
+        const zonedNow=toZonedTime(now,timeZone)
         let startDate: Date;
         let endDate: Date;
         let groupBy: any;
         let labels: string[];
-
+      
         switch (interval) {
             case 'weekly':
-                startDate = startOfWeek(now);
-                endDate = endOfWeek(now);
+                startDate =  startOfWeek(zonedNow,{weekStartsOn:1});
+                endDate = endOfWeek(zonedNow,{weekStartsOn:1});
                 groupBy = { $dayOfWeek: '$date' }; // 1=Sun, 2=Mon, ..., 7=Sat
-                labels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+                labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat","Sun"];
                 break;
             case 'monthly':
-                startDate = startOfMonth(now);
-                endDate = endOfMonth(now);
+                startDate = startOfMonth(zonedNow);
+                endDate = endOfMonth(zonedNow);
                 groupBy = { $dayOfMonth: '$date' }; // Group by day of the month
                 labels = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
                 break;
             case 'yearly':
-                startDate = startOfYear(now);
-                endDate = endOfYear(now);
+                startDate = startOfYear(zonedNow);
+                endDate = endOfYear(zonedNow);
                 groupBy = { $month: '$date' }; // 1=Jan, 2=Feb, ..., 12=Dec
                 labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
                 break;
@@ -268,7 +264,7 @@ export async function getTotalIncomeAndExpense(req: Request<{}, {}, {}, IncomeBy
 
         // Aggregate income by the selected interval
         const incomeAggregation = transcation.aggregate([
-            { $match: { type: 'income', date: { $gte: startDate, $lt: endDate }, userId: userId._id } },
+            { $match: { type: 'income', date:{ $gte: startDate, $lt: endDate }, userId: userId._id } },
             { $group: { _id: groupBy, totalIncome: { $sum: '$amount' } } },
             { $sort: { _id: 1 } } // Sort by the grouping
         ]);

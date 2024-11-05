@@ -12,11 +12,15 @@ import userRouter, { validateOrigin } from './routes/userroutes';
 import transcationRouter from './routes/routetranscations';
 import accountsRouter from "./routes/routeaccounts";
 import budgetsRouter from "./routes/routebudgets";
+import categoriesRouter from './routes/routecategory';
 import oauth2Client from "./middlewares/googleauthClient";
 import user from "./models/User";
 import budgets from "./models/Budgets";
 import { CreateTransactionRequest } from "./controllers/transcation";
 import { getTotalIncomeAndExpense } from "./controllers/user";
+import { clearCategories, seedCategories } from "./seeders/categorySeeders";
+import { clearBudgets, seedDefaultBudget } from "./seeders/budgetsSeeder";
+import { clearAccounts, seedDefaultAccount } from "./seeders/accountSeeder";
 
 
 
@@ -28,7 +32,7 @@ import { getTotalIncomeAndExpense } from "./controllers/user";
 const app=express();
 const httpServer=createServer(app);
 const io=new Server(httpServer,{cors:{
-    origin:["http://localhost:3000","http://localhost:5000"]
+    origin:["http://localhost:3000","http://localhost:3001"]
 }})
 const port=5000;
 app.use(expresscookie());
@@ -38,10 +42,7 @@ app.use(express.urlencoded({extended:true}));
 app.use(passport.initialize())
 app.use(cors({
     origin:["http://localhost:3000","http://localhost:3001"],
-
     credentials:true,
-    
-    
 }));
 
 
@@ -58,14 +59,46 @@ function onlyForHandShake(middleware:any){
 }
 
 //connect to mongoDb database finance;
-
-mongoose.connect(process.env.MONGODB_URI!,{dbName:"financeApp"}).then((data)=>{
-    if(data){
-       console.log("connected to the database");
+async function seedDatabase() {
+    try {
+  // clear the database;
+  //     await clearCategories(); // Clear existing categories
+  //  await clearBudgets()
+      // Run seeders
+      await seedCategories();
+      // await clearAccounts()
+      await seedDefaultAccount();
+      // await seedDefaultBudget();
+      // Call other seeders here
+  
+      console.log("Database seeding completed.");
+    } catch (error) {
+      console.error("Error seeding database:", error)
     }
-}).catch((err)=>{
-    console.log("not able to connect to db",err)
-})
+  }
+
+  async function main() {
+    try {
+        await mongoose.connect(process.env.MONGODB_URI!, { dbName: "financeApp" });
+        console.log("Connected to the database");
+
+        await seedDatabase(); // Call the seed function after connecting
+
+    } catch (err) {
+        console.log("Not able to connect to db", err);
+    }
+}
+
+main()
+
+// mongoose.connect(process.env.MONGODB_URI!,{dbName:"financeApp"}).then(async()=>{
+    
+//        console.log("connected to the database");
+//        await seedDatabase()
+    
+// }).catch((err)=>{
+//     console.log("not able to connect to db",err)
+// })
 
 
 
@@ -73,6 +106,7 @@ app.use('/api/auth',userRouter);
 app.use('/api/transactions',transcationRouter);
 app.use('/api/account',accountsRouter);
 app.use('/api/budgets',budgetsRouter);
+app.use('/api/category',categoriesRouter);
 app.get('/oauth2callback', async (req:Request,res:Response)=>{
 
     const {code,state}=req.query as {code:string|any,state:string|any};
@@ -121,30 +155,30 @@ app.get('/dashboard',passport.authenticate("jwt",{session:false}),(req,res:Respo
 
 
 
-io.on("connection",(socket)=>{
-  // getting the namespace  
-  socket.on("register",(userId:any)=>{
-      if(userId){
-          socket.join(userId); 
-             socket.on('trackBudget',async()=>{
-                const budget=await budgets.find({userId});
-                socket.emit('initialData',budget);
-                const changeStream=budgets.watch();
-                changeStream.on('change',async(change)=>{
-                    if (change.operationType === 'update' || change.operationType === 'insert') {
-                        const updatedBudget = await budgets.findById(change.documentKey._id);
-                        if (updatedBudget?.userId.toString() === userId) {
-                          socket.emit('budgetUpdate', updatedBudget);
-                        }
-                      }
-                })
+// io.on("connection",(socket)=>{
+//   // getting the namespace  
+//   socket.on("register",(userId:any)=>{
+//       if(userId){
+//           socket.join(userId); 
+//              socket.on('trackBudget',async()=>{
+//                 const budget=await budgets.find({userId});
+//                 socket.emit('initialData',budget);
+//                 const changeStream=budgets.watch();
+//                 changeStream.on('change',async(change)=>{
+//                     if (change.operationType === 'update' || change.operationType === 'insert') {
+//                         const updatedBudget = await budgets.findById(change.documentKey._id);
+//                         if (updatedBudget?.userId.toString() === userId) {
+//                           socket.emit('budgetUpdate', updatedBudget);
+//                         }
+//                       }
+//                 })
 
-             })
-      } 
-  })
+//              })
+//       } 
+//   })
 
 
-})
+// })
 
 
 
