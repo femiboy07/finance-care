@@ -10,7 +10,7 @@ export default function SelectTypeByIncomeAndExpense({intervals,setIntervals}:{i
     
     return (
     <Select onValueChange={setIntervals} value={intervals} >
-    <SelectTrigger className="w-[180px] h-full" defaultValue={intervals}>
+    <SelectTrigger className="w-[100px] h-full" defaultValue={intervals}>
              <SelectValue/>
        </SelectTrigger>
        <SelectContent>

@@ -3,7 +3,7 @@ import { Card, CardTitle } from "../../@/components/ui/card";
 import AddExpense from "../../components/Transaction/addExpense";
 import AddIncome from "../../components/Transaction/addIncome";
 import CreateBudget from "../../components/Budget/createBudget";
-import { ArrowDown, ArrowUp, DollarSign, GanttChartIcon, LocateFixedIcon, LucideBadgeSwissFranc, LucideBarChart4, LucideFileLineChart, LucideGitGraph, LucideHome, LucideLineChart, MailSearchIcon } from "lucide-react";
+import { ArrowDown, ArrowUp, DollarSign, GanttChartIcon, LoaderCircle, LoaderCircleIcon, LocateFixedIcon, LucideBadgeSwissFranc, LucideBarChart4, LucideFileLineChart, LucideGitGraph, LucideHome, LucideLineChart, MailSearchIcon } from "lucide-react";
 import StatsGraph from "../../components/Transaction/statsTable";
 import { useQuery } from "@tanstack/react-query";
 import { getMetrics, getUser } from "../../api/apiRequest";
@@ -15,145 +15,144 @@ import useRequireAuth from "../../hooks/useRequireAuth";
 import { createPortal } from "react-dom";
 import UserLoggedOut from "../../components/Modals/UserLoggedOut";
 import SelectTypeByIncomeAndExpense from "../../components/Transaction/SelectTypeByIncomeAndExpense";
+import DashBoardSkeleton from "../../components/Skeleton/DashBoardSkeleton";
+import { useUser } from "../../context/UserProvider";
 
 
 
 
 
-export default function DashBoard(){
-            const [loading,setLoading]=useState(false);
-            const {removeToken,isLoading}=useRequireAuth();
-            const [intervals,setIntervals]=useState('weekly')
-        
-            const {isPending,error,data}=useQuery({
-              queryKey:['metrics'],
-              queryFn: getMetrics,
-             
-            })
+export default function DashBoard() {
+  const [loading, setLoading] = useState(false);
+  const { removeToken, isLoading } = useRequireAuth();
+  const [intervals, setIntervals] = useState('weekly')
 
-            const {data:usernameData}=useQuery({
-              queryKey:['username'],
-              queryFn:getUser
-            })
+  const { isPending, error, data } = useQuery({
+    queryKey: ['metrics'],
+    queryFn: getMetrics,
 
-     
+  })
 
-      
-      if(isPending){
-        return (
-            <div className="bg-green-600 mt-20">
-                 Loading...
-            </div>
-          )
-      }
-            if (error?.message === '') 
-              return (
-              <div className=" w-full h-full flex justify-center bg-red-600 mt-20">
-              {'An error has occurred: ' + error.message};
-              </div>
-            )
-            console.log(data);
-            console.log(usernameData)
+  const { data: usernameData } = useQuery({
+    queryKey: ['username'],
+    queryFn: getUser,
 
-return (
-  <Suspense fallback={<div className="text-black bg-blue-600 h-64">Loading...</div>}>
-    <div className=" w-full px-3 lg:px-9 min-h-screen mt-20  mb-10 " style={{clipPath: `rectangle(0 20%, 50% 0, 100% 80%, 0 100%)`}}>
+
+  })
+
+  if (isPending) {
+    return (
+      <DashBoardSkeleton />
+    )
+  }
+  if (error?.message === '')
+    return (
+      <div className=" w-full h-full flex justify-center bg-red-600 mt-20">
+        {'An error has occurred: ' + error.message};
+      </div>
+    )
+  console.log(data);
+  console.log(usernameData)
+
+  return (
+    <Suspense fallback={<div className="text-black bg-blue-600 h-64">Loading...</div>}>
+      <div className=" w-full px-3 lg:px-9 min-h-screen mt-20 font-custom2  mb-10 " style={{ clipPath: `rectangle(0 20%, 50% 0, 100% 80%, 0 100%)` }}>
         <div className=" w-full h-full space-y-8 ">
-         
-        {usernameData &&  
-         <div className="user-welcome text-orange-300 font-mono leading-9 font-extrabold">
-          <h1 className=" text-2xl ">Welcome, {usernameData.data}</h1>
-          <span className="text-black">Continue your journey to financial success</span>
-         </div>}
-         <div className="w-full mt-5 flex  ">
-             <Card className=" bg-white flex w-full gap-5 shadow-xs items-center justify-center p-5 leading-4">
-                <AddExpense />
-                <AddIncome/>
-                <CreateBudget/>
-             </Card>
+
+          {usernameData &&
+            <div className="user-welcome text-orange-300  font-custom2 leading-2 font-extrabold">
+              <h1 className=" text-2xl ">Welcome, {usernameData.data}</h1>
+              <span className="text-black text-sm">Continue your journey to financial success</span>
+            </div>}
+          <div className="w-full mt-5 flex">
+            <Card className=" bg-white flex w-full gap-5 shadow-xs items-center justify-center p-5 leading-4">
+              <AddExpense />
+              <AddIncome />
+              <CreateBudget />
+            </Card>
           </div>
-         <div className="income-expenses-financial-table flex gap-4 w-full mt-5 flex-wrap">
-        
-          <>
-          <Suspense fallback={<div className="bg-blue-600 h-64 w-64">Loading...</div>}>
-           <Card className="bg-white relative  w-52 h-52 rounded-lg shadow-xs  flex-1 min-w-52">
-            <div className="cont flex flex-col p-5  leading-2 space-y-7 flex-1"> 
-            <div className="w-14 h-14 flex justify-center items-center rounded-full bg-purple-300">
-            <LucideHome className=" text-purple-900 "/>
-            </div>
-            {/* <div className="absolute right-5 top-2 w-14">
-             <MailSearchIcon className=" w-[64px] h-[24px]" size={50}/>
-            </div> */}
-           <div className="flex  text-xl font-semibold">
-           <div className=" text-4xl font-semibold">{ data.totalBalance !== undefined  ? formatAmount(data.totalBalance).slice(0,-3) : formatAmount(0).slice(0,-3)}</div>
-            <sub className="self-end">{`${data.totalBalance !== undefined ? ('.'+formatAmount(data.totalBalance).slice(-2)) : ("."+formatAmount(0).slice(-2)) }`}</sub> 
-            </div>
-            <span className=" text-gray-400">Total balance</span>
-            </div> 
-           
-           </Card>
-           <Card className="bg-white   w-52 h-52 shadow-xs flex-1 min-w-52">
-           <div className="cont flex flex-col p-5 leading-2 space-y-7 flex-1"> 
-            <div className="w-14 h-14 flex justify-center items-center rounded-full bg-sky-100">
-            <LocateFixedIcon className=" text-sky-900 "/>
-            </div>
-           <div className="flex  text-xl font-semibold">
-            
-            <div className=" text-4xl font-semibold">{(data !== undefined && formatAmount(data.totalBudget).slice(0,-3)) || 0}</div>
-            <sub className="self-end">{`.${formatAmount(data.totalBudget).slice(-2)}`}</sub> 
-            </div>
-            <span className=" text-gray-400">Budgets</span>
-            </div>
-           </Card>
-           <Card className="bg-white   w-52 h-52 shadow-xs  flex-1 min-w-52">
-           <div className="cont flex flex-col p-5 leading-2 space-y-7 flex-1"> 
-            <div className="w-14 h-14 flex justify-center items-center rounded-full bg-green-200">
-            <ArrowUp className=" text-green-900 "/>
-            </div>
-           <div className="flex  text-xl font-semibold">
-            <div className=" text-4xl font-semibold">{(data !== undefined && formatAmount(data.totalIncome).slice(0,-3)) || 0}</div>
-            <sub className="self-end">{`.${formatAmount(data.totalIncome).slice(-2)}`}</sub> 
-            </div>
-            <span className=" text-gray-400">Income</span>
-            </div>
-           </Card>
-           <Card className="bg-white   w-52 h-52 shadow-xs  flex-1 min-w-52">
-           <div className="cont flex flex-col p-5 leading-2 space-y-7 flex-1"> 
-            <div className="w-14 h-14 flex justify-center items-center rounded-full bg-red-100">
-            <ArrowDown className=" text-red-900 "/>
-            </div>
-           <div className="flex  text-xl font-semibold">
-           
-            <div className=" text-4xl font-semibold">{(data !== undefined && formatAmount(data.totalExpense).slice(0,-3)) || 0}</div>
-            <sub className="self-end">.{formatAmount(data.totalExpense).slice(-2)}</sub> 
-            </div>
-            <span className=" text-gray-400">Expenses</span>
-            </div>
-           </Card>
-           </Suspense>
-           </>
-           
+          <div className="income-expenses-financial-table flex gap-4 w-full mt-5 flex-wrap">
+            {data &&
+              <>
+
+                <Card className="bg-white relative  w-52 h-52 rounded-lg shadow-xs  flex-1 min-w-52">
+                  <div className="cont flex flex-col p-5  leading-2 space-y-7 flex-1">
+                    {/* {!data && <LoaderCircleIcon className="animate-pulse" />} */}
+                    <div className="w-14 h-14 flex justify-center items-center rounded-full bg-purple-300">
+                      <LucideHome className=" text-purple-900 " />
+                    </div>
+
+                    <div className="flex  text-xl font-custom2 font-semibold">
+                      <div className=" lg:text-3xl text-2xl  font-semibold">{data.totalBalance !== undefined ? formatAmount(data.totalBalance).slice(0, -3) : formatAmount(0).slice(0, -3)}</div>
+                      <sub className="self-end">{`${data.totalBalance !== undefined ? ('.' + formatAmount(data.totalBalance).slice(-2)) : ("." + formatAmount(0).slice(-2))}`}</sub>
+                    </div>
+
+                    <span className=" text-gray-400">Total balance</span>
+                  </div>
+
+                </Card>
+                <Card className="bg-white   w-52 h-52 shadow-xs flex-1 min-w-52">
+                  <div className="cont flex flex-col p-5 leading-2 space-y-7 flex-1">
+                    <div className="w-14 h-14 flex justify-center items-center rounded-full bg-sky-100">
+                      <LocateFixedIcon className=" text-sky-900 " />
+                    </div>
+                    <div className="flex  text-xl font-custom2 font-semibold  flex-wrap overflow-ellipsis">
+
+                      <div className=" lg:text-3xl text-2xl font-semibold text-ellipsis">{(data !== undefined && formatAmount(data.totalBudget).slice(0, -3)) || 0}</div>
+                      <sub className="self-end">{`.${formatAmount(data.totalBudget).slice(-2)}`}</sub>
+                    </div>
+                    <span className=" text-gray-400">Budgets</span>
+                  </div>
+                </Card>
+                <Card className="bg-white   w-52 h-52 shadow-xs  flex-1 min-w-52">
+                  <div className="cont flex flex-col p-5 leading-2 space-y-7 flex-1">
+                    <div className="w-14 h-14 flex justify-center items-center rounded-full bg-green-200">
+                      <ArrowUp className=" text-green-900 " />
+                    </div>
+                    <div className="flex  text-xl font-custom2 font-semibold">
+                      <div className=" lg:text-3xl text-2xl text-ellipsis line-clamp-3 font-semibold">{(data !== undefined && formatAmount(data.totalIncome).slice(0, -3)) || <LoaderCircle className="animate-spin" />}</div>
+                      <sub className="self-end">{`.${formatAmount(data.totalIncome).slice(-2)}`}</sub>
+                    </div>
+                    <span className=" text-gray-400">Income</span>
+                  </div>
+                </Card>
+                <Card className="bg-white   w-52 h-52 shadow-xs  flex-1 min-w-52">
+                  <div className="cont flex flex-col p-5 leading-2 space-y-7 flex-1">
+                    <div className="w-14 h-14 flex justify-center items-center rounded-full bg-red-100">
+                      <ArrowDown className=" text-red-900 " />
+                    </div>
+                    <div className="flex  text-xl font-custom2 font-semibold">
+
+                      <div className=" lg:text-3xl text-2xl font-semibold line-clamp-3">{(data !== undefined && formatAmount(data.totalExpense).slice(0, -3)) || 0}</div>
+                      <sub className="self-end">.{formatAmount(data.totalExpense).slice(-2)}</sub>
+                    </div>
+                    <span className=" text-gray-400">Expenses</span>
+                  </div>
+                </Card>
+
+              </>
+            }
           </div>
-          
-         
-          </div>
+
+
+        </div>
         <div className="last-transcations w-full mt-5 flex h-full flex-wrap  gap-5">
-          <ReacentTransactions/>
+          <ReacentTransactions />
           <Card className=" w-[60%] h-96 order-1 lg:px-3 px-3 flex-1 py-7 ">
             <div className="flex w-full justify-between h-9 items-center">
-            <CardTitle className=" self-center flex   text-md md:text-xl">
-              <span className="self-center h-full">Date Overview</span>
+              <CardTitle className=" self-center flex   text-md md:text-xl">
+                <span className="self-center text-xl h-full">Date Overview</span>
               </CardTitle>
-            <SelectTypeByIncomeAndExpense intervals={intervals} setIntervals={setIntervals}/>
+              <SelectTypeByIncomeAndExpense intervals={intervals} setIntervals={setIntervals} />
             </div>
-            <StatsGraph intervals={intervals}/>
+            <StatsGraph intervals={intervals} />
           </Card>
         </div>
         <div className="fixed -translate-x-1/2 top-1/2 -translate-y-1/2 left-1/2 w-full">
-        {isLoading && <UserLoggedOut/>}
+          {isLoading && <UserLoggedOut />}
         </div>
-    </div>
+      </div>
     </Suspense>
-        
-    )
+
+  )
 }

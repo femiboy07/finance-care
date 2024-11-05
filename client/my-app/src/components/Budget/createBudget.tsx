@@ -1,17 +1,19 @@
 import React from "react";
 import { Button, buttonVariants } from "../../@/components/ui/button";
 import { LucideWallet2, MinusCircleIcon, Wallet, Wallet2, Wallet2Icon, WalletCards, WalletIcon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 
 
 
-export default function CreateBudget(){
+export default function CreateBudget() {
+    const navigate = useNavigate()
     return (
-        <div className="flex flex-col gap-2 justify-center items-center">
-        <Button className={buttonVariants({variant:"secondary",size:"icon",className:"rounded-full bg-blue-200 opacity-75"})}>
-           <Wallet color="white" className="bg-blue-600 h-[24px] w-[24px]   "/>
-        </Button>
-        <span className="text-center">Create budget</span>
+        <div className="flex flex-col gap-2 items-center">
+            <Button onClick={() => navigate('budgets')} className={buttonVariants({ variant: "secondary", size: "icon", className: "rounded-full h-12 w-12  font-bold lg:h-16 lg:w-16 flex flex-col  bg-blue-200 opacity-75" })}>
+                <WalletCards color="white" className="bg-blue-600 rounded-full self-center h-[25px] w-[25px]" />
+            </Button>
+            <span className=" lg:text-lg text-sm">Create budget</span>
         </div>
     )
 }

@@ -1,3 +1,5 @@
+const { custom } = require('zod');
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
@@ -93,8 +95,14 @@ module.exports = {
         "accordion-up": "accordion-up 0.2s ease-out",
         "shadow-move":"shadow-move 0.7s ease-in-out infinite alternate ",
         "sidebar-animate":"sidebar-animate 0.7s ease-in-out ",
-        "logo-bounce":"logo-bounce 0.9s linear infinite alternate",
+        "logo-bounce":"logo-bounce 0.7s ease-in-out infinite alternate",
       },
+      fontFamily:{
+        custom:['Roboto-black','sans-serif'],
+        custom1:['Roboto-italic'],
+        custom2:['Roboto-light'],
+        custom3:['Roboto-bold']
+      }
     },
   },
   plugins: [require("tailwindcss-animate"),

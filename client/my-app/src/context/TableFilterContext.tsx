@@ -5,7 +5,7 @@ import { useReactTable,Table } from "@tanstack/react-table";
 interface FilterContextType{
     rowSelection:Record<string,boolean>;
     setRowSelection:React.Dispatch<React.SetStateAction<Record<string,boolean>>>
-    selectedTotal:number | string,
+    selectedTotal:number |  string,
     setSelectedTotal:React.Dispatch<React.SetStateAction<number>>
     // table:Table<any>
 }
