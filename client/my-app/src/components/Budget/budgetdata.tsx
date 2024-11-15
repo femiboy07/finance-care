@@ -1,8 +1,8 @@
 import React from "react";
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../@/components/ui/table";
-import { formatDate } from "date-fns";
-import { CheckCircleIcon } from "lucide-react";
+import SetBudget from "./SetBudget";
+import { LoaderCircleIcon } from "lucide-react";
 
 
 
@@ -17,24 +17,26 @@ interface Budgets {
 }
 
 export const BudgetColumns: ColumnDef<Budgets>[] = [
-
-
   {
     accessorKey: "category",
     header: (props) => {
-      return <div className="text-left ">{"Category"}</div>
+      return <div className="text-left uppercase min-w-64  w-64 ">{"Category"}</div>
     },
     cell(props) {
       return (
-        <span className=" self-center px-[13px]">{props.row.original.category}</span>
+        <span className="self-center px-[13px]  text-ellipsis flex-shrink-0  flex-1  w-full h-full items-center flex-nowrap leading-tight m-0 overflow-hidden text-nowrap ">{props.row.original.category}</span>
       )
     },
+    size: 800,
+    maxSize: 800,
+    minSize: 800,
+
   },
 
   {
     accessorKey: "spent",
     header: (props) => {
-      return <div className=" max-w-32 uppercase">{"SPENT"}</div>
+      return <div className=" uppercase min-w-11" >{"SPENT"}</div>
     },
     cell({ row, cell }) {
       let amount: any = row.original.spent.$numberDecimal;
@@ -48,35 +50,51 @@ export const BudgetColumns: ColumnDef<Budgets>[] = [
         formatted = ''
       }
       return (
-        <span className=" self-center px-[13px] text-orange-300 font-semibold border-none  w-full h-[36px] flex items-center  whitespace-pre-wrap max-w-full overflow-hidden text-ellipsis ">{formatted}</span>
+        <span className=" self-center px-[13px] text-orange-300 font-semibold border-none flex-shrink-0 w-full h-[36px] flex items-center  whitespace-pre-wrap max-w-full overflow-hidden text-ellipsis ">{formatted}</span>
       )
     },
+
   },
 
 
 
   {
     accessorKey: "budget",
-    header: "BUDGET",
+    header: () => {
+      return <div className="uppercase max-w-11">BUDGET</div>
+    },
     cell({ row, cell }) {
       let amount: any = row.original.budget.$numberDecimal;
+      let remaining: any = row.original.remaining.$numberDecimal;
+      let category: any = row.original.category;
+      let spent: any = row.original.spent;
       let formatted;
-      if (amount !== '0.0') {
+      if (amount !== "0.0") {
         formatted = new Intl.NumberFormat("en-NG", {
           style: "currency",
           currency: "NGN",
         }).format(amount)
-      } else {
-        formatted = 'set budget'
       }
-      return <span className={`text-black px-[13px] text-ellipsis  font-extrabold py-0  border-0 m-0 max-w-full w-full flex flex-wrap overflow-x-auto outline-none text-left leading-tight shadow-none`}>{`${formatted}`}</span>
+
+      return <SetBudget value={amount !== '0.0' ? formatted : ''}
+        id={row.original._id}
+        defaultValue={amount}
+        type={"text"}
+        category={category}
+        remaining={remaining}
+        spent={spent}
+        name={"budget"}
+        className={`text-black bg-transparent text-ellipsis  w-full rounded-md  overflow-hidden   hover:border-orange-400  font-semibold`} placeholder={"set Budget"} />
     },
+    size: 150,
+    maxSize: 150,
+
   },
 
   {
     accessorKey: "remaining",
-    header: (props) => {
-      return <div className=" uppercase max-w-32 ">{"REMAINING"}</div>
+    header: () => {
+      return <div className="min-w-11 max-w-64">REMAINING</div>
     },
     cell({ row, cell }) {
       let amount: any = row.original.remaining.$numberDecimal;
@@ -86,22 +104,26 @@ export const BudgetColumns: ColumnDef<Budgets>[] = [
           style: "currency",
           currency: "NGN",
         }).format(amount)
-      } else {
-        formatted = ''
       }
       return (
 
-        <span className=" self-center px-[13px] text-red-600 font-semibold border-none py-0 w-full max-w-full h-[36px] flex items-center    overflow-hidden text-ellipsis">{formatted}</span>
+        <span className=" self-center px-[13px]  text-red-600 flex-shrink-0 font-semibold w-full  border-none py-0  h-[36px] flex items-center    overflow-hidden text-ellipsis">{formatted}</span>
 
 
       )
     },
+    size: 40,
+    maxSize: 150,
+    minSize: 150
+
 
   },
 
   {
+    size: 40,
+    minSize: 40,
+    maxSize: 40,
     id: 'actions',
-
 
   },
 
@@ -131,66 +153,78 @@ export function BudgetTable<TData, TValue>({ columns, data, isPending }: DataTab
     },
     getCoreRowModel: getCoreRowModel(),
   })
-
+  const doubleRows = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
   return (
-    <div className=" px-5 py-4 mt-5 bg-white rounded-md overflow-x-auto">
-      <Table className="border-black  overflow-y-hidden h-fit w-full table-auto overflow-x-auto border-spacing-0">
-        <TableHeader className=" ">
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="[&_tr:first-child]:border-collapse">
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead key={header.id} className="leading-[15px] bg-background  border  align-middle px-[13px]  text-ellipsis h-[40px]  pt-[10px] pb-[8px] text-[#aeaeae]">
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                  </TableHead>
-                )
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody className=" border-black">
-          {isPending ? (<div className="flex justify-center  text-black bg-red-600 w-full h-full">Loading...</div>) : (
-            <>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
 
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                    className="py-5"
-                  >
-                    {/* <td className="border fixed left-0 w-0 h-0"></td> */}
-                    {row.getVisibleCells().map((cell) => (
-                      <>
+    <Table id="table-lead" className="border-black table-auto  overflow-x-auto border-spacing-0 w-full  overflow-y-hidden ">
+      <TableHeader className="w-full ">
+        {table.getHeaderGroups().map((headerGroup) => (
+          <TableRow key={headerGroup.id} className="[&_tr:first-child]:border-collapse">
+            {headerGroup.headers.map((header) => {
+              return (
+                <TableHead key={header.id} className="leading-[15px] bg-background   border  align-middle px-[13px]  text-ellipsis h-[40px]  pt-[10px] pb-[8px] text-[#aeaeae]">
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+                </TableHead>
+              )
+            })}
+          </TableRow>
+        ))}
+      </TableHeader>
+      <TableBody className=" border-black relative ">
+        <>
+          {isPending &&
+            <div className="max-w-md w-full flex absolute text-black left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 flex-col space-y-2 justify-center items-center text-center ">
+              <span>Fetching transactions..</span>
+              <LoaderCircleIcon />
+            </div>
+          }
+          {table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row) => (
 
-                        <TableCell key={cell.id} className="h-[36px] border  px-0 py-0  ">
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </TableCell>
-                      </>
-                    ))}
-                  </TableRow>
-
-                ))
-
-              ) : (
-                <TableRow className=" ">
-
-                  <TableCell colSpan={columns.length} className=" ">
-                    <div className="w-full flex justify-center flex-col items-center">
-
-                      <span>You have no transaction matching this filter</span>
-                    </div>
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected()}
+                className={`py-5 ${row.getIsSelected() ? 'bg-orange-100' : ''} `}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id} className=" h-[36px]  border  px-0 py-0      ">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
-                </TableRow>
-              )}
-            </>)}
-        </TableBody>
-      </Table>
-    </div>
+
+                ))}
+
+              </TableRow>
+
+
+            ))
+
+          ) :
+
+            (
+
+              <>
+                {doubleRows.map((item, index) => (
+
+
+                  <TableRow key={index} className={` w-full border bg-white ${isPending ? ' animate-pulse' : ''}   `} >
+                    <TableCell colSpan={table.getHeaderGroups()[0]?.headers?.length || 1} className={`w-full border ${isPending ? 'py-3' : 'py-5'}  `}>
+
+                    </TableCell>
+
+                  </TableRow>
+                ))
+                }
+              </>
+            )}
+
+        </>
+      </TableBody>
+    </Table>
+
   )
 }

@@ -17,6 +17,8 @@ import { getAccountsName, updateTransaction } from "../../api/apiRequest";
 import { queryClient } from "../..";
 import { useToast } from "../../@/components/ui/use-toast";
 import { FileDiff } from "lucide-react";
+import CustomSelect from "../common/CustomSelect";
+import { useCategory } from "../../context/CategoryProvider";
 
 
 
@@ -39,7 +41,7 @@ const formSchema = z.object({
 
   }, { message: 'Not a number pls  input a number' }),
   // status:z.string(),
-  accountId: z.string()
+  accountId: z.string(),
 }).refine((data) => {
   const parsedDate = parse(data.date, 'PPP', new Date());
 
@@ -57,14 +59,16 @@ export default function EditTransaction({ transaction, closeSideBar }: { transac
   const token = JSON.parse(localStorage.getItem('userAuthToken') || '{}');
 
   const [showDate, setShowDate] = useState(false);
+  console.log(transaction)
   const { toast } = useToast();
   const [month, setMonth] = useState(new Date());
   const status: string[] = ["cleared", "pending"]
   const type: string[] = ["income", "expense"];
   const divRef = useRef<HTMLDivElement | null>(null)
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const { categories } = useCategory()
   const { error, data } = useQuery({
-    queryKey: ['accounts', token.access_token],
+    queryKey: ['accounts'],
     queryFn: getAccountsName
   })
   const mutation = useMutation({
@@ -76,8 +80,23 @@ export default function EditTransaction({ transaction, closeSideBar }: { transac
       queryClient.invalidateQueries({ queryKey: ['addtransaction'] })
       queryClient.invalidateQueries({ queryKey: ['editTransactionsmobile'] })
       queryClient.invalidateQueries({ queryKey: ['accounts'] })
-      queryClient.invalidateQueries({ queryKey: ['allaccounts'] })
-    }
+      queryClient.invalidateQueries({ queryKey: ['allaccounts'] });
+      new Promise((resolve) => setTimeout(resolve, 5000))
+      closeSideBar()
+      toast({
+        description: "transaction sucessfully updated",
+        className: "text-black bg-white"
+      })
+    },
+    onError(error, variables, context) {
+      new Promise((resolve) => setTimeout(resolve, 5000))
+      closeSideBar()
+      toast({
+        description: `${error} `,
+        className: "text-white h-16",
+        variant: "destructive"
+      })
+    },
   })
   const { isPending } = mutation;
 
@@ -132,31 +151,20 @@ export default function EditTransaction({ transaction, closeSideBar }: { transac
 
   const handleOnSubmit = async (values: z.infer<typeof formSchema>) => {
 
-    try {
-      const newamount = parseFloat(values?.amount);
-      const parsed = parse(newValue, 'MMMM do, y', new Date());
-      const defaultDate = parse(values.date, 'MMMM do, y', new Date());
 
-      const newValues = { ...values, amount: newamount, date: newValue === '' ? formatISO(defaultDate) : formatISO(parsed) }
-      await mutation.mutateAsync({ queryKey: ['editTransaction', token.access_token], variable: newValues, id: transaction._id });
+    const newamount = parseFloat(values?.amount);
+    const parsed = parse(newValue, 'MMMM do, y', new Date());
+    const defaultDate = parse(values.date, 'MMMM do, y', new Date());
 
 
-    } catch (err) {
-      new Promise((resolve) => setTimeout(resolve, 5000))
-      // setIsAddTransaction(false);
-      toast({
-        description: `An error occured' pls credit your account pls `,
-        className: "text-white h-16",
-        variant: "destructive"
-      })
-    } finally {
-      new Promise((resolve) => setTimeout(resolve, 5000))
-      closeSideBar()
-      toast({
-        description: "transaction sucessfully updated",
-        className: "text-black bg-white"
-      })
-    }
+    const newValues = { ...values, amount: newamount, date: newValue === '' ? formatISO(defaultDate) : formatISO(parsed) }
+    console.log(newValues)
+    mutation.mutate({ queryKey: ['editTransaction', token.access_token], variable: newValues, id: transaction._id });
+
+    new Promise((resolve) => setTimeout(resolve, 5000))
+    // setIsAddTransaction(false);
+
+
   }
   const handleOnClick = () => {
     setShowDate(true);
@@ -194,20 +202,14 @@ export default function EditTransaction({ transaction, closeSideBar }: { transac
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">TYPE</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value} >
-                  <FormControl>
-                    <SelectTrigger className="bg-white">
-                      <SelectValue placeholder="income or expense" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className=" z-[11445]">
-                    {type?.map((item: string) => (
-                      <SelectItem key={item} value={item}>
-                        {item}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <CustomSelect
+                  options={type}
+                  name="type"
+                  form={form}
+                  field={field}
+                  placeholder="type"
+                  onSelect={(value: any) => value}
+                />
                 <FormMessage />
               </FormItem>
             )}
@@ -230,9 +232,8 @@ export default function EditTransaction({ transaction, closeSideBar }: { transac
               <DayPicker
                 mode="single"
                 onMonthChange={setMonth}
-
                 month={month}
-                className=" absolute left-1/2  -translate-x-1/2 bg-white rounded-md shadow-md "
+                className=" absolute left-1/2 z-[888955]  -translate-x-1/2 bg-white rounded-md shadow-md "
                 selected={selectedDate}
                 onSelect={handleDayPickerSelect}
               />
@@ -244,20 +245,14 @@ export default function EditTransaction({ transaction, closeSideBar }: { transac
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">CATEGORY</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger className="bg-white">
-                      <SelectValue placeholder="select your category" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className=" z-[11445] overflow-y-auto h-64">
-                    {dataCategory && dataCategory?.map((item: string) => (
-                      <SelectItem key={item} value={item}>
-                        {item}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {categories && <CustomSelect
+                  options={categories && categories?.map((item: any) => item.name)}
+                  name="type"
+                  form={form}
+                  field={field}
+                  placeholder="category"
+                  onSelect={(value: any) => value}
+                />}
                 <FormMessage />
               </FormItem>
             )}
@@ -284,7 +279,7 @@ export default function EditTransaction({ transaction, closeSideBar }: { transac
               <FormItem >
                 <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">DESCRIPTION</FormLabel>
                 <FormControl>
-                  <Input type="string" defaultValue={field.value} className="bg-white"   {...field} />
+                  <Input type="text" defaultValue={field.value} className="bg-white"   {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -321,20 +316,14 @@ export default function EditTransaction({ transaction, closeSideBar }: { transac
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">ACCOUNT NAME</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value} >
-                  <FormControl>
-                    <SelectTrigger className="bg-white">
-                      <SelectValue placeholder="select your category" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className=" z-[11445] ">
-                    {data && data?.map((item: any, index: any) => (
-                      <SelectItem key={index} value={item._id}>
-                        {item.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <CustomSelect
+                  options={data && data}
+                  name="accountId"
+                  placeholder="accountId"
+                  form={form}
+                  field={field}
+                  onSelect={(value: any) => value}
+                />
                 <FormMessage />
               </FormItem>
             )}
@@ -357,7 +346,7 @@ export default function EditTransaction({ transaction, closeSideBar }: { transac
             <Button onClick={closeSideBar} className={buttonVariants({ variant: "default", className: "px-3  bg-orange-400 hover:bg-orange-500" })}>
               CLOSE
             </Button>
-            {(form.formState.isDirty || newValue) && <Button className="" type="submit">
+            {(form.formState.isDirty || newValue || form.control) && <Button className="" type="submit">
               {isPending ? "Loading..." : "SAVE"}
             </Button>}
           </div>

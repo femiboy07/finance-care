@@ -100,15 +100,16 @@ export async function fetchTransactions({queryKey}:any){
   try{
     if(name || category || page || search ||  limit){
       const res= await apiClient.get(`/transactions/listtransactions/${year}/${convert}?page=${page}&name=${name}&category=${category}&search=${search}&pageLimit=${limit}`);
-   const data= res.data;
-   
-   return data;
+     const data= res.data;
+    return data;
     }
+    if(page || limit){
     const res=apiClient.get(`/transactions/listtransactions/${year}/${convert}?page=${page}&pageLimit=${limit}`);
     const data=(await res).data;
-    
-
     return data;
+    }
+
+   
       
 
     }catch(err){

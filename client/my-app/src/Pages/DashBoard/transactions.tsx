@@ -3,7 +3,7 @@ import MonthPicker from "../../components/Transaction/monthPicker";
 import SearchTransactions from "../../components/Transaction/searchTransactions";
 import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "../../@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
-import { fetchTransactions } from "../../api/apiRequest";
+import { fetchCategory, fetchTransactions } from "../../api/apiRequest";
 import SelectAccount from "../../components/Transaction/selectAccount";
 import { TransactionTable, transactionColumns } from "../../components/Transaction/transactionData";
 import { Card } from "../../@/components/ui/card";
@@ -70,17 +70,22 @@ export default function TransactionPage() {
   const secondBox = useRef<HTMLDivElement | null>(null);
 
 
-  const { categories, isLoading: categoryLoading } = useCategory();
+  const { data: categories, isLoading: categoryLoading, isFetching: categoriesetching } = useQuery({ queryKey: ['category'], queryFn: fetchCategory });
 
-  const { data, isPending, error, isLoading } = useQuery({
+  const { data, isPending, error, isLoading, isFetching } = useQuery({
     queryKey: ['alltransactions', { name, category, year, month, page, search, limit }],
     queryFn: fetchTransactions,
-    staleTime: 24 * 60 * 60 * 1000,
-    gcTime: 24 * 60 * 60 * 1000,
+    gcTime: 0,
+    // retry: true,
     enabled: !!categories
+
 
   })
 
+
+  useEffect(() => {
+    updateQueryParams({ month, year })
+  }, [month, year])
 
 
 
@@ -93,7 +98,7 @@ export default function TransactionPage() {
     if (page) searchParam.set('page', page.toString());
     if (search) searchParam.set('search', search);
     setSearchParam(searchParam);
-    // updateQueryParams({ month, year })
+    updateQueryParams({ month, year })
     // updateTransactionQueryParams({ month, year, search, limit, page })
   }, [category, name, page, searchParam, setSearchParam, search, month, year]);
 
@@ -298,7 +303,7 @@ export default function TransactionPage() {
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, []);
+  }, [rowSelection]);
 
   return (
     <div id="transaction-page" data-page="transaction" className="w-full h-full px-2 md:px-4 xl:px-9 mt-20 mb-10 font-custom2 text-black  ">
@@ -331,7 +336,7 @@ export default function TransactionPage() {
               <SelectTrigger className="w-[180px] ml-2 h-12 text-orange-400 font-semibold border-orange-500 rounded-2xl bg-white">
                 <SelectValue placeholder="Category" />
                 <SelectContent className=" h-36 overflow-y-auto border-0 border-none outline-none">
-                  {categories && categories?.map((item: any) => {
+                  {categories && categories.data && categories?.data?.map((item: any) => {
                     return (
                       <SelectItem value={item.name} defaultValue={"all"}>
                         {item.name}
@@ -350,7 +355,7 @@ export default function TransactionPage() {
         </div>}
       {
         isSidebarOpen && !categoryLoading && (
-          <Card ref={addRef} className="fixed right-0 add-bar  top-0 bottom-0 z-[48] lg:w-96 w-full px-5 h-full scrollbar-hide overflow-hidden scroll-m-0 overflow-y-auto">
+          <Card ref={addRef} data-bar="edit-bar" className="fixed right-0 add-bar  top-0 bottom-0 z-[48] lg:w-96 w-full px-5 h-full scrollbar-hide overflow-hidden scroll-m-0 overflow-y-auto">
             <EditTransaction transaction={selectedTransaction} closeSideBar={closeSidebar} />
           </Card>
         )
@@ -362,7 +367,7 @@ export default function TransactionPage() {
           {width < 816 ?
             <div className="flex">
               <div className={`${!hideOver ? 'w-full' : "flex-shrink w-full table-fixed border-spacing-0"} min-w-0`}>
-                {isLoading && categoryLoading && <CardTransaction handleEditTransaction={handleEditTransaction} data={[]} isPending={isLoading} />}
+                {isLoading && <CardTransaction handleEditTransaction={handleEditTransaction} data={[]} isPending={isLoading} />}
                 {data && month && year && <CardTransaction handleEditTransaction={handleEditTransaction} data={data?.listTransactions} />}
               </div>
               <div style={{ minWidth: `calc(260px + 1rem)` }} className={`${hideOver ? `flex` : `hidden`} flex flex-grow flex-1  flex-col items-end `}>
@@ -374,7 +379,7 @@ export default function TransactionPage() {
               </div>
             </div> :
             <>
-              {isPending ? < TransactionTable
+              {isPending || categoriesetching || categoryLoading ? < TransactionTable
                 clearFilter={clearFilters}
                 columns={columns}
                 data={[]}
@@ -382,8 +387,8 @@ export default function TransactionPage() {
                 handleOpenSideBar={handleOpenSideBar}
                 isPending={isPending} /> :
                 <div ref={firstBox} className="flex z-0">
-                  <div className=" px-3  mt-5  overflow-x-auto overflow-y-hidden h-fit py-2  z-0 bg-white bg-opacity-60 rounded-md  ">
-                    {data && data.listTransactions && <TransactionTable
+                  <div className=" px-3  mt-5  overflow-x-auto overflow-y-hidden h-fit py-2  z-0 bg-white bg-opacity-30 rounded-md  ">
+                    {data && data.listTransactions && categories && <TransactionTable
                       clearFilter={clearFilters}
                       columns={columns}
                       data={data?.listTransactions}
@@ -402,7 +407,7 @@ export default function TransactionPage() {
             </>}
 
           <div className="">
-            {data && data.listTransactions && page >= 1 && (
+            {data && data.listTransactions && data.listTransactions.length >= limit && (
               <div className="flex justify-between h-24 items-center  mt-2">
                 {data && data.listTransactions.length >= limit && <LimitButton setLimit={setLimit} />}
                 <Pagination className="">

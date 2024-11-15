@@ -28,83 +28,6 @@ const findTransactionBudgets = async (category: string,userId:any): Promise<numb
     return getTotalSpent;
 };
 
-// export async function createBudgets(req:CreateTransactionRequest,res:Response){
-//     const {accountId,category,amount,period,startDate,endDate}=req.body;
-
-//     const existingbudget=await budgets.findOne({userId:req.user?._id,category:category});
-   
-//     if(existingbudget){
-//       return res.status(400).json({ message: "Budget for this category already exists" });
-//     }
-
-//    if (!period) {
-//         return res.status(400).json({ message: "period.. is required..." });
-//     }
-//     if (!amount) {
-//         return res.status(400).json({ message: "amount is required..." });
-//     }
-   
-//     if (!category) {
-//         return res.status(400).json({ message: "category is required..." });
-//     }
-//     if (!accountId) {
-//         return res.status(400).json({ message: "Account ID is required..." });
-//     }
-
-   
-
-//     if (period === 'custom') {
-//         if (!startDate || isNaN(new Date(startDate).getTime())) {
-//             return res.status(400).json({ message: "Start date is required for custom period..." });
-//         }
-//         if (!endDate || isNaN(new Date(endDate).getTime())) {
-//             return res.status(400).json({ message: "End date is required for custom period..." });
-//         }
-//         const start = new Date(startDate);
-//         const end = new Date(endDate);
-
-//         if (start >= end) {
-//             return res.status(400).json({ message: "Start date must be before end date..." });
-//         }
-//     } else{
-//         // If period is 'monthly' or 'yearly', dates are not required
-//         if (startDate || endDate) {
-//             return res.status(400).json({ message: "Start date and end date should not be provided for non-custom periods..." });
-//         }
-//     }
-    
-   
-
-//     try{
-//         const account = await accounts.findOne({_id:accountId});
-//         if (!account) {
-//             return res.status(404).json({ message: "Account not found..." });
-//         }
-
-//       const spent=await findTransactionBudgets(category)
-
-//         // Create the new budget
-//        const newBudget = await budgets.create({
-//             userId:req.user?._id!,
-//             accountId,
-//             spent:spent,
-//             remaining:spent-amount,
-//             category,
-//             amount,
-//             period,
-//             startDate: period === 'custom' ? new Date(startDate) : undefined,
-//             endDate: period === 'custom' ? new Date(endDate) : undefined,
-//         })
-
-//         await newBudget.save();
-
-//         return res.status(200).json({ data: newBudget, message: "Budget created successfully..." });
-//     }catch(err){
-//         return res.status(500).json({ message: "System error, please try again later", err });
-//     }
-
-
-// }
 
 interface BudgetParams{
     accountId?:string;
@@ -144,15 +67,19 @@ export async function getBudgets(req: CreateTransactionRequest, res: Response) {
         // Map each category to a budget entry, adding defaults for missing categories.
         const data = allCategories.map((category:any) => {
             const categoryBudget:any = budget.find((b:any) => b.category._id.toString() === category._id.toString());
-            console.log(categoryBudget,'categoryBudet')
+            console.log(categoryBudget,'categoryBudet');
+            // const checkCategory=await transcation.find({category:category._id,month:definedMonth ,year:definedYear});
+            // console.log(checkCategory,"checkcategory")
+            // const amountReduce=checkCategory && checkCategory.reduce((prev:any,current:any)=>prev.amount + current.amount,0);
+            // const convertReduce=toDecimal128(amountReduce);
             return {
                 category: category.name,
                 _id: categoryBudget?._id,
                 month:categoryBudget ? categoryBudget.month : null,
                 year:categoryBudget ? categoryBudget.year : null,
                 budget: categoryBudget ? categoryBudget.budget : new mongoose.Types.Decimal128("0.0"),
-                spent: categoryBudget ? categoryBudget.spent :new mongoose.Types.Decimal128("0.0") ,
-                remaining: categoryBudget ? categoryBudget.remaining :new mongoose.Types.Decimal128("0.0") ,
+                spent: categoryBudget ? categoryBudget.spent  :new mongoose.Types.Decimal128("0.0") ,
+                remaining: categoryBudget ? categoryBudget.remaining  :new mongoose.Types.Decimal128("0.0") ,
             };
         });
 
@@ -213,14 +140,18 @@ export async function updateBudget(req: CreateTransactionRequest, res: Response)
         if (!budgetEntry) {
             // Update existing budget
           //lets check if this new budget created already has some transactions
-          const checkCategory=await transcation.findOne({category:categoryId,month:parseInt(definedMonth,10) + 1 ,year:parseInt(definedYear,10)});
+          const checkCategory=await transcation.find({category:categoryId,month:parseInt(definedMonth,10) + 1 ,year:parseInt(definedYear,10)});
+          console.log(checkCategory,"checkcategory")
+          const amountReduce=checkCategory && checkCategory.reduce((prev:any,current:any)=>prev.amount + current.amount,0);
+          const convertReduce=toDecimal128(amountReduce);
             // Create new budget if none exists
+            
             const newBudget = new budgets({
                 userId,
                 category: categoryId,
                 budget: decimalAmount,
-                spent:checkCategory && decimalSpent ? parseFloat(checkCategory.amount.toString()) -parseFloat(decimalSpent?.toString()) : decimalSpent,
-                remaining: checkCategory && decimalSpent && decimalAmount ? parseFloat(decimalAmount?.toString()) - parseFloat(checkCategory.amount.toString()) : decimalRemaining,
+                spent:convertReduce   ? parseFloat(convertReduce?.toString())  : decimalSpent,
+                remaining: convertReduce && decimalAmount && decimalAmount?.toString() !== '0.0' ? parseFloat(decimalAmount?.toString()) - parseFloat(convertReduce.toString()) : decimalRemaining,
                 year: parseInt(definedYear, 10),
                 month: parseInt(definedMonth, 10) + 1,
             });
@@ -286,10 +217,11 @@ export async function deleteBudget(req: Request, res: Response) {
             _id:id},
             {
                 $set:{
-                    budget:new mongoose.Types.Decimal128(""),
-                    remaining:new mongoose.Types.Decimal128("0.0")
+                    budget:new mongoose.Types.Decimal128("0.0"),
+                    remaining:new mongoose.Types.Decimal128("0.0"),
+                    
                 }
-            });
+            },{upsert:false,new:true});
         if (!result) {
             return res.status(404).json({ message: "Cant unset this it has no budget for it..." });
         }

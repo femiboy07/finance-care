@@ -100,9 +100,12 @@ export const transactionColumns: ColumnDef<Transaction>[] = [
       return (
         // <span className="  font-bold hover:border-orange-400  px-3">{row.original.description}</span>
 
-        <MyInputMutation type="text" name="description" value={row.original.description} placeholder={row.original.description} id={row.original._id} defaultValue={row.original.description} className={`text-black bg-transparent     rounded-md   hover:border-orange-400   font-semibold`} />
+        <MyInputMutation type="text" name="description" value={row.original.description} placeholder={row.original.description} id={row.original._id} defaultValue={row.original.description} className={`text-black bg-transparent  w-full    rounded-md   hover:border-orange-400   font-semibold`} />
       )
     },
+    size: 300,
+    minSize: 100,
+    maxSize: 500
 
   },
 
@@ -125,7 +128,7 @@ export const transactionColumns: ColumnDef<Transaction>[] = [
         <MyInputMutation name="category" value={props.row.original.category?.name} placeholder={props.row.original.category?.name} id={props.row.original._id} defaultValue={props.row.original.category?.name} className={`text-black ring-0  blur-none focus-within:ring-0  h-full w-full  border  bg-none   hover:border-orange-400 outline-none      font-semibold`} />
       )
     },
-    // size: 100
+    size: 200
   },
 
 
@@ -301,7 +304,7 @@ export function TransactionTable<TData, TValue>({ columns, data, isPending, list
           {isPending &&
             <div className="max-w-md w-full flex absolute text-black left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 flex-col space-y-2 justify-center items-center text-center ">
               <span>Fetching transactions..</span>
-              <LoaderCircleIcon />
+              <LoaderCircleIcon className=" animate-spin" />
             </div>
           }
           {table.getRowModel().rows?.length ? (
@@ -332,7 +335,7 @@ export function TransactionTable<TData, TValue>({ columns, data, isPending, list
                 {doubleRows.map((item, index) => (
 
 
-                  <TableRow key={index} className={` w-full border bg-white ${isPending ? ' animate-pulse' : ''}   `} >
+                  <TableRow key={index} className={` w-full border bg-white ${isPending ? ' ' : ''}   `} >
                     <TableCell colSpan={table.getHeaderGroups()[0]?.headers?.length || 1} className={`w-full border ${isPending ? 'py-3' : 'py-5'}  `}>
 
                     </TableCell>
@@ -344,12 +347,12 @@ export function TransactionTable<TData, TValue>({ columns, data, isPending, list
             )}
 
         </>
-        {table.getRowModel().rows.length === 0 && searchParam.size >= 1 && !isPending && <div className="w-full max-w-full absolute top-1/2  -translate-y-1/2  flex flex-col space-y-2 justify-center items-center text-center ">
+        {/* {table.getRowModel().rows.length === 0 && searchParam.size >= 1 && !isPending && <div className="w-full max-w-full absolute top-1/2  -translate-y-1/2  flex flex-col space-y-2 justify-center items-center text-center ">
           <img src={lunchImage} alt="lunch" className=" w-16 h-16" />
           <span className="w-full">You have no transaction yet</span>
 
-        </div>}
-        {table.getRowModel().rows.length === 0 && !isPending && <div className="w-full max-w-full absolute top-1/2  -translate-y-1/2  flex flex-col space-y-2 justify-center items-center text-center ">
+        </div>} */}
+        {!table.getRowModel().rows && !isPending && < div className="w-full max-w-full absolute top-1/2  -translate-y-1/2  flex flex-col space-y-2 justify-center items-center text-center ">
           <img src={lunchImage} alt="lunch" className=" w-16 h-16" />
           <span className="w-full">You have no transaction yet</span>
           <span>ways to add a transactions</span>

@@ -180,14 +180,7 @@ export default function AddTransaction({ setIsAddTransaction, months, transactRe
   async function handleOnSubmit(values: z.infer<typeof formSchema>) {
 
     if (!values) return;
-    if (!isOnline) {
-      setIsAddTransaction(false)
-      toast({
-        description: 'Network error',
-        className: 'text-white bg-red-600 border-l-4 w-64 border-l-black',
-      });
-      return;
-    }
+
 
     const newamount = parseFloat(values.amount).toFixed(2)
     const definedMonth = parseInt(Months, 10);

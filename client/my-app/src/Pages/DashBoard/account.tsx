@@ -31,11 +31,11 @@ export default function AccountPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // const { accounts, isReady } = useUser()
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isPending, isFetching } = useQuery({
     queryKey: ["allaccounts"],
     queryFn: getAccounts,
-    staleTime: 24 * 60 * 60 * 1000,
-    gcTime: 24 * 60 * 60 * 1000,
+    // staleTime: 24 * 60 * 60 * 1000,
+    gcTime: 0,
 
   })
 
@@ -122,9 +122,9 @@ export default function AccountPage() {
         <>
 
           <div className=" flex  mt-[18px]  lg:pb-[1em] z-0 transition transform">
-            {isLoading ? <AccountTable columns={columns} data={[]} isPending={isLoading} handleOpenSideBar={handleOpenSideBar} /> :
+            {isLoading || isPending ? <AccountTable columns={columns} data={[]} isPending={isLoading || isPending} handleOpenSideBar={handleOpenSideBar} /> :
               <>
-                {data && <Card className=" px-3  mt-5   overflow-x-auto  overflow-y-hidden h-fit py-2  z-0   bg-white rounded-md">
+                {data && <Card className=" mt-5   overflow-x-auto  overflow-y-hidden h-fit   z-0   bg-white bg-opacity-30 rounded-md">
                   <AccountTable columns={columns} data={filteredAccounts} isPending={isLoading} handleOpenSideBar={handleOpenSideBar} />
                 </Card>
 

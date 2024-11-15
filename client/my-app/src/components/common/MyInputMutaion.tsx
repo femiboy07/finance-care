@@ -31,11 +31,6 @@ export default function MyInputMutation({ value, type, id, name, placeholder, cl
   const [text, setText] = useState(value);
   const [selected, setSelected] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [showDate, setShowDate] = useState(false);
-  const [month, setMonth] = useState(new Date());
-  const divRef = useRef<HTMLDivElement | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [newValue, setNewValue] = useState('');
   const [startDate, setStartDate] = useState<Date | null>(new Date())
   const meet = text;
   const { categories } = useCategory();
@@ -62,55 +57,25 @@ export default function MyInputMutation({ value, type, id, name, placeholder, cl
 
     onError: (error) => {
       toast({
-        description: error as unknown as string,
-        className: 'text-white border-l-white border-l-4 ',
+        description: `${error}`,
+        className: 'text-white  ',
         variant: "destructive",
 
       });
-      setText(value)
+
     }
   })
 
 
   const { isPending, data } = mutation;
 
-  const handleDayPickerSelect = (date: Date | undefined) => {
-    if (!date) {
-      setText("");
-      setSelectedDate(undefined);
-    } else {
-      setSelectedDate(date);
 
-      setText(format(date, "P"));
-
-
-    }
-
-  };
 
   const newData = new Intl.NumberFormat('en-NG', {
     style: 'currency',
     currency: 'NGN',
   }).format(text)
 
-  const handleFormatValue = (e: React.ChangeEvent<HTMLInputElement>) => {
-
-
-    setText(e.target.value);
-
-    const parsedDate = parse(e.target.value, "P", new Date());
-    if (isValid(parsedDate)) {
-      setSelectedDate(parsedDate);
-
-
-    } else {
-
-      setSelectedDate(undefined);
-      setText('')
-    }
-
-
-  }
 
 
 
@@ -150,9 +115,6 @@ export default function MyInputMutation({ value, type, id, name, placeholder, cl
       return;
     }
 
-    // if (name === 'amount' && data?.amount > 15) {
-    //   return;
-    // }
 
     if (parseFloat(text).toFixed(2) === defaultValue) {
       setText(value)
@@ -271,7 +233,7 @@ export default function MyInputMutation({ value, type, id, name, placeholder, cl
         //   case  'date' :
 
         return (
-          <div onClick={() => setSelected(true)} className="relative h-full flex hover:border-orange-400 hover:border  items-center">
+          <div onClick={() => setSelected(true)} className={`relative ${name === 'description' ? 'hover:after:content-["Add a note"]' : ''} h-full flex  hover:border-orange-400 hover:border  items-center`}>
 
             {isPending && <LoaderCircle className=" animate-spin absolute flex items-center self-center bottom-1/2 right-4 top-1/2 w-4 h-4" />}
 
@@ -286,7 +248,7 @@ export default function MyInputMutation({ value, type, id, name, placeholder, cl
                     type={type}
                     value={text}
                     name={name}
-                    className={`${className} py-0 px-[5.1px] border-0 m-0 max-w-full ${name === 'description' ? 'placeholder:content-["Add a note"] hover:content-["Add a note"]' : ''} w-full flex flex-wrap  outline-none text-left leading-tight shadow-none`}
+                    className={`${className}  py-0 px-[5.1px] border-0 m-0 max-w-full  w-full flex flex-wrap  outline-none text-left leading-tight shadow-none`}
                     defaultValue={defaultValue}
                     onChange={(e) => setText(e.target.value)}
                     placeholder={placeholder}
@@ -297,8 +259,7 @@ export default function MyInputMutation({ value, type, id, name, placeholder, cl
                 </div>
               </div>
             ) : (
-              <div className={`border-none px-[13px]  w-full h-full  inline-flex items-center flex-nowrap leading-tight m-0 overflow-hidden text-nowrap   max-w-full  text-ellipsis`}>
-
+              <div className={`border-none px-[13px] ${name === 'description' ? 'hover:placeholder-shown:content-["Add a note"]' : ''}  w-full h-full  inline-flex items-center flex-nowrap leading-tight m-0 overflow-hidden text-nowrap   max-w-full  text-ellipsis`}>
                 {name === 'amount'
                   ? value
                   : text}

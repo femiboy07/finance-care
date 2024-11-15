@@ -59,7 +59,7 @@ export async function signInUser(req:Request,res:Response){
         const existingUser=await user.findOne({email});
         if(!existingUser) return res.status(400).json({ message: 'Invalid credentials' });
         const isMatch = await existingUser.comparePassword(password)
-        if (!isMatch) return res.status(400).json({ msg: 'Invalid credentials' });
+        if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
         const payload = { id: existingUser._id ,email:existingUser.email};
         const access_token=jwt.sign(payload,process.env.SECRET_KEY!,{expiresIn:60})
         const refresh_token=jwt.sign(payload, process.env.SECRET_KEY!,{expiresIn:'7d'});

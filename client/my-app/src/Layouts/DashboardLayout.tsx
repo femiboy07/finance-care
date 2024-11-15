@@ -9,6 +9,10 @@ import MobileSideBar from "../components/common/mobileSideBar";
 import useRequireAuth from "../hooks/useRequireAuth";
 import LoadingOverlay from "../components/common/LoadingOverlay";
 import { AppDataProvider } from "../context/AppDataProvider";
+import Banner from "../components/common/Banner";
+import { createPortal } from "react-dom";
+import UserLoggedOut from "../components/Modals/UserLoggedOut";
+import ShowNetworkToast from "../components/common/ShowNetworkToast";
 
 
 
@@ -61,7 +65,7 @@ export default function DashBoardLayout() {
   const [page, setPage] = useState(1);
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState<number>(page);
-  const { token } = useRequireAuth();
+  const { token, isLoading } = useRequireAuth();
 
 
   useEffect(() => {
@@ -107,6 +111,11 @@ export default function DashBoardLayout() {
       <SideBar setOpen={setOpen} open={open} />
       {width < 1280 && <MobileSideBar open={open} setOpen={setOpen} />}
       <LoadingOverlay />
+      <Banner />
+      {isLoading && createPortal(
+        <UserLoggedOut />, document.body
+      )}
+
       <div className={`flex flex-col h-full w-full mx-auto xl:ml-64 `}>
         <Outlet
           context=

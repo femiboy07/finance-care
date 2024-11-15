@@ -23,12 +23,10 @@ export default function LogOutUser() {
     })
     return (
         <>
-            <button onClick={removeToken} className={`min-h-[45px] ${isPending ? 'animate-pulse' : ''}  font-bold bg-slate-200 outline-none border-none  cursor-pointer min-w-[45px] flex relative justify-center items-center rounded-full `}>
+            <button className={`min-h-[45px] ${isPending ? 'animate-pulse' : ''}  font-bold bg-slate-200 outline-none border-none  cursor-pointer min-w-[45px] flex relative justify-center items-center rounded-full `}>
                 <span className="uppercase text-slate-400">{usernameData && usernameData.data[0]}</span>
             </button>
-            {isLoading && createPortal(
-                <UserLoggedOut />, document.body
-            )}
+
         </>
     )
 }

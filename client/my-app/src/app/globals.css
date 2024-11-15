@@ -86,12 +86,25 @@
 
   }
 
+  .loading-banner {
+    background: url('../assets/dollarimage.jpg');
+    background-repeat: repeat;
+    background-attachment: fixed;
+    background-size: 50px 50px;
+    width: 100%;
+    height: 100%;
+  }
+
   .meet {
     background-color: orange;
   }
 
   .content:first-child {
     border-top: none
+  }
+
+  a {
+    font-size: 14px;
   }
 
   body {

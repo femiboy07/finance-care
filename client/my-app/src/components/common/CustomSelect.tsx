@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { FieldPath, FieldValues } from 'react-hook-form';
+import { Input } from '../../@/components/ui/input';
 
 // Type for the options, can be string or object with name and _id
 type Option = string | { name: string; _id: string, type: string, systemAccount: boolean };
@@ -108,18 +109,19 @@ const CustomSelect = <TFieldValues extends Record<string, any>>({
             onKeyDown={handleKeyDown}
             className={`relative w-full z-[9999] text-sm rotate-0 py-[0.5em] focus:border-black ${isExpanded ? 'border-black border' : ''} focus:border flex justify-between  border min-h-[2.7141429em] ${isExpanded ? 'rounded-bl-none rounded-br-none' : ''}  focus-within:border-black rounded-md  border-gray-300  `}
         >
-            <input name={field.name as string} type="hidden" value={field.value ? (typeof field.value === 'object' ? field.value._id : field.value) : ''} readOnly />
+            <Input name={field.name as string} type="hidden" value={field.value ? (typeof field.value === 'object' ? field.value._id : field.value) : ''} readOnly />
 
-            <input
+            <Input
                 className={`w-full left-0 pl-4 placeholder:text-sm h-full rounded-md top-0 absolute leading-[1.21429em] border-none focus-within:outline-none z-[5]`}
                 onClick={() => setIsExpanded(true)}
                 autoComplete='off'
                 aria-autocomplete='none'
-                name={field.name as string}
+                // name={field.name as string}
                 onChange={(e) => {
                     const value = e.target.value.trim();
                     setFilterText(value);
                     form.setValue(name, value)
+                    // field.onChange(value)
                     setFilter(options && options.filter(option =>
                         typeof option === 'string'
                             ? option.toLowerCase().includes(value.toLowerCase())
@@ -134,6 +136,7 @@ const CustomSelect = <TFieldValues extends Record<string, any>>({
                         ? name === 'accountId' && field.value.systemAccount !== true ? `${field.value.name},(${field.value.type})` : field.value.name
                         : `${field.value}`
                     : placeholder}
+                name={field.name}
             />
 
             <i
@@ -151,7 +154,7 @@ const CustomSelect = <TFieldValues extends Record<string, any>>({
                     role="listbox"
 
                 >
-                    {filter.length > 0 &&
+                    {filter && filter.length > 0 &&
                         filter.map((item, index) => (
                             <div
                                 key={typeof item === 'object' ? item._id : index}

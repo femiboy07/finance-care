@@ -8,6 +8,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { Input } from "../../@/components/ui/input";
 import axios from "axios";
 import { Button } from "../../@/components/ui/button";
+import lunchMoneyImg from '../../assets/luncho.png'
 
 const formSchema = z.object({
     name: z.string(),
@@ -119,19 +120,19 @@ const RegisterPage: React.FC = () => {
 
     return (
         <Form {...form}>
-            <div className="lg:w-[95%]  h-[95%] max-w-md max-md:w-full font-custom mx-auto lg:max-w-4xl lg:mx-[4em] my-auto text-black  overflow-y-auto  flex lg:flex-row  flex-col rounded-md leading-7 justify-center   lg:px-[3em] lg:py:[2em]  space-y-5  bg-white   shadow-[#145sd44] px-4 shadow-2xl border-black ">
+            <div className="lg:w-[95%]  h-[95%]  max-w-md max-md:w-full font-custom mx-auto lg:max-w-4xl lg:mx-[4em] my-auto text-black  overflow-y-auto  flex lg:flex-row  flex-col rounded-md leading-7 justify-center   lg:px-[3em] lg:py:[2em]  space-y-5  bg-white  shadow-[0px_0px_4px_3px_rgb(238,238,238)]  px-4 shadow-2xl border-black ">
                 <div className=" flex flex-col justify-between w-full my-auto  px-0 py-[1.25rem]  items-center  text-center">
                     <div></div>
                     <div className="lg:w-1/2 h-full w-full ">
                         <div id='logo-container' style={{ height: '100px', width: '100px', margin: '1em auto', backgroundRepeat: 'no-repeat' }}>
                             <div id="logo" className=" animate-logo-bounce relative top-0 left-[10px]" style={{
-                                backgroundImage: `url(	https://my.lunchmoney.app/5cc2e62c644a5ab9d2ac.png)`,
+                                backgroundImage: `url(${lunchMoneyImg})`,
                                 width: '75px', height: '75px', backgroundRepeat: 'no-repeat', backgroundSize
                                     : 'contain'
                             }} ></div>
                             <div id="shadow" className="w-[50px] h-[10px] text-center mx-auto opacity-[0.5px] rounded-[80%] bg-black animate-shadow-move "></div>
                         </div>
-                        <h2 className=" p-0  w-full text-3xl text-center font-bold font-900" style={{ margin: 'calc(0.142857em - 2rem) 0rem 1rem' }}>Welcome to The First Day Of Your New Financial Journey</h2>
+                        <h2 className=" p-0  w-full text-xl md:text-3xl text-center font-bold font-900" style={{ margin: 'calc(0.142857em - 2rem) 0rem 1rem' }}>Welcome to The First Day Of Your New Financial Journey</h2>
 
                         <div>
                             <p className="mt-[1rem] leading-[1.4285em]">Already signed in</p>

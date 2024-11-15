@@ -15,6 +15,7 @@ export const useCloseSideBar = (container: MutableRefObject<HTMLDivElement | nul
         e.stopPropagation()
 
         const clickedInsideAddTransaction = e.target.closest('[data-bar="add-bar"]');
+        const clickedInsideEditTransaction = e.target.closest('[data-bar="edit-bar"]');
         const clickedInsideHomeSideBar = document.querySelector('[data-bar="home-bar"]');
         const clickedInsideTransactionPage = document.querySelector('[data-page="transaction"]');
 
@@ -28,7 +29,7 @@ export const useCloseSideBar = (container: MutableRefObject<HTMLDivElement | nul
         }
 
 
-        if ((container.current && !clickedInsideAddTransaction) || (container.current && e.target.contains(clickedInsideHomeSideBar))) {
+        if ((container.current && !clickedInsideAddTransaction && !clickedInsideEditTransaction) || (container.current && e.target.contains(clickedInsideHomeSideBar))) {
 
             if (isOpen) {
                 setIsOpen(false);

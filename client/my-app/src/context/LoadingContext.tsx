@@ -84,14 +84,14 @@ export const LoadingProvider: React.FC<{ children: ReactNode }> = ({ children })
     <LoadingContext.Provider value={{ isLoading, showModal, setIsLoading, setShowModal }}>
       {children}
       {isLoading && <div className="loading-overlay">Loading...</div>}
-      {showModal && (
+      {/* {showModal && (
         <div className="modal">
           <p>Your session has expired. Please log in again to continue.</p>
           <button onClick={() => window.location.href = '/auth/login'}>
             Log in again
           </button>
         </div>
-      )}
+      )} */}
     </LoadingContext.Provider>
   );
 };

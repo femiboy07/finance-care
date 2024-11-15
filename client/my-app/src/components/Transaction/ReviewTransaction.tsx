@@ -15,14 +15,9 @@ import { dataCategory } from "../../Pages/DashBoard/transactions";
 
 export default function ReviewTransactions({ transaction, month, year, page, category }: { transaction: any, month: any, year: any, page: any, category: any }) {
   const { monthString } = useOutletContext<ContextType>();
-  const tabRef = useRef<HTMLDivElement | null>(null);
-  const firstTab = useRef<HTMLDivElement | null>(null);
   console.log(month, year, "month", "year")
-
-  const { rowSelection } = useSelectedFilter()
   //fetch budgets;
   const { data, isLoading } = useBudget();
-
 
 
 
@@ -60,9 +55,9 @@ export default function ReviewTransactions({ transaction, month, year, page, cat
       <Card className="sticky flex-col min-h-0  bg-opacity-60 bg-white  flex leading-7 items-center px-[13px] mb-[1em] mx-auto max-w-[260px] w-[260px] p-[0.75em]">
 
         <div className=" content group/content group-first/content:border-none ">
-          <div className="header  uppercase mt-[2px] flex justify-between items-start" style={{ borderTop: 0 }}>
+          <div className="header  uppercase  flex justify-between items-start" style={{ borderTop: 0 }}>
             <span></span>
-            <span>{monthString} summary</span>
+            <span className="text-sm">{monthString} summary</span>
             {/* <SettingsIcon className="w-5" /> */}
           </div>
           {/* <hr className="border-slate-200 w-full" /> */}

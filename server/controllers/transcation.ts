@@ -68,7 +68,7 @@ export async function createTranscation(req: CreateTransactionRequest, res: Resp
     const definedYear=year;
     const definedMonth=month;
     console.log(definedYear,definedMonth,'year,month');
-      const account =  await accounts.findOne({ _id: accountId, userId: req.user?._id }) || await accounts.findOne({ userId: null, isSystemAccount: true });;
+      const account =  await accounts.findOne({ _id: accountId}) ;;
       if (!account) {
           return res.status(404).json({ message: "Account not found or access denied" });
       }
@@ -82,7 +82,10 @@ export async function createTranscation(req: CreateTransactionRequest, res: Resp
       }
 
       const categoryId = categoryDoc._id;
-
+      const currentBalance = new Decimal(account.balance.toString());
+      if (type.toLowerCase() === 'expense' && currentBalance.lessThan(amount)) {
+        return res.status(400).json({ message: "Insufficient funds in the account" });
+    }
       const newTransaction = new transcation({
           userId: req.user?._id!,
           accountId,
@@ -96,7 +99,7 @@ export async function createTranscation(req: CreateTransactionRequest, res: Resp
           year:parseInt(definedYear,10),
       });
 
-      const currentBalance = new Decimal(account.balance.toString());
+    
       await deductBalance(accountId, amount, currentBalance.toString(), type);
       newTransaction.status = "cleared";
       await newTransaction.save();
@@ -117,7 +120,7 @@ export async function createTranscation(req: CreateTransactionRequest, res: Resp
               {
                   $set: {
                       spent: updatedSpent,
-                      remaining: updatedRemaining,
+                      remaining:existingBudget.budget.toString() !== '0.0' ? updatedRemaining : new mongoose.Types.Decimal128("0.0"),
                   },
               },
                {new:true,upsert:false}
@@ -158,6 +161,7 @@ export async function createTranscation(req: CreateTransactionRequest, res: Resp
 export async function updateTransaction(req: CreateTransactionRequest, res: Response) {
   const { id } = req.params;
   const { category, type, amount, description, date, accountId } = req.body as Partial<TransactionDTO>;
+  console.log(accountId,"accountId")
 
   try {
     // Fetch transaction and account details
@@ -172,6 +176,16 @@ export async function updateTransaction(req: CreateTransactionRequest, res: Resp
     }
 
     let accBalance = convertToNumber(account.balance);
+
+    if(accountId){
+      
+      await transcation.findByIdAndUpdate(
+        transaction._id,
+        { accountId: accountId }, // Set new accountId here
+        { new: true } // Returns the updated document
+      );
+      
+    }
 
     // Reverse the previous transaction's effect on balance
     accBalance = updateAccountBalanceOnReverse(transaction, accBalance);
@@ -273,7 +287,7 @@ async function handleCategoryChange(transaction: ITranscations, newCategoryId: a
       year: transaction.year
     });
 
-    if (oldBudget) {
+    if (oldBudget && oldBudget?.budget ) {
      
      await budgets.findOneAndUpdate(
         {
@@ -286,7 +300,7 @@ async function handleCategoryChange(transaction: ITranscations, newCategoryId: a
             $set: {
                 
                 spent:  toDecimal128(parseFloat(oldBudget.spent.toString()) - parseFloat(transaction.amount.toString())),
-                remaining:toDecimal128(parseFloat(oldBudget.budget.toString()) - (parseFloat(oldBudget.spent.toString()) - parseFloat(transaction.amount.toString())) )
+                remaining:oldBudget.budget !== new mongoose.Types.Decimal128("0.0") ? toDecimal128(parseFloat(oldBudget.budget.toString()) - (parseFloat(oldBudget.spent.toString()) + parseFloat(transaction.amount.toString())) ) : "0.0"
             }
         },
         { new: true, upsert: false }
@@ -301,11 +315,12 @@ async function handleCategoryChange(transaction: ITranscations, newCategoryId: a
     year: transaction.year
   });
 
-  if (newBudget) {
+  if (newBudget && newBudget.budget) {
     // newBudget.spent += convertToNumber(newAmount);
     // let remaining=convertToNumber(newBudget.remaining);
     // remaining = convertToNumber(newBudget.budget) - convertToNumber(newBudget.spent);
     // await newBudget.save();
+    console.log(newBudget.budget.toString(),"let me see")
     await budgets.findOneAndUpdate(
       {
         category: newCategoryId._id,
@@ -317,7 +332,7 @@ async function handleCategoryChange(transaction: ITranscations, newCategoryId: a
           $set: {
               
               spent:  toDecimal128(parseFloat(newBudget.spent.toString()) + parseFloat(transaction.amount.toString())),
-              remaining:toDecimal128(parseFloat(newBudget.budget.toString()) - parseFloat(transaction.amount.toString())) 
+              remaining:newBudget.budget !== new mongoose.Types.Decimal128("0.0") ? toDecimal128(parseFloat(newBudget.budget.toString()) - (parseFloat(newBudget.spent.toString()) + parseFloat(transaction.amount.toString())) ) : "0.0"
              
           }
       },
@@ -353,7 +368,7 @@ async function handleAmountChange(transaction: ITranscations, newAmount: number)
           $set: {
               
               spent:  toDecimal128(parseFloat(budget.spent.toString()) + parseFloat(amountDifference.toString())),
-              remaining:toDecimal128(parseFloat(budget.budget.toString()) - parseFloat(amountDifference.toString()))
+              remaining:toDecimal128(parseFloat(budget.budget.toString()) - parseFloat(newAmount.toString()))
           }
       },
       { new: true, upsert: false }
@@ -528,7 +543,7 @@ const endOfMonthUtc = toZonedTime(endOfMonthLocal, timeZone)
     const skip = (pageNumber - 1) * limitNumber;
    
     
-    const listTransactions=await transcation?.find(query).populate({path:'category',select:'name type'}).skip(skip).limit(limitNumber).sort({date:-1})
+    const listTransactions=await transcation?.find(query).populate({path:'category',select:'name type'}).populate({path:'accountId',select:'name _id type '}).skip(skip).limit(limitNumber).sort({date:-1})
 
     const totalItems = await transcation.countDocuments(query);
     const totalPages = Math.ceil(totalItems / limitNumber);

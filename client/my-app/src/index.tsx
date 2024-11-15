@@ -5,7 +5,7 @@ import "../src/app/globals.css";
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { RouterProvider, createBrowserRouter, useLocation } from 'react-router-dom';
-import { QueryClient, QueryClientProvider, } from '@tanstack/react-query';
+import { onlineManager, QueryClient, QueryClientProvider, } from '@tanstack/react-query';
 import "react-day-picker/dist/style.css";
 
 
@@ -34,20 +34,52 @@ import { QueryPersister } from '@tanstack/react-query';
 import { persistQueryClient } from '@tanstack/react-query-persist-client';
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
 import localforage from 'localforage';
+import LogOut from './Pages/Auth/Logout';
+import { toast, useToast } from './@/components/ui/use-toast';
+import ShowNetworkToast from './components/common/ShowNetworkToast';
+
 
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // refetchOnMount: "always",
-      refetchOnWindowFocus: true,
-
-
-      retry(failureCount, error) {
-        return navigator.onLine
+      // Retry infinitely for queries while offline
+      retry: (failureCount, error) => {
+        // Keep retrying if offline, stop retrying if online and fails
+        return !navigator.onLine;
       },
-    }
+      // retryOnMount: true,         // Retry when the component remounts
+      // refetchOnWindowFocus: true, // Refetch on focus
+      // refetchOnReconnect: true,   // Refetch when reconnected
+      // refetchOnMount: 'always',   // Always refetch on mount
+      staleTime: 0,               // No stale time, always fetch fresh
+      // retryDelay: (retryAttempt) => Math.min(1000 * 2 ** retryAttempt, 30000), // Exponential backoff up to 30 seconds
+    },
+    mutations: {
+      // Mutations won't retry automatically
+      retry: false,
 
-  }
+      onMutate: () => {
+        if (!navigator.onLine) {
+          throw new Error("Network Error: You are offline.");
+        }
+      },
+      // Handle errors globally
+      onError: (error) => {
+
+        if (error.message === "Network Error: You are offline.") {
+          // alert("Network Error: You are offline.");
+          toast({
+            description: 'Network Error',
+            variant: 'destructive'
+          })
+
+        } else {
+          console.error("Global Mutation Error:", error.message);
+        }
+      },
+    },
+
+  },
 });
 
 // const localStoragePersister = createSyncStoragePersister({
@@ -61,6 +93,21 @@ export const queryClient = new QueryClient({
 //   maxAge: 24 * 60 * 60 * 1000, // 24 
 // })
 
+onlineManager.setEventListener((setOnline) => {
+  const handleOnline = () => setOnline(true);
+  const handleOffline = () => setOnline(false);
+
+  // Detect network changes
+  window.addEventListener('online', handleOnline);
+  window.addEventListener('offline', handleOffline);
+
+  // Cleanup event listeners when no longer needed
+  return () => {
+    window.removeEventListener('online', handleOnline);
+    window.removeEventListener('offline', handleOffline);
+  };
+});
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
@@ -68,14 +115,19 @@ const root = ReactDOM.createRoot(
 
 
 const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <App />
+  ...(process.env.NODE_ENV !== 'production') ?
+    [{
+      path: '/',
+      element: <App />
 
-  },
+    }] : [],
   {
     path: '/auth',
-    element: <AuthLayout />,
+
+    element:
+
+      <AuthLayout />
+    ,
 
     children: [
       {
@@ -86,6 +138,11 @@ const router = createBrowserRouter([
       {
         path: 'register',
         element: <Register />,
+      },
+
+      {
+        path: 'logout',
+        element: <LogOut />
       }
 
     ],
@@ -134,23 +191,35 @@ const router = createBrowserRouter([
 
 root.render(
   <React.StrictMode>
+
     <QueryClientProvider client={queryClient}>
+
       <DataProvider>
-        <AuthProvider>
-          <LoadingProvider>
+        <LoadingProvider>
 
-            <FilterProvider>
-              <CategoryProvider>
-                <BudgetProvider>
-                  <RouterProvider router={router} />
-                </BudgetProvider>
-              </CategoryProvider>
-            </FilterProvider>
 
-          </LoadingProvider>
-        </AuthProvider>
+
+
+          {/* <LoadingProvider> */}
+          {/* <AuthProvider> */}
+          <FilterProvider>
+            <CategoryProvider>
+              <BudgetProvider>
+                <RouterProvider router={router} />
+              </BudgetProvider>
+            </CategoryProvider>
+          </FilterProvider>
+          {/* </AuthProvider> */}
+          {/* </LoadingProvider> */}
+
+
+
+
+        </LoadingProvider>
       </DataProvider>
+
     </QueryClientProvider>
+
   </React.StrictMode>
 );
 

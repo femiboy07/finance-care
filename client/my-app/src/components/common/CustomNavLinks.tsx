@@ -35,7 +35,7 @@ const CustomNavLinks: React.FC<CustomNavProps> = ({ to, children, exact = true, 
     return child;
   };
   return (
-    <NavLink to={to} title={title} end={exact} className={`min-h-[40px]  px-3  py-2 hover:bg-orange-200  rounded-md cursor-pointer flex items-center w-full justify-start  ${isActive ? 'bg-orange-300 text-orange-600' : ''} `}  >
+    <NavLink to={to} title={title} end={exact} className={`min-h-[40px] text-[1rem]  px-3  py-2 hover:bg-orange-200  rounded-md cursor-pointer flex items-center w-full justify-start  ${isActive ? 'bg-orange-300 text-orange-600' : ''} `}  >
       {React.Children.map(children, cloneWithProps)}
     </NavLink>
 

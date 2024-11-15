@@ -45,10 +45,12 @@ export default function BudgetsPage() {
   const [selectedBudget, setSelectedBudget] = useState(null);
   const [searchParam, setSearchParam] = useSearchParams();
   const [width] = useInnerWidthState();
-  const { data, isLoading, updateQueryParams } = useBudget();
+  const { data, isLoading, updateQueryParams, isFetching, isPending } = useBudget();
 
 
-
+  useEffect(() => {
+    updateQueryParams({ month, year })
+  }, [])
 
   useEffect(() => {
     // if (category) searchParam.set('category', category);
@@ -108,44 +110,44 @@ export default function BudgetsPage() {
       return {
         ...col,
         cell: ({ row }: any) => (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-full p-0 flex justify-center">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="z-10 ">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(row.original.category)}
-              >
-                Copy payment ID
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => handleEditBudget(row.original)}>
-                Edit Budgets
-              </DropdownMenuItem>
-              {/* <DropdownMenuItem>View Budgets</DropdownMenuItem> */}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <>
+            {row.original.budget.$numberDecimal !== '0.0' ?
+              (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-full p-0 flex justify-center">
+                      <span className="sr-only">Open menu</span>
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="z-10 ">
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuItem
+                      onClick={() => navigator.clipboard.writeText(row.original.category)}
+                    >
+                      Copy payment ID
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleEditBudget(row.original)}>
+                      Edit Budgets
+                    </DropdownMenuItem>
+                    {/* <DropdownMenuItem>View Budgets</DropdownMenuItem> */}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : null}
+          </>
         ),
       };
     }
     return col;
   });
   return (
-    <div className="w-full h-full px-2 font-custom2 md:px-4 xl:px-9 mt-20 mb-10 text-black max-w-full overflow-y-hidden">
+    <div className="w-full  h-full px-2 md:px-4 xl:px-9 font-custom2 mt-20 mb-10 text-black">
       <h1 className="text-slate-700 font-bold text-2xl text-center lg:text-left">Budgets</h1>
       <div className="mt-1">
         <div className="date-table-filters w-full flex h-24 items-center  max-w-full ">
           <MonthBudgetPicker page={page} params={searchParam} setPage={setPage} />
-          {/* <div className="ml-auto" >
-            <Button onClick={handleOpenSideBar} className={buttonVariants({ className: " bg-orange-400 lg:py-6 hover:bg-slate-300 flex justify-center items-center hover:opacity-45 lg:h-13 px-3 py-6 rounded-[100%]  lg:rounded-full" })}>
-              <PlusIcon className="w-[25px]  h-[25px] self-center" />
-              <span className=" lg:block hidden">AddBudgets</span>
-            </Button>
-          </div> */}
+
         </div>
       </div>
       {width >= 1024 && <div className="filters-searches max-w-full  w-full  ">
@@ -164,24 +166,15 @@ export default function BudgetsPage() {
         </Card>
       )}
 
-      <div className=" h-full">
-        {isLoading && <TransactionSkeleton />}
-
-        {data && data.data && data.data.length > 0 && month && year && (
+      <div className=" h-full overflow-y-hidden max-w-full w-full ">
+        {isPending || isLoading ? <BudgetTable columns={columns} data={[]} isPending={isPending || isLoading} /> :
           <>
-            <BudgetTable columns={columns} data={data?.data} isPending={isLoading} />
-            {/* <Pagination className="mt-2 ">
-              <PaginationContent className=" py-2  rounded-md ml-auto">
-                <PaginationItem className=" bg-transparent  cursor-pointer rounded-md " >
-                  <PaginationPrevious className=" hover:bg-transparent" onClick={handlePrevious} />
-                </PaginationItem>
-                {prepareButtons()}
-                <PaginationItem className=" bg-tranaparent cursor-pointer rounded-md">
-                  <PaginationNext className=" hover:bg-transparent" onClick={handleNext} />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination> */}
-          </>)}
+            {data && data.data && data.data.length > 0 && month && year && (
+              <div className='  mt-5   h-fit py-2 w-full max-w-full  z-0 bg-white bg-opacity-30 rounded-md'>
+                <BudgetTable columns={columns} data={data?.data} isPending={isLoading || isPending} />
+
+              </div>)}
+          </>}
       </div>
 
 
