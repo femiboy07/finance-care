@@ -12,7 +12,7 @@ import { useLocation, useNavigate, useOutletContext, useParams, useSearchParams 
 import { ContextType } from "../../Layouts/DashboardLayout";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "../../@/components/ui/pagination";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../../@/components/ui/dropdown-menu";
-import { CheckCircle2, CheckCircle2Icon, CheckCircleIcon, MoreHorizontal, MoveLeftIcon, PlusIcon } from "lucide-react";
+import { CheckCircle2, CheckCircleIcon, MoreHorizontal, MoveLeftIcon } from "lucide-react";
 import EditTransaction from "../../components/Transaction/EditTransaction";
 import AddTransaction from "../../components/Transaction/AddTransaction";
 import CardTransaction from "../../components/Transaction/CardTransaction";
@@ -22,14 +22,9 @@ import SelectedTransactions from "../../components/Transaction/SelectedTransacti
 import { useSelectedFilter } from "../../context/TableFilterContext";
 import { useCloseSideBar } from "../../hooks/useCloseSideBar";
 import TransactionButton from "../../components/Transaction/TransactionButton";
-import { Sheet } from "../../@/components/ui/sheet";
 import { useBudget } from "../../context/BudgetContext";
-import { queryAllByAltText } from "@testing-library/react";
 import { queryClient } from "../..";
 import LimitButton from "../../components/common/LimitButton";
-import { useTransaction } from "../../context/TransactionProvider";
-import { useData } from "../../context/DataProvider";
-import { useCategory } from "../../context/CategoryProvider";
 import ExportDataToCsv from "../../components/Transaction/ExportDataToCsv";
 
 

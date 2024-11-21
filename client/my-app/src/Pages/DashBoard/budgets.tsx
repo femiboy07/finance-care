@@ -1,27 +1,18 @@
-import React, { ReactNode, useEffect, useState } from 'react';
-import { Button, buttonVariants } from '../../@/components/ui/button';
-import { MoreHorizontal, PlusIcon } from 'lucide-react';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '../../@/components/ui/pagination';
-import { fetchBudgets } from '../../api/apiRequest';
-import { useQuery } from '@tanstack/react-query';
+import React, { useEffect, useState } from 'react';
+import { Button } from '../../@/components/ui/button';
+import { MoreHorizontal } from 'lucide-react';
 import { useInnerWidthState } from '../../hooks/useInnerWidthState';
 import { useLocation, useNavigate, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
 import { ContextType } from '../../Layouts/DashboardLayout';
 import { BudgetColumns } from '../../components/Budget/budgetdata';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../../@/components/ui/dropdown-menu';
 import MonthBudgetPicker from '../../components/Budget/MonthBudgetPicker';
-import TransactionSkeleton from '../../components/Skeleton/TransactionSkeleton';
-import SearchFilterSkeleton from '../../components/Skeleton/SearchFiterSkeleton';
-import CardTransaction from '../../components/Transaction/CardTransaction';
-import SearchBudgets from '../../components/Budget/searchBudgets';
 import { BudgetTable } from '../../components/Budget/budgetdata';
 import AddBudgets from '../../components/Budget/AddBudgets';
 import { createPortal } from 'react-dom';
 import EditBudget from '../../components/Budget/EditBudget';
 import { Card } from '../../@/components/ui/card';
-import { queryClient } from '../..';
 import { useBudget } from '../../context/BudgetContext';
-import { useData } from '../../context/DataProvider';
 import ClearAllBudgets from '../../components/Budget/ClearAllBudgets';
 
 
@@ -35,18 +26,14 @@ export default function BudgetsPage() {
   const { category, name, setCategory, setName, setSearchParams } = useOutletContext<ContextType>()
   const navigate = useNavigate()
   const { year, month } = useParams();
-  const [active, setActive] = useState(false);
   const location = useLocation();
-  const [type, setType] = useState('');
   const [page, setPage] = useState(1);
-  const [currentPage, setCurrentPage] = useState<number>(page);
-  const [disabled, setDisabled] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAddBudget, setIsAddBudget] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState(null);
   const [searchParam, setSearchParam] = useSearchParams();
   const [width] = useInnerWidthState();
-  const { data, isLoading, updateQueryParams, isFetching, isPending } = useBudget();
+  const { data, isLoading, updateQueryParams, isPending } = useBudget();
 
 
   useEffect(() => {
@@ -66,18 +53,9 @@ export default function BudgetsPage() {
   }, [location.search, navigate])
 
 
-  function clearFilters() {
-    const newParams = new URLSearchParams();
-    setSearchParam(newParams, { replace: true });
-    setCategory('');
-    setName("")
-  }
 
 
-  const handleOpenSideBar = () => {
-    setIsAddBudget(true);
 
-  }
 
   useEffect(() => {
     if (isAddBudget || isSidebarOpen) {
