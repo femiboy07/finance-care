@@ -1,15 +1,14 @@
 // registering a user or sign in or signup a user;
-import { Response,Request, NextFunction } from "express";
-import user, { IUser } from "../models/User";
+import { Response,Request } from "express";
+import user from "../models/User";
 import jwt from "jsonwebtoken";
 import { CreateTransactionRequest } from "./transcation";
 import transcation from "../models/Transcation";
-import mongoose, { isValidObjectId } from "mongoose";
 import {startOfWeek,startOfMonth,startOfYear,endOfWeek,endOfMonth,endOfYear} from "date-fns";
 import {toZonedTime} from 'date-fns-tz'
 
 
-export async function register(req:Request,res:Response,next:NextFunction):Promise<unknown>{
+export async function register(req:Request,res:Response):Promise<unknown>{
      const {email,password,name,username}=req.body;
      
      if(!email && !password && !name && !username){
@@ -80,7 +79,7 @@ export async function signInUser(req:Request,res:Response){
     }
  
 }
-export async function refreshToken(req: Request, res: Response, next: NextFunction) {
+export async function refreshToken(req: Request, res: Response) {
     try {
       const refreshToken = req.cookies?.refreshToken;
   

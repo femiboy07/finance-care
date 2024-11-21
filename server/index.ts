@@ -1,6 +1,4 @@
-import express, { Application, NextFunction, Response,Express,Request } from "express";
-import { createServer } from "http";
-import { Server } from "socket.io";
+import express, {  NextFunction, Response,Request } from "express";
 import * as dotenv from "dotenv";
 dotenv.config({ path: __dirname + '/.env' });
 import mongoose from "mongoose";
@@ -8,19 +6,15 @@ import cors from 'cors';
 import expresscookie from "cookie-parser";
 import passport from "./config/passport";
 import jwt from "jsonwebtoken";
-import userRouter, { validateOrigin } from './routes/userroutes';
+import userRouter from './routes/userroutes';
 import transcationRouter from './routes/routetranscations';
 import accountsRouter from "./routes/routeaccounts";
 import budgetsRouter from "./routes/routebudgets";
 import categoriesRouter from './routes/routecategory';
 import oauth2Client from "./middlewares/googleauthClient";
 import user from "./models/User";
-import budgets from "./models/Budgets";
-import { CreateTransactionRequest } from "./controllers/transcation";
-import { getTotalIncomeAndExpense } from "./controllers/user";
-import { clearCategories, seedCategories } from "./seeders/categorySeeders";
-import { clearBudgets, seedDefaultBudget } from "./seeders/budgetsSeeder";
-import { clearAccounts, seedDefaultAccount } from "./seeders/accountSeeder";
+import {  seedCategories } from "./seeders/categorySeeders";
+import { seedDefaultAccount } from "./seeders/accountSeeder";
 
 
 
@@ -30,10 +24,7 @@ import { clearAccounts, seedDefaultAccount } from "./seeders/accountSeeder";
 
 
 const app=express();
-const httpServer=createServer(app);
-const io=new Server(httpServer,{cors:{
-    origin:["http://localhost:3000","http://localhost:3001"]
-}})
+
 const port=process.env.PORT || 5000;
 app.use(expresscookie());
 app.use(express.json());
@@ -47,10 +38,10 @@ app.use(cors({
 
 
 
-app.use((req:CreateTransactionRequest,res,next)=>{
-    req.io=io;
-    next();
-})
+// app.use((req:CreateTransactionRequest,res,next)=>{
+//     req.io=io;
+//     next();
+// })
 
 function onlyForHandShake(middleware:any){
    return (req:Request,res:Response,next:NextFunction)=>{
@@ -175,6 +166,6 @@ app.get('/dashboard',passport.authenticate("jwt",{session:false}),(req,res:Respo
 
 
 
-httpServer.listen(port,()=>{
+app.listen(port,()=>{
     console.log(`Example app listening on port ${port}`);
 })

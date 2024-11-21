@@ -1,11 +1,9 @@
 import { Request,Response } from "express";
-import accounts from "../models/Account";
 import budgets from "../models/Budgets";
-import { convertToNumber, CreateTransactionRequest } from "./transcation";
+import {  CreateTransactionRequest } from "./transcation";
 import transcation from "../models/Transcation";
 import CategoryModel from "../models/Category";
-import mongoose, { AnyBulkWriteOperation, ObjectId } from "mongoose";
-import Decimal from "decimal.js";
+import mongoose from "mongoose";
 import { toDecimal128 } from "../utils/modify";
 
 
@@ -29,17 +27,6 @@ const findTransactionBudgets = async (category: string,userId:any): Promise<numb
 };
 
 
-interface BudgetParams{
-    accountId?:string;
-    category?:string;
-    period?:string;
-    month:string;
-    year:string;
-    startDate?:string;
-    endDate?:string;
-   
-
-}
 export async function getBudgets(req: CreateTransactionRequest, res: Response) {
     try {
         const { year, month } = req.params;

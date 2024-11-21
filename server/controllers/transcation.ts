@@ -1,15 +1,9 @@
 import { Request ,Response} from "express";
 import transcation, { ITranscations, transcationCategory } from "../models/Transcation";
-import {google,gmail_v1} from  "googleapis";
-import oauth2Client from "../middlewares/googleauthClient";
-import crypto from 'crypto';
-import jwt from "jsonwebtoken";
-import mongoose, { Decimal128, ObjectId, Query,Types } from "mongoose";
-import user from "../models/User";
-import { sendNotificationMessage } from "./notifications";
+import mongoose, { Decimal128 } from "mongoose";
 import accounts from "../models/Account";
 import { Server } from "socket.io";
-import decimal, { Decimal } from "decimal.js";
+import { Decimal } from "decimal.js";
 import budgets from "../models/Budgets";
 import CategoryModel from "../models/Category";
 import { toDecimal128 } from "../utils/modify";
@@ -143,7 +137,7 @@ export async function createTranscation(req: CreateTransactionRequest, res: Resp
           // return res.status(200).json({ data: newTransaction, message: "New transaction created successfully" });
       }
 
-      sendNotificationMessage(req.io, req.user?._id!, newTransaction, "transaction_alert");
+      // sendNotificationMessage(req.io, req.user?._id!, newTransaction, "transaction_alert");
 
       return res.status(200).json({ data: newTransaction, message: "Transaction created and budget updated successfully" });
   } catch (err: any) {
