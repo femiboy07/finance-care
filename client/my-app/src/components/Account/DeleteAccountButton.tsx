@@ -45,7 +45,7 @@ export default function DeleteAccountButton({ accountId, closeSideBar }: { accou
                     DELETE THIS ACCOUNT
                 </Button>
             </DialogTrigger>
-            <DialogContent className="px-0">
+            <DialogContent className="px-0 text-foreground">
                 <DialogHeader className="px-3">
                     <DialogTitle>Confirm Deletion</DialogTitle>
                 </DialogHeader>

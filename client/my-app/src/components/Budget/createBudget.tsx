@@ -11,7 +11,7 @@ export default function CreateBudget() {
     return (
         <div className="flex flex-col gap-2 items-center">
             <Button onClick={() => navigate('budgets')} className={buttonVariants({ variant: "secondary", size: "icon", className: "rounded-full h-12 w-12  font-bold lg:h-16 lg:w-16 flex flex-col  bg-blue-200 opacity-75" })}>
-                <WalletCards color="white" className="bg-blue-600 rounded-full self-center h-[25px] w-[25px]" />
+                <WalletCards color="blue" className="  self-center rounded-full " />
             </Button>
             <span className=" lg:text-lg text-sm">Create budget</span>
         </div>

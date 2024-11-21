@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../../@/components/ui/dialog";
 import RouterForm from "../../context/reactrouterform";
 import z from 'zod';
 import { useForm, useWatch } from "react-hook-form";
@@ -8,15 +7,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "../../@/components/ui/input";
 import { DayPicker } from "react-day-picker";
 import { format, formatISO, isValid, parse } from "date-fns";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../@/components/ui/select";
-import { dataCategory } from "../../Pages/DashBoard/transactions";
 import DeleteTransactionButton from "./DeleteTransaction";
 import { Button, buttonVariants } from "../../@/components/ui/button";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getAccountsName, updateTransaction } from "../../api/apiRequest";
 import { queryClient } from "../..";
 import { useToast } from "../../@/components/ui/use-toast";
-import { FileDiff } from "lucide-react";
 import CustomSelect from "../common/CustomSelect";
 import { useCategory } from "../../context/CategoryProvider";
 
@@ -41,7 +37,11 @@ const formSchema = z.object({
 
   }, { message: 'Not a number pls  input a number' }),
   // status:z.string(),
-  accountId: z.string(),
+  accountId: z.object({
+    _id: z.string(),
+    name: z.string(),
+    type: z.string()
+  }),
 }).refine((data) => {
   const parsedDate = parse(data.date, 'PPP', new Date());
 
@@ -61,6 +61,7 @@ export default function EditTransaction({ transaction, closeSideBar }: { transac
   const [showDate, setShowDate] = useState(false);
   console.log(transaction)
   const { toast } = useToast();
+  const [accountId, setAccountId] = useState(null)
   const [month, setMonth] = useState(new Date());
   const status: string[] = ["cleared", "pending"]
   const type: string[] = ["income", "expense"];
@@ -113,7 +114,7 @@ export default function EditTransaction({ transaction, closeSideBar }: { transac
       category: transaction.category.name,
       description: transaction.description,
       amount: parseInt(transaction.amount.$numberDecimal).toFixed(0),
-      accountId: transaction.accountId,
+      accountId: transaction.accountId
     },
     mode: "onChange"
   })
@@ -157,8 +158,8 @@ export default function EditTransaction({ transaction, closeSideBar }: { transac
     const defaultDate = parse(values.date, 'MMMM do, y', new Date());
 
 
-    const newValues = { ...values, amount: newamount, date: newValue === '' ? formatISO(defaultDate) : formatISO(parsed) }
-    console.log(newValues)
+    const newValues = { ...values, amount: newamount, accountId: values.accountId?._id!!, date: newValue === '' ? formatISO(defaultDate) : formatISO(parsed) }
+    console.log(newValues, 'form submitted')
     mutation.mutate({ queryKey: ['editTransaction', token.access_token], variable: newValues, id: transaction._id });
 
     new Promise((resolve) => setTimeout(resolve, 5000))
@@ -166,6 +167,11 @@ export default function EditTransaction({ transaction, closeSideBar }: { transac
 
 
   }
+  const watchedAccountId = useWatch({
+    control: form.control,
+    name: "accountId",
+  });
+
   const handleOnClick = () => {
     setShowDate(true);
   }
@@ -185,8 +191,8 @@ export default function EditTransaction({ transaction, closeSideBar }: { transac
   }, [])
   return (
     <Form {...form}>
-      <RouterForm className="bg-white h-full w-full mb-20  text-black relative" onSubmit={form.handleSubmit(handleOnSubmit)}>
-        <div className="header text-black w-full pt-5 text-2xl ">
+      <RouterForm className="bg-white dark:bg-card text-foreground h-full w-full mb-20  text-black relative" onSubmit={form.handleSubmit(handleOnSubmit)}>
+        <div className="header text-foreground w-full pt-5 text-2xl ">
           <h1>Transaction Details</h1>
         </div>
 
@@ -228,12 +234,12 @@ export default function EditTransaction({ transaction, closeSideBar }: { transac
             )}
           />
           {showDate && (
-            <div className=" relative  w-full  " ref={divRef}>
+            <div className=" relative  w-full " ref={divRef}>
               <DayPicker
                 mode="single"
                 onMonthChange={setMonth}
                 month={month}
-                className=" absolute left-1/2 z-[888955]  -translate-x-1/2 bg-white rounded-md shadow-md "
+                className=" absolute left-1/2 z-[888955]  -translate-x-1/2 bg-white dark:bg-background rounded-md shadow-md "
                 selected={selectedDate}
                 onSelect={handleDayPickerSelect}
               />
@@ -247,7 +253,7 @@ export default function EditTransaction({ transaction, closeSideBar }: { transac
                 <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">CATEGORY</FormLabel>
                 {categories && <CustomSelect
                   options={categories && categories?.map((item: any) => item.name)}
-                  name="type"
+                  name="category"
                   form={form}
                   field={field}
                   placeholder="category"
@@ -285,31 +291,7 @@ export default function EditTransaction({ transaction, closeSideBar }: { transac
               </FormItem>
             )}
           />
-          {/* 
-                <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">STATUS</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                  <SelectTrigger className="bg-white">
-                    <SelectValue  placeholder={field.value}/>
-                  </SelectTrigger>
-                    </FormControl>
-                        <SelectContent className=" z-[11445] overflow-y-auto "> 
-                          {status && status?.map((item:string)=>(
-                            <SelectItem key={item}  value={item}>
-                                {item}
-                            </SelectItem>
-                          ))}  
-                    </SelectContent>
-                  </Select>
-                  <FormMessage/>
-                 </FormItem>
-              )}
-                /> */}
+
           <FormField
             control={form.control}
             name="accountId"
@@ -317,7 +299,7 @@ export default function EditTransaction({ transaction, closeSideBar }: { transac
               <FormItem>
                 <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">ACCOUNT NAME</FormLabel>
                 <CustomSelect
-                  options={data && data}
+                  options={data && data.map((item: any) => ({ _id: item._id, name: item.name, type: item.type }))}
                   name="accountId"
                   placeholder="accountId"
                   form={form}
@@ -340,13 +322,13 @@ export default function EditTransaction({ transaction, closeSideBar }: { transac
 
         </div>
 
-        <div className="close-button  sticky bottom-0 py-5 bg-white  px-3  right-3    border-top  z-[78555]  ">
+        <div className="close-button  sticky bottom-0 py-5 bg-white dark:bg-card  px-3  right-3    border-top  z-[78555]  ">
           <hr />
           <div className="mt-5  flex justify-between">
             <Button onClick={closeSideBar} className={buttonVariants({ variant: "default", className: "px-3  bg-orange-400 hover:bg-orange-500" })}>
               CLOSE
             </Button>
-            {(form.formState.isDirty || newValue || form.control) && <Button className="" type="submit">
+            {(form.formState.isDirty || newValue || JSON.stringify(watchedAccountId) !== JSON.stringify(transaction.accountId)) && <Button className="" type="submit">
               {isPending ? "Loading..." : "SAVE"}
             </Button>}
           </div>

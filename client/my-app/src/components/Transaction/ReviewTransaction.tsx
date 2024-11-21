@@ -5,10 +5,7 @@ import { useOutletContext } from "react-router-dom";
 import { ContextType } from "../../Layouts/DashboardLayout";
 import { formatAmount } from "../../utils/formatAmount";
 import { useBudget } from "../../context/BudgetContext";
-import { useSelectedFilter } from "../../context/TableFilterContext";
 import CustomProgressBar from "../common/CustomProgressBar";
-import { useData } from "../../context/DataProvider";
-import { dataCategory } from "../../Pages/DashBoard/transactions";
 
 
 
@@ -45,16 +42,16 @@ export default function ReviewTransactions({ transaction, month, year, page, cat
 
 
   return (
-    <div className="mb-[4rem] mt-5 " >
-      <Card className="  flex-col static bg-opacity-60 bg-white   flex leading-7 items-center mb-[1em] mx-auto max-w-[260px] w-[260px] p-[0.75em]" >
+    <div className="mb-[4rem] mt-5 "  >
+      <Card className="  flex-col  bg-opacity-60 dark:bg-card bg-white   flex leading-7 items-center mb-[1em] mx-auto max-w-[260px] w-[260px] p-[0.75em]" >
         <HomeIcon />
         <h1>REVIEW { } TRANSACTIONS</h1>
         <h6>Everything looks good</h6>
       </Card>
 
-      <Card className="sticky flex-col min-h-0  bg-opacity-60 bg-white  flex leading-7 items-center px-[13px] mb-[1em] mx-auto max-w-[260px] w-[260px] p-[0.75em]">
+      <Card className=" flex-col sticky   bg-opacity-60 max-h-full bg-white dark:bg-card   flex leading-7 items-center px-[13px] mb-[1em] mx-auto max-w-[260px] w-[260px] p-[0.75em]">
 
-        <div className=" content group/content group-first/content:border-none ">
+        <div className=" content group/content group-first/content:border-none  ">
           <div className="header  uppercase  flex justify-between items-start" style={{ borderTop: 0 }}>
             <span></span>
             <span className="text-sm">{monthString} summary</span>
@@ -63,9 +60,9 @@ export default function ReviewTransactions({ transaction, month, year, page, cat
           {/* <hr className="border-slate-200 w-full" /> */}
         </div>
         {/** for income  to be found here  */}
-        <div className="mt-2  content  w-full ">
+        <div className="mt-2  content dark:border-t-white  w-full  ">
           <p className=" uppercase text-center">Income</p>
-          <div className="flex flex-col last:mb-0">
+          <div className="flex flex-col last:mb-0 ">
             {transactionIncome.map((item: any) => (
               <div className="mt-2">
                 <div key={item._id} className="flex justify-between">
@@ -93,7 +90,7 @@ export default function ReviewTransactions({ transaction, month, year, page, cat
           </div>
 
         </div>
-        <div className="mt-2  content  w-full ">
+        <div className="mt-2  content dark:border-t-white  w-full ">
           <p className=" uppercase text-center">Expense</p>
           <div className="flex flex-col last:mb-0 ">
             {transactionExpense.map((item: any) => (

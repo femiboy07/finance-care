@@ -40,7 +40,7 @@ export default function DeleteBudgetButton({ budgetId, closeSideBar }: { budgetI
                     UNSET THIS BUDGET
                 </Button>
             </DialogTrigger>
-            <DialogContent className="px-0">
+            <DialogContent className="px-0 text-foreground">
                 <DialogHeader className="px-3">
                     <DialogTitle>Confirm Deletion</DialogTitle>
                 </DialogHeader>

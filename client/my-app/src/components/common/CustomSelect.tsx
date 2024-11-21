@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, SetStateAction } from 'react';
 import { FieldPath, FieldValues } from 'react-hook-form';
 import { Input } from '../../@/components/ui/input';
 
@@ -43,13 +43,14 @@ const CustomSelect = <TFieldValues extends Record<string, any>>({
     const handleSelect = (value: string | Option) => {
         setSelectedValue(value);
         setFilterText(typeof value === 'object' ? value.systemAccount !== true ? `${value.name},(${value.type})` : value.name : value);
+        field.onChange(typeof value === 'object' && name === 'accountId' ? `${value.name},(${value.type})` : value)
         form.setValue(
             name,
-            typeof value === 'object' ? value && value._id : value // Ensure correct value is sent to the form
+            typeof value === 'object' && name === 'accountId' ? value : value // Ensure correct value is sent to the form
         );
         setIsExpanded(false);
         setFilter(options);
-        onSelect(value);
+        onSelect(value)
     };
 
     const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -109,10 +110,10 @@ const CustomSelect = <TFieldValues extends Record<string, any>>({
             onKeyDown={handleKeyDown}
             className={`relative w-full z-[9999] text-sm rotate-0 py-[0.5em] focus:border-black ${isExpanded ? 'border-black border' : ''} focus:border flex justify-between  border min-h-[2.7141429em] ${isExpanded ? 'rounded-bl-none rounded-br-none' : ''}  focus-within:border-black rounded-md  border-gray-300  `}
         >
-            <Input name={field.name as string} type="hidden" value={field.value ? (typeof field.value === 'object' ? field.value._id : field.value) : ''} readOnly />
+            {/* <Input name={field.name as string} type="hidden" value={field.value ? (typeof field.value === 'object' ? field.value._id : field.value) : ''} readOnly /> */}
 
             <Input
-                className={`w-full left-0 pl-4 placeholder:text-sm h-full rounded-md top-0 absolute leading-[1.21429em] border-none focus-within:outline-none z-[5]`}
+                className={`w-full left-0 pl-4 placeholder:text-sm h-full text-foreground rounded-md top-0 absolute leading-[1.21429em] border-none focus-within:outline-none z-[5]`}
                 onClick={() => setIsExpanded(true)}
                 autoComplete='off'
                 aria-autocomplete='none'
@@ -121,22 +122,26 @@ const CustomSelect = <TFieldValues extends Record<string, any>>({
                     const value = e.target.value.trim();
                     setFilterText(value);
                     form.setValue(name, value)
+                    field.onChange(value)
                     // field.onChange(value)
                     setFilter(options && options.filter(option =>
                         typeof option === 'string'
                             ? option.toLowerCase().includes(value.toLowerCase())
                             : option.name.toLowerCase().includes(value.toLowerCase())
                     ));
+
                     setFocusedIndex(-1);
                     setIsExpanded(true);
                 }}
                 value={filterText}
                 placeholder={field.value && field.value
                     ? typeof field.value === 'object'
-                        ? name === 'accountId' && field.value.systemAccount !== true ? `${field.value.name},(${field.value.type})` : field.value.name
+                        ? name === 'accountId' ? `${field.value.name},(${field.value.type})` : field.value.name
                         : `${field.value}`
                     : placeholder}
+
                 name={field.name}
+
             />
 
             <i
@@ -164,7 +169,7 @@ const CustomSelect = <TFieldValues extends Record<string, any>>({
                                 role="option"
                                 aria-selected={selectedValue === item || focusedIndex === index}
                             >
-                                {item && typeof item === 'object' ? item.systemAccount !== true ? `${item.name},(${item.type})` : item.name : item}
+                                {item && typeof item === 'object' ? `${item.name},(${item.type})` : item}
                             </div>
                         ))
                     }

@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../context/UserProvider';
 import { useTransaction } from '../../context/TransactionProvider';
 import { useData } from '../../context/DataProvider';
+import lunchoImage from '../../assets/luncho.png'
 
 
 
@@ -49,7 +50,7 @@ export default function ReacentTransactions() {
 
 
   return (
-    <Card className=' w-full lg:w-[50%]'>
+    <Card className=' w-full lg:w-[50%] border-0 shadow-md'>
 
       {isLoading ?
         <div className='w-full h-full flex justify-center items-center'>
@@ -66,11 +67,17 @@ export default function ReacentTransactions() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {data && data.transactions.length === 0 && <div className='text-black text-md text-center font-semibold w-full'>No transaction present</div>}
+            {!newData && <div className='text-black text-md text-foreground text-center font-semibold w-full'>
+              <div className='flex flex-col items-center text-lg justify-center'>
+                <img src={lunchoImage} alt='lum' width={100} />
+                <span>No recent transaction</span>
+              </div>
+
+            </div>}
             {newData && Object.keys(newData).map((category: any) => (
               <div key={category} className='flex font-bold flex-col mb-3 '>
 
-                <h2 className='pb-3 text-gray-500 text-sm'>{category}</h2>
+                <h2 className='pb-3 text-gray-500  text-sm'>{category}</h2>
                 <ul className='space-y-3'>
                   {newData[category].map((transaction: any) => (
                     <li key={transaction._id} className='flex justify-between w-full'>
@@ -81,7 +88,7 @@ export default function ReacentTransactions() {
 
                         <h4 className=' text-xs text-gray-300'>{transaction.time}</h4>
                       </div>
-                      <span className={` font-custom2 ${transaction.type === 'income' ? 'text-green-500 font-bold' : 'text-black font-bold'}`}>{formatAmount(transaction.amount.$numberDecimal)}</span>
+                      <span className={` font-custom2 ${transaction.type === 'income' ? 'text-green-500 font-bold' : 'text-black dark:text-red-500 font-bold'}`}>{formatAmount(transaction.amount.$numberDecimal)}</span>
                     </li>
                   ))}
                 </ul>

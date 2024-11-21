@@ -9,14 +9,14 @@ import { useQuery } from "@tanstack/react-query";
 import { getMetrics, getUser } from "../../api/apiRequest";
 import { formatAmount } from "../../utils/formatAmount";
 import ReacentTransactions from "../../components/Transaction/RecentTransactions";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { ContextType } from "../../Layouts/DashboardLayout";
 import useRequireAuth from "../../hooks/useRequireAuth";
-import { createPortal } from "react-dom";
 import UserLoggedOut from "../../components/Modals/UserLoggedOut";
 import SelectTypeByIncomeAndExpense from "../../components/Transaction/SelectTypeByIncomeAndExpense";
 import DashBoardSkeleton from "../../components/Skeleton/DashBoardSkeleton";
 import { useUser } from "../../context/UserProvider";
+import { apiClient } from "../../context/LoadingContext";
+import { Line, LineChart } from "recharts";
+import { useNavigate } from "react-router-dom";
 
 
 
@@ -25,13 +25,27 @@ import { useUser } from "../../context/UserProvider";
 export default function DashBoard() {
   const [loading, setLoading] = useState(false);
   const { removeToken, isLoading } = useRequireAuth();
-  const [intervals, setIntervals] = useState('weekly')
+  const [intervals, setIntervals] = useState(() => (localStorage.getItem('intervalKey') || 'weekly'));
+  const navigate = useNavigate();
+  const { token } = useRequireAuth()
+
 
   const { isPending, error, data } = useQuery({
     queryKey: ['metrics'],
     queryFn: getMetrics,
 
   })
+
+
+
+  const { data: Trends, isLoading: loadingTrends } = useQuery({
+    queryKey: ['trends'],
+    queryFn: async () => {
+      const res = await apiClient.get(`/transactions/statistics?interval=${intervals}`);
+      return res.data;
+    }
+  })
+
 
   const { data: usernameData } = useQuery({
     queryKey: ['username'],
@@ -62,10 +76,10 @@ export default function DashBoard() {
           {usernameData &&
             <div className="user-welcome text-orange-300  font-custom2 leading-2 font-extrabold">
               <h1 className=" text-2xl ">Welcome, {usernameData.data}</h1>
-              <span className="text-black text-sm">Continue your journey to financial success</span>
+              <span className="text-black dark:text-foreground text-sm">Continue your journey to financial success</span>
             </div>}
           <div className="w-full mt-5 flex">
-            <Card className=" bg-white flex w-full gap-5 shadow-xs items-center justify-center p-5 leading-4">
+            <Card className="  flex w-full gap-5 border-0 shadow-md items-center justify-center p-5 leading-4">
               <AddExpense />
               <AddIncome />
               <CreateBudget />
@@ -75,12 +89,19 @@ export default function DashBoard() {
             {data &&
               <>
 
-                <Card className="bg-white relative  w-52 h-52 rounded-lg shadow-xs  flex-1 min-w-52">
+                <Card className=" relative border-0  w-52 h-52 flex rounded-lg shadow-md  flex-1 min-w-52">
                   <div className="cont flex flex-col p-5  leading-2 space-y-7 flex-1">
                     {/* {!data && <LoaderCircleIcon className="animate-pulse" />} */}
                     <div className="w-14 h-14 flex justify-center items-center rounded-full bg-purple-300">
                       <LucideHome className=" text-purple-900 " />
+
                     </div>
+
+                    {Trends && Trends?.trends && <div className=" absolute  right-5">
+                      <LineChart width={40} height={40} data={Trends?.trends}>
+                        <Line type="monotone" dataKey="incomeTrend" stroke="#8884d8" strokeWidth={2} />
+                      </LineChart>
+                    </div>}
 
                     <div className="flex  text-xl font-custom2 font-semibold">
                       <div className=" lg:text-3xl text-2xl  font-semibold">{data.totalBalance !== undefined ? formatAmount(data.totalBalance).slice(0, -3) : formatAmount(0).slice(0, -3)}</div>
@@ -91,7 +112,7 @@ export default function DashBoard() {
                   </div>
 
                 </Card>
-                <Card className="bg-white   w-52 h-52 shadow-xs flex-1 min-w-52">
+                <Card className="w-52 h-52 shadow-md border-0 flex-1 min-w-52">
                   <div className="cont flex flex-col p-5 leading-2 space-y-7 flex-1">
                     <div className="w-14 h-14 flex justify-center items-center rounded-full bg-sky-100">
                       <LocateFixedIcon className=" text-sky-900 " />
@@ -104,7 +125,7 @@ export default function DashBoard() {
                     <span className=" text-gray-400">Budgets</span>
                   </div>
                 </Card>
-                <Card className="bg-white   w-52 h-52 shadow-xs  flex-1 min-w-52">
+                <Card className="w-52 h-52 border-0 shadow-md  flex-1 min-w-52">
                   <div className="cont flex flex-col p-5 leading-2 space-y-7 flex-1">
                     <div className="w-14 h-14 flex justify-center items-center rounded-full bg-green-200">
                       <ArrowUp className=" text-green-900 " />
@@ -116,11 +137,17 @@ export default function DashBoard() {
                     <span className=" text-gray-400">Income</span>
                   </div>
                 </Card>
-                <Card className="bg-white   w-52 h-52 shadow-xs  flex-1 min-w-52">
+                <Card className="   w-52 border-0 h-52 shadow-md  flex-1 min-w-52">
                   <div className="cont flex flex-col p-5 leading-2 space-y-7 flex-1">
                     <div className="w-14 h-14 flex justify-center items-center rounded-full bg-red-100">
                       <ArrowDown className=" text-red-900 " />
                     </div>
+
+                    {Trends && Trends?.trends && <div className=" absolute  right-5">
+                      <LineChart width={150} height={40} data={Trends.trends}>
+                        <Line type="monotone" dataKey="expenseTrend" stroke="#8884d8" strokeWidth={2} />
+                      </LineChart>
+                    </div>}
                     <div className="flex  text-xl font-custom2 font-semibold">
 
                       <div className=" lg:text-3xl text-2xl font-semibold line-clamp-3">{(data !== undefined && formatAmount(data.totalExpense).slice(0, -3)) || 0}</div>
@@ -138,7 +165,7 @@ export default function DashBoard() {
         </div>
         <div className="last-transcations w-full mt-5 flex h-full flex-wrap  gap-5">
           <ReacentTransactions />
-          <Card className=" w-[60%] h-96 order-1 lg:px-3 px-3 flex-1 py-7 ">
+          <Card className=" w-[60%] border-0 h-96 order-1 lg:px-3 px-3 flex-1 py-7 ">
             <div className="flex w-full justify-between h-9 items-center">
               <CardTitle className=" self-center flex   text-md md:text-xl">
                 <span className="self-center text-xl h-full">Date Overview</span>

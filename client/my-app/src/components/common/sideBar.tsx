@@ -1,9 +1,10 @@
-import { BarChart4Icon, IndentDecrease, LayoutDashboardIcon, LogOutIcon, PiggyBankIcon, WalletMinimalIcon, } from "lucide-react";
+import { BanknoteIcon, BarChart4Icon, CoinsIcon, IndentDecrease, LayoutDashboardIcon, LogOutIcon, PiggyBankIcon, WalletMinimalIcon, } from "lucide-react";
 import React from "react";
 import { Link, NavLink } from "react-router-dom";
 import CustomNavLinks from "./CustomNavLinks";
 import peerIcon from "../../assets/peercoin.png"
 import useRequireAuth from "../../hooks/useRequireAuth";
+import { Card } from "../../@/components/ui/card";
 
 
 
@@ -16,8 +17,8 @@ export default function SideBar({ open, setOpen }: { open: boolean, setOpen: any
 
   return (
 
-    <div style={{ height: `100%` }} data-bar="home-bar" className={`hidden font-custom font-normal text-[1rem]   xl:fixed shadow-md   lg:flex-col border-r-slate-600 w-64     justify-between rounded-bl-lg  z-50 bg-white text-black pb-5  overflow-y-auto       xl:flex  left-0   bottom-0 `}>
-      <div className="h-16 w-full  left-[12px]  border-black bg-white   p-[18px] flex  gap-2 items-center">
+    <Card style={{ height: `100%` }} data-bar="home-bar" className={`hidden font-custom font-normal text-[1rem]  dark:text-white  min-[1120px]:fixed shadow-md dark:shadow-sm    lg:flex-col  w-64     justify-between rounded-bl-lg  z-50  text-black pb-5  overflow-y-auto       xl:flex  left-0   bottom-0 `}>
+      <div className="h-16 w-full  left-[12px]  border-black  p-[18px] flex  gap-2 items-center">
         <div className=" relative w-10 h-10">
           <img src={peerIcon} alt="my-img" className="absolute  inset-0" />
         </div>
@@ -59,7 +60,7 @@ export default function SideBar({ open, setOpen }: { open: boolean, setOpen: any
           } to={`transactions`}   >
             {({ isActive }) => (
               <>
-                <IndentDecrease className="mr-[24px]" />
+                <BanknoteIcon className="mr-[24px]" />
                 <span className="  ">Transactions</span>
               </>
             )}
@@ -76,7 +77,7 @@ export default function SideBar({ open, setOpen }: { open: boolean, setOpen: any
           } to={`accounts`}   >
             {({ isActive }) => (
               <>
-                <PiggyBankIcon className="mr-[24px]" />
+                <CoinsIcon className="mr-[24px]" />
                 <span className="  ">Accounts</span>
               </>
             )}
@@ -108,7 +109,7 @@ export default function SideBar({ open, setOpen }: { open: boolean, setOpen: any
               isPending ? "" : "",
               isActive ? "text-orange-300" : "",
               isTransitioning ? "" : "",
-            ].join(`min-h-[40px]  px-3  py-2  rounded-md cursor-pointer text-[1rem] flex items-center w-full justify-start  ${isActive ? 'bg-orange-300 text-orange-600' : ''} `)
+            ].join(`min-h-[40px]  px-3  py-2 hover:bg-orange-200   rounded-md cursor-pointer text-[1rem] flex items-center w-full justify-start  ${isActive ? 'bg-orange-300 text-orange-600' : ''} `)
           } to='/auth/logout'   >
             {({ isActive }) => (
               <div onClick={removeToken} className="flex">
@@ -121,7 +122,7 @@ export default function SideBar({ open, setOpen }: { open: boolean, setOpen: any
         </div>
       </div>
 
-    </div>
+    </Card>
 
 
   )

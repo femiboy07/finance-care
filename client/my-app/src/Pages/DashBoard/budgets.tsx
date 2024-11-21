@@ -22,6 +22,7 @@ import { Card } from '../../@/components/ui/card';
 import { queryClient } from '../..';
 import { useBudget } from '../../context/BudgetContext';
 import { useData } from '../../context/DataProvider';
+import ClearAllBudgets from '../../components/Budget/ClearAllBudgets';
 
 
 
@@ -143,15 +144,19 @@ export default function BudgetsPage() {
   });
   return (
     <div className="w-full  h-full px-2 md:px-4 xl:px-9 font-custom2 mt-20 mb-10 text-black">
-      <h1 className="text-slate-700 font-bold text-2xl text-center lg:text-left">Budgets</h1>
+      <h1 className="text-slate-700 dark:text-foreground font-bold text-2xl text-center lg:text-left">Budgets</h1>
       <div className="mt-1">
-        <div className="date-table-filters w-full flex h-24 items-center  max-w-full ">
-          <MonthBudgetPicker page={page} params={searchParam} setPage={setPage} />
-
+        <div className="date-table-filters w-full flex h-24 max-h-full flex-wrap items-center  max-w-full ">
+          <div className='w-full flex flex-[100%]  flex-grow dark:text-foreground md:flex-grow'>
+            <MonthBudgetPicker page={page} params={searchParam} setPage={setPage} />
+          </div>
+          <div className='flex-wrap ml-auto '>
+            {year && month && <ClearAllBudgets month={parseInt(month)} year={parseInt(year)} />}
+          </div>
         </div>
       </div>
       {width >= 1024 && <div className="filters-searches max-w-full  w-full  ">
-        {isLoading && <SearchFilterSkeleton />}
+        {/* {isLoading && <SearchFilterSkeleton />} */}
       </div>}
       {isAddBudget &&
         (
@@ -161,7 +166,7 @@ export default function BudgetsPage() {
             </div>, document.body)
         )}
       {isSidebarOpen && (
-        <Card className="fixed right-0  top-0 bottom-0 z-[48] lg:w-96 w-full px-5 h-full scrollbar-hide overflow-hidden scroll-m-0 overflow-y-auto">
+        <Card className="fixed right-0  bg-white dark:bg-background top-0 bottom-0 z-[48] lg:w-96 w-full px-5  h-full scrollbar-hide overflow-hidden scroll-m-0 overflow-y-auto">
           <EditBudget budgets={selectedBudget} closeSideBar={closeSidebar} />
         </Card>
       )}
@@ -170,7 +175,7 @@ export default function BudgetsPage() {
         {isPending || isLoading ? <BudgetTable columns={columns} data={[]} isPending={isPending || isLoading} /> :
           <>
             {data && data.data && data.data.length > 0 && month && year && (
-              <div className='  mt-5   h-fit py-2 w-full max-w-full  z-0 bg-white bg-opacity-30 rounded-md'>
+              <div className='  mt-5   h-fit py-2 w-full max-w-full  z-0 text-foreground bg-opacity-30 rounded-md'>
                 <BudgetTable columns={columns} data={data?.data} isPending={isLoading || isPending} />
 
               </div>)}

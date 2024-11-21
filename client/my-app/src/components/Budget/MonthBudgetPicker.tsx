@@ -46,17 +46,17 @@ export default function MonthBudgetPicker({ params, page, setPage }: { params: a
 
   return (
 
-    <div className='flex  py-5 items-center text-black '>
-      <div className="date-controls-button flex gap-1 ">
-        <Button className={buttonVariants({ variant: "default", className: " bg-transparent hover:bg-transparent rounded-full text-black h-4 px-1 py-4 self-start" })} onClick={handlePrevClick} >
+    <div className='flex  py-5 items-center dark:text-foreground'>
+      <div className="date-controls-button flex gap-1 text-foreground ">
+        <Button className={buttonVariants({ variant: "default", className: " bg-transparent hover:bg-transparent rounded-full text-black dark:text-foreground h-4 px-1 py-4 self-start" })} onClick={handlePrevClick} >
           <MoveLeftIcon />
         </Button>
-        <Button className={buttonVariants({ variant: "default", className: " bg-transparent text-black hover:bg-transparent  rounded-full h-4 px-1 py-4 self-start " })} onClick={handleNextClick}>
+        <Button className={buttonVariants({ variant: "default", className: " bg-transparent  hover:bg-transparent  text-black dark:text-foreground rounded-full h-4 px-1 py-4 self-start " })} onClick={handleNextClick}>
           <MoveRightIcon />
         </Button>
       </div>
       <div className="date-picker date-title ml-2">
-        <span className=" text-slate-700 font-semibold text-lg lg:text-3xl">{monthString}{" "}{year}</span>
+        <span className=" text-slate-700 dark:text-foreground font-semibold text-lg lg:text-3xl">{monthString}{" "}{year}</span>
       </div>
     </div>
   )

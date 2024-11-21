@@ -67,9 +67,13 @@ const formSchema = z.object({
 
   }, { message: 'Not a number pls  input a number' }),
 
-  accountId: z.string({
+  accountId: z.object({
+    name: z.string(),
+    type: z.string(),
+    _id: z.string()
+  }, {
     required_error: "pls select account"
-  }).min(5, { message: 'account name is required' })
+  }),
 }).refine((data) => {
 
 
@@ -133,7 +137,11 @@ export default function AddTransaction({ setIsAddTransaction, months, transactRe
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      accountId: "",
+      accountId: {
+        name: data[0].name,
+        _id: data[0]._id,
+        type: data[0].type
+      },
       type: type[0],
       date: currentDate,
       category: "",
@@ -221,8 +229,8 @@ export default function AddTransaction({ setIsAddTransaction, months, transactRe
   return (
     <Form {...form}>
 
-      <RouterForm data-form="add-transaction" className=" bg-white w-full  p-[0rem] font-custom relative border-l flex flex-col    text-black " onSubmit={form.handleSubmit(handleOnSubmit)}>
-        <div className="header text-black w-full pt-[2.5em]  px-6 text-2xl ">
+      <RouterForm data-form="add-transaction" className=" bg-white dark:bg-card text-foreground w-full  p-[0rem] font-custom relative border-l flex flex-col    text-black " onSubmit={form.handleSubmit(handleOnSubmit)}>
+        <div className="header text-black dark:text-foreground w-full pt-[2.5em]  px-6 text-2xl ">
           <h1 >Add Transaction</h1>
         </div>
         <div className=" p-[1.5em] overflow-y-auto overflow-x-hidden scrollbar-widths flex-1    mt-3  ">
@@ -259,7 +267,7 @@ export default function AddTransaction({ setIsAddTransaction, months, transactRe
                   <FormItem>
                     <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">DATE</FormLabel>
                     <FormControl>
-                      <Input type='text' onClick={handleOnClick} placeholder={currentDate.toString()} onChange={handleFormatValue} className="bg-white" value={value} />
+                      <Input type='text' onClick={handleOnClick} placeholder={currentDate.toString()} onChange={handleFormatValue} className="bg-white   " value={value} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -271,7 +279,7 @@ export default function AddTransaction({ setIsAddTransaction, months, transactRe
                     mode="single"
                     onMonthChange={setMonth}
                     month={month}
-                    className=" absolute left-1/2 top-0  z-[77889999] -translate-x-1/2 bg-white rounded-md shadow-xl "
+                    className=" absolute left-1/2 top-0  dark:bg-background dark:shadow-[#303030] dark:shadow-md z-[77889999] -translate-x-1/2 bg-white rounded-md shadow-xl "
                     selected={selectedDate}
                     onSelect={handleDayPickerSelect}
                   />
@@ -337,7 +345,7 @@ export default function AddTransaction({ setIsAddTransaction, months, transactRe
                         onSelect={(value: any) => value}
                         form={form}
                         name={"accountId"}
-                        options={data && data}
+                        options={data && data.map((item: any) => ({ _id: item._id, name: item.name, type: item.type }))}
                         field={field}
                       />}
 

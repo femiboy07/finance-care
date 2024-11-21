@@ -140,8 +140,8 @@ export default function EditBudget({ budgets, closeSideBar }: { budgets: any, cl
   }, [])
   return (
     <Form {...form}>
-      <RouterForm className="bg-white h-full w-full mb-20  text-black relative" onSubmit={form.handleSubmit(handleOnSubmit)}>
-        <div className="header text-black w-full pt-5 text-2xl ">
+      <RouterForm className="bg-white dark:bg-background text-foreground h-full w-full mb-20  text-black relative" onSubmit={form.handleSubmit(handleOnSubmit)}>
+        <div className="header  w-full pt-5 text-2xl ">
           <h1>Budget Details</h1>
         </div>
         <div className="border h-fit  py-3 w-full px-3 mt-3 space-y-4 ">
@@ -193,7 +193,7 @@ export default function EditBudget({ budgets, closeSideBar }: { budgets: any, cl
 
         </div>
 
-        <div className="close-button  sticky bottom-0 py-5 bg-white  px-3  right-3    border-top  z-[78555]  ">
+        <div className="close-button  sticky bottom-0 py-5  px-3  right-3    border-top  z-[78555]  ">
           <hr />
           <div className="mt-5  flex justify-between">
             <Button onClick={closeSideBar} className={buttonVariants({ variant: "default", className: "px-3 font-bold  bg-orange-400 hover:bg-orange-500" })}>

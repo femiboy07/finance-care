@@ -37,6 +37,8 @@ import localforage from 'localforage';
 import LogOut from './Pages/Auth/Logout';
 import { toast, useToast } from './@/components/ui/use-toast';
 import ShowNetworkToast from './components/common/ShowNetworkToast';
+import { ThemeProvider } from './context/ThemeProvider';
+import { LoadingBannerProvider } from './context/LoadingBannerProvider';
 
 
 export const queryClient = new QueryClient({
@@ -149,7 +151,10 @@ const router = createBrowserRouter([
   },
   {
     path: "dashboard",
-    element: <DashBoardLayout />,
+    element:
+
+      <DashBoardLayout />,
+
     children: [
       {
         index: true,
@@ -191,36 +196,28 @@ const router = createBrowserRouter([
 
 root.render(
   <React.StrictMode>
-
     <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme='light' storageKey='femiootheme'>
+        <DataProvider>
+          <LoadingProvider>
 
-      <DataProvider>
-        <LoadingProvider>
+            <AuthProvider>
+              <FilterProvider>
+                {/* <LoadingBannerProvider> */}
+                <CategoryProvider>
+                  <BudgetProvider>
+                    <RouterProvider router={router} />
+                  </BudgetProvider>
+                </CategoryProvider>
+                {/* </LoadingBannerProvider> */}
+              </FilterProvider>
+            </AuthProvider>
 
-
-
-
-          {/* <LoadingProvider> */}
-          {/* <AuthProvider> */}
-          <FilterProvider>
-            <CategoryProvider>
-              <BudgetProvider>
-                <RouterProvider router={router} />
-              </BudgetProvider>
-            </CategoryProvider>
-          </FilterProvider>
-          {/* </AuthProvider> */}
-          {/* </LoadingProvider> */}
-
-
-
-
-        </LoadingProvider>
-      </DataProvider>
-
+          </LoadingProvider>
+        </DataProvider>
+      </ThemeProvider>
     </QueryClientProvider>
-
-  </React.StrictMode>
+  </React.StrictMode >
 );
 
 // If you want to start measuring performance in your app, pass a function

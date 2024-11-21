@@ -20,6 +20,7 @@ import { createPortal } from "react-dom";
 import DatePicker from "react-datepicker";
 import { useCategory } from "../../context/CategoryProvider";
 import { useData } from "../../context/DataProvider";
+import useOnlineStatus from "../../hooks/useOnlineStatus";
 
 
 
@@ -33,6 +34,7 @@ export default function MyInputMutation({ value, type, id, name, placeholder, cl
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(new Date())
   const meet = text;
+  const { isOnline } = useOnlineStatus()
   const { categories } = useCategory();
   console.log(categories, 'anyyyyy')
   const categoryData = categories?.map((item: any) => item.name)
@@ -52,9 +54,6 @@ export default function MyInputMutation({ value, type, id, name, placeholder, cl
         className: 'text-black bg-white border-l-4 border-l-black',
       });
     },
-
-
-
     onError: (error) => {
       toast({
         description: `${error}`,
@@ -147,6 +146,10 @@ export default function MyInputMutation({ value, type, id, name, placeholder, cl
   console.log(data, "dataaaaaaaaaaaa");
 
   const handleCategoryChange = async (value: any) => {
+    // if (!isOnline) {
+    //   return;
+    // }
+
 
     if (value === defaultValue) {
       setText(value)
@@ -154,7 +157,7 @@ export default function MyInputMutation({ value, type, id, name, placeholder, cl
     }
 
     if (value !== defaultValue) {
-      setText(value)
+      // setText(value)
 
       mutation.mutate({ queryKey: ['editTransaction', token.access_token], variable: { category: value }, id: id });
     }
@@ -183,14 +186,16 @@ export default function MyInputMutation({ value, type, id, name, placeholder, cl
     switch (name) {
       case 'category':
         return (
+
           <Select
             onValueChange={handleCategoryChange}
+
             value={text}
             defaultValue={text}
             name={name}
           >
             <SelectTrigger
-              className={`${className} border-0 outline-none rounded-none bg-transparent`}
+              className={`${className} border-0 outline-none rounded-none text-foreground bg-transparent`}
             >
               <SelectValue placeholder={placeholder} />
             </SelectTrigger>
@@ -210,7 +215,7 @@ export default function MyInputMutation({ value, type, id, name, placeholder, cl
           <div className="relative ">
             {name === 'date' && (
 
-              <div id='cont' className={`cursor-text relative   rounded-[2px] w-full h-[37px] `} >
+              <div id='cont' className={`cursor-text relative  text-foreground  rounded-[2px] w-full h-[37px] `} >
 
                 <DatePicker
                   className={` h-full border-orange-400   border-none px-[13px] w-full absolute top-0 outline-1 border  outline-orange-400 bg-transparent `}
@@ -233,7 +238,7 @@ export default function MyInputMutation({ value, type, id, name, placeholder, cl
         //   case  'date' :
 
         return (
-          <div onClick={() => setSelected(true)} className={`relative ${name === 'description' ? 'hover:after:content-["Add a note"]' : ''} h-full flex  hover:border-orange-400 hover:border  items-center`}>
+          <div onClick={() => setSelected(true)} className={`relative ${name === 'description' ? 'hover:after:content-["Add a note"]' : ''} h-full flex text-foreground  hover:border-orange-400 hover:border  items-center`}>
 
             {isPending && <LoaderCircle className=" animate-spin absolute flex items-center self-center bottom-1/2 right-4 top-1/2 w-4 h-4" />}
 

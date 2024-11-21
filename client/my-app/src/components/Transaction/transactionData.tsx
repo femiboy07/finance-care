@@ -13,6 +13,7 @@ import { Button } from "../../@/components/ui/button";
 import lunchImage from '../../assets/lunch image.png';
 import AddTransaction from "./AddTransaction";
 import TransactionButton from "./TransactionButton";
+import { Input } from "../../@/components/ui/input";
 
 
 
@@ -27,6 +28,7 @@ export type Transaction = {
     _id: string,
   };
   amount: any;
+  accountId: any
   date: Date;
   description: string;
   type: string;
@@ -56,7 +58,7 @@ export const transactionColumns: ColumnDef<Transaction>[] = [
         <Checkbox
           checked={row.getIsSelected()}
           data-state={row.getIsSelected()}
-          className={`${row.getIsSelected() ? ' checked:text-orange-200 text-black' : ''}`}
+          className={`${row.getIsSelected() ? ' checked:text-orange-200 checked:dark:border-slate-300 checked:dark:text-black checked:dark:bg-orange-400  bg-orange-400' : ''}`}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
           aria-label="Select row"
         />
@@ -64,7 +66,8 @@ export const transactionColumns: ColumnDef<Transaction>[] = [
     ),
     enableSorting: false,
     enableHiding: false,
-    size: 30,
+    size: 30
+
 
   },
 
@@ -100,12 +103,11 @@ export const transactionColumns: ColumnDef<Transaction>[] = [
       return (
         // <span className="  font-bold hover:border-orange-400  px-3">{row.original.description}</span>
 
-        <MyInputMutation type="text" name="description" value={row.original.description} placeholder={row.original.description} id={row.original._id} defaultValue={row.original.description} className={`text-black bg-transparent  w-full    rounded-md   hover:border-orange-400   font-semibold`} />
+        <MyInputMutation type="text" name="description" value={row.original.description} placeholder={row.original.description} id={row.original._id} defaultValue={row.original.description} className={`text-black bg-transparent  w-full flex-wrap    rounded-md   hover:border-orange-400   font-semibold`} />
       )
     },
-    size: 300,
-    minSize: 100,
-    maxSize: 500
+    size: 400
+
 
   },
 
@@ -125,10 +127,26 @@ export const transactionColumns: ColumnDef<Transaction>[] = [
     cell(props) {
       return (
 
-        <MyInputMutation name="category" value={props.row.original.category?.name} placeholder={props.row.original.category?.name} id={props.row.original._id} defaultValue={props.row.original.category?.name} className={`text-black ring-0  blur-none focus-within:ring-0  h-full w-full  border  bg-none   hover:border-orange-400 outline-none      font-semibold`} />
+        <MyInputMutation name="category" value={props.row.original.category?.name} placeholder={props.row.original.category?.name} id={props.row.original._id} defaultValue={props.row.original.category?.name} className={`text-black ring-0  blur-none focus-within:ring-0  h-full w-full  border  bg-none   hover:border-orange-400 outline-none font-semibold`} />
       )
     },
     size: 200
+  },
+
+  {
+    accessorKey: 'name',
+    header: () => {
+      return <div className="">Account</div>
+    },
+    cell: ({ row, cell }) => {
+      return (
+        <div className="hover:border-orange-400 hover:border  h-full w-full">
+          <div className="relative w-full h-full  flex-nowrap  ">
+            <input type="text" name="account" value={row.original.accountId.name} className="  text-wrap absolute inline-flex m-0 inset-0 ring-0 px-[13px]    blur-none bg-transparent outline-0 focus-within:ring-0    h-full w-full   hover:text-nowrap  hover:outline    outline-none  font-semibold" readOnly />
+          </div>
+        </div>
+      )
+    }
   },
 
 
@@ -178,11 +196,12 @@ export interface DataTableProps<TData, Tvalue> {
   isPending: boolean,
   listData: any,
   clearFilter: () => void,
-  handleOpenSideBar: () => void
+  handleOpenSideBar: () => void,
+  hideOver: boolean
 }
 
 
-export function TransactionTable<TData, TValue>({ columns, data, isPending, listData, clearFilter, handleOpenSideBar }: DataTableProps<TData, TValue>) {
+export function TransactionTable<TData, TValue>({ columns, data, isPending, listData, clearFilter, handleOpenSideBar, hideOver }: DataTableProps<TData, TValue>) {
 
   const { rowSelection, setRowSelection, setSelectedTotal, selectedTotal } = useSelectedFilter();
   const navigate = useNavigate();
@@ -268,8 +287,8 @@ export function TransactionTable<TData, TValue>({ columns, data, isPending, list
 
   return (
 
-    <Table id="table-lead" className="border-slate-400 text-left overflow-y-hidden w-full table-fixed  border-spacing-0">
-      <TableHeader className="bg-white">
+    <Table id="table-lead" className={`  dark:border-0 dark:border-l-0 border-0 bg-card    dark:bg-[#303030]  dark:border-[#303030] text-left overflow-y-hidden table-fixed  w-full  border-spacing-0`}>
+      <TableHeader className="">
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id} className="bg-white ">
             {headerGroup.headers.map((header) => {
@@ -287,7 +306,7 @@ export function TransactionTable<TData, TValue>({ columns, data, isPending, list
           </TableRow>
         ))}
       </TableHeader>
-      <TableBody className="border-black overflow-y-hidden relative ">
+      <TableBody className=" overflow-y-hidden  w-full max-w-full ">
         {searchParam.size > 1 &&
           <TableRow>
             <TableCell colSpan={table.getHeaderGroups()[0]?.headers.length || 1} className="text-center border h-6">
@@ -302,7 +321,7 @@ export function TransactionTable<TData, TValue>({ columns, data, isPending, list
           </TableRow>}
         <>
           {isPending &&
-            <div className="max-w-md w-full flex absolute text-black left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 flex-col space-y-2 justify-center items-center text-center ">
+            <div className="max-w-md w-full flex absolute text-black dark:text-foreground left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 flex-col space-y-2 justify-center items-center text-center ">
               <span>Fetching transactions..</span>
               <LoaderCircleIcon className=" animate-spin" />
             </div>
@@ -313,10 +332,10 @@ export function TransactionTable<TData, TValue>({ columns, data, isPending, list
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected()}
-                className={`py-5 ${row.getIsSelected() ? 'bg-orange-100' : ''} `}
+                className={`py-5 ${row.getIsSelected() ? 'bg-orange-100 dark:bg-slate-800 border-0 dark:bg-opacity-80' : ''} w-full  `}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className=" h-[36px]  border  px-0 py-0      ">
+                  <TableCell key={cell.id} className=" h-[36px] border   px-0 py-0      ">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
 
@@ -335,7 +354,7 @@ export function TransactionTable<TData, TValue>({ columns, data, isPending, list
                 {doubleRows.map((item, index) => (
 
 
-                  <TableRow key={index} className={` w-full border bg-white ${isPending ? ' ' : ''}   `} >
+                  <TableRow key={index} className={` w-full border bg-white dark:bg-card ${isPending ? ' ' : ''}   `} >
                     <TableCell colSpan={table.getHeaderGroups()[0]?.headers?.length || 1} className={`w-full border ${isPending ? 'py-3' : 'py-5'}  `}>
 
                     </TableCell>
@@ -347,12 +366,12 @@ export function TransactionTable<TData, TValue>({ columns, data, isPending, list
             )}
 
         </>
-        {/* {table.getRowModel().rows.length === 0 && searchParam.size >= 1 && !isPending && <div className="w-full max-w-full absolute top-1/2  -translate-y-1/2  flex flex-col space-y-2 justify-center items-center text-center ">
+        {table.getRowModel().rows.length === 0 && searchParam.size > 1 && !isPending && <div className="w-full max-w-full absolute top-1/2  -translate-y-1/2  flex flex-col space-y-2 justify-center items-center text-center ">
           <img src={lunchImage} alt="lunch" className=" w-16 h-16" />
-          <span className="w-full">You have no transaction yet</span>
+          <span className="w-full">No data related to your query</span>
 
-        </div>} */}
-        {!table.getRowModel().rows && !isPending && < div className="w-full max-w-full absolute top-1/2  -translate-y-1/2  flex flex-col space-y-2 justify-center items-center text-center ">
+        </div>}
+        {table.getRowModel().rows.length === 0 && !isPending && < div className="w-full left-0 right-0 max-w-full absolute top-1/2  -translate-y-1/2  flex flex-col space-y-2 justify-center items-center text-center ">
           <img src={lunchImage} alt="lunch" className=" w-16 h-16" />
           <span className="w-full">You have no transaction yet</span>
           <span>ways to add a transactions</span>

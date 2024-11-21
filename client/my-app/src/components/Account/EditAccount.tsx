@@ -70,8 +70,22 @@ export default function EditAccounts({ account, closeSideBar }: { account: any, 
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['alltransactions'] })
             // queryClient.invalidateQueries({ queryKey: ['allBudgets'] })
-            queryClient.invalidateQueries({ queryKey: ['allaccounts'] })
-        }
+            queryClient.invalidateQueries({ queryKey: ['allaccounts'] });
+            closeSideBar()
+            toast({
+                description: `account succesfully updated`,
+
+                className: "text-black h-16 bg-green-500"
+            })
+        },
+        onError(error, variables, context) {
+            closeSideBar()
+            toast({
+                description: `${error} `,
+                className: "text-white h-16",
+                variant: "destructive"
+            })
+        },
     })
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -91,31 +105,12 @@ export default function EditAccounts({ account, closeSideBar }: { account: any, 
 
     async function handleOnSubmit(values: z.infer<typeof formSchema>) {
         if (!values) return;
-        try {
-            const newamount = parseFloat(values.balance).toFixed(2)
-            const newValues = {
-                ...values, amount: newamount
-            }
-            const res = await mutation.mutateAsync({ queryKey: ['allaccounts', token.access_token], variable: newValues, id: account._id });
-            console.log(res);
-        } catch (err) {
 
-
-            toast({
-                description: ` pls you already have a budget created for this just edit it  `,
-                className: "text-white h-16",
-                variant: "destructive"
-            })
-
-        } finally {
-            closeSideBar()
-            toast({
-                description: `account succesfully updated`,
-
-                className: "text-black h-16 bg-green-500"
-            })
+        const newamount = parseFloat(values.balance).toFixed(2)
+        const newValues = {
+            ...values, amount: newamount
         }
-
+        mutation.mutate({ queryKey: ['allaccounts', token.access_token], variable: newValues, id: account._id });
 
     }
 
@@ -140,8 +135,8 @@ export default function EditAccounts({ account, closeSideBar }: { account: any, 
     }, [])
     return (
         <Form {...form}>
-            <RouterForm className="bg-white h-full w-full mb-20  text-black relative" onSubmit={form.handleSubmit(handleOnSubmit)}>
-                <div className="header text-black w-full pt-5 text-2xl ">
+            <RouterForm className="bg-white dark:bg-card h-full text-foreground w-full mb-20  text-black relative" onSubmit={form.handleSubmit(handleOnSubmit)}>
+                <div className="header text-black dark:text-foreground w-full pt-5 text-2xl ">
                     <h1>Account Details</h1>
                 </div>
                 <div className="border h-fit  py-3 w-full px-3 mt-3 space-y-4 ">
@@ -204,7 +199,7 @@ export default function EditAccounts({ account, closeSideBar }: { account: any, 
 
                 </div>
 
-                <div className="close-button  sticky bottom-0 py-5 bg-white  px-3  right-3 border-top  z-[78555]  ">
+                <div className="close-button  sticky bottom-0 py-5 bg-white dark:bg-card  px-3  right-3 border-top  z-[78555]  ">
                     <hr />
                     <div className="mt-5  flex justify-between">
                         <Button onClick={closeSideBar} className={buttonVariants({ variant: "default", className: "px-3  bg-orange-400 hover:bg-orange-500" })}>

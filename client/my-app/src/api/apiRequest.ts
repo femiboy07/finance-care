@@ -103,11 +103,11 @@ export async function fetchTransactions({queryKey}:any){
      const data= res.data;
     return data;
     }
-    if(page || limit){
-    const res=apiClient.get(`/transactions/listtransactions/${year}/${convert}?page=${page}&pageLimit=${limit}`);
-    const data=(await res).data;
-    return data;
-    }
+    // if(page || limit){
+    // const res=apiClient.get(`/transactions/listtransactions/${year}/${convert}?page=${page}&pageLimit=${limit}`);
+    // const data=(await res).data;
+    // return data;
+    // }
 
    
       
@@ -303,7 +303,7 @@ export async function createTransaction({queryKey, variable,month,year}: CreateT
       category: variable.category,
       description: variable.description,
       amount: variable.amount,
-      accountId: variable.accountId,
+      accountId: variable.accountId._id,
       month,
       year
     });
@@ -404,8 +404,11 @@ export async function updateAccount({queryKey,variable,id}:updateTransactionPara
   const res=await apiClient.put(`/account/update/${id}`,variable);
    const data= res.data;
    return data;
-  }catch(err){
-     console.log(err);
+  }catch(err:any){
+    if (err.response) {
+      return Promise.reject(err.response.data.message || 'An error occurred'); // Reject the error to propagate it
+    }
+    return Promise.reject(err.message || 'An unexpected error occurred');
  }
 }
 

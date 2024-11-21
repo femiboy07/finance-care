@@ -109,7 +109,7 @@ export default function AccountPage() {
   }
   return (
     <div className="w-full  h-full px-2 md:px-4 xl:px-9 font-custom2 mt-20 mb-10">
-      <h1 className="text-black text-4xl">Accounts</h1>
+      <h1 className="text-foreground text-4xl">Accounts</h1>
       <div className="mt-10 ">
         <div className="flex w-full justify-between">
           <div className="ml-auto flex items-center gap-2" >
@@ -124,7 +124,7 @@ export default function AccountPage() {
           <div className=" flex  mt-[18px]  lg:pb-[1em] z-0 transition transform">
             {isLoading || isPending ? <AccountTable columns={columns} data={[]} isPending={isLoading || isPending} handleOpenSideBar={handleOpenSideBar} /> :
               <>
-                {data && <Card className=" mt-5   overflow-x-auto  overflow-y-hidden h-fit   z-0   bg-white bg-opacity-30 rounded-md">
+                {data && <Card className=" mt-5   overflow-x-auto  overflow-y-hidden h-fit   z-0   bg-white dark:bg-background bg-opacity-30 rounded-md">
                   <AccountTable columns={columns} data={filteredAccounts} isPending={isLoading} handleOpenSideBar={handleOpenSideBar} />
                 </Card>
 

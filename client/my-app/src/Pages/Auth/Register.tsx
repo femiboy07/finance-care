@@ -9,6 +9,7 @@ import { Input } from "../../@/components/ui/input";
 import axios from "axios";
 import { Button } from "../../@/components/ui/button";
 import lunchMoneyImg from '../../assets/luncho.png'
+import useRequireAuth from "../../hooks/useRequireAuth";
 
 const formSchema = z.object({
     name: z.string(),
@@ -35,7 +36,7 @@ const RegisterPage: React.FC = () => {
     const errors: any = useActionData();
     const location = useLocation();
     const navigate = useNavigate();
-
+    const { token } = useRequireAuth()
 
 
 
@@ -98,7 +99,11 @@ const RegisterPage: React.FC = () => {
         form.clearErrors(); // Clears all errors
     };
 
-
+    useEffect(() => {
+        if (token) {
+            navigate('/dashboard')
+        }
+    }, [navigate, token])
 
 
 
@@ -120,7 +125,7 @@ const RegisterPage: React.FC = () => {
 
     return (
         <Form {...form}>
-            <div className="lg:w-[95%]  h-[95%]  max-w-md max-md:w-full font-custom mx-auto lg:max-w-4xl lg:mx-[4em] my-auto text-black  overflow-y-auto  flex lg:flex-row  flex-col rounded-md leading-7 justify-center   lg:px-[3em] lg:py:[2em]  space-y-5  bg-white  shadow-[0px_0px_4px_3px_rgb(238,238,238)]  px-4 shadow-2xl border-black ">
+            <div className="lg:w-[95%]  h-[95%]  max-w-md max-md:w-full font-custom mx-auto lg:max-w-4xl lg:mx-[4em] my-auto text-black  dark:text-white overflow-y-auto  flex lg:flex-row  flex-col rounded-md leading-7 justify-center   lg:px-[3em] lg:py:[2em]  space-y-5  bg-white dark:bg-card dark:shadow-none dark:text-foreground shadow-[0px_0px_4px_3px_rgb(238,238,238)]  px-4  border-black ">
                 <div className=" flex flex-col justify-between w-full my-auto  px-0 py-[1.25rem]  items-center  text-center">
                     <div></div>
                     <div className="lg:w-1/2 h-full w-full ">
@@ -147,9 +152,9 @@ const RegisterPage: React.FC = () => {
                             name="username"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="after:content-['*'] border-orange-400 after:text-red-600 after:ml-2">USERNAME</FormLabel>
+                                    <FormLabel className="after:content-['*'] border-orange-400  after:text-red-600 after:ml-2">USERNAME</FormLabel>
                                     <FormControl >
-                                        <Input   {...field} onChange={(e) => {
+                                        <Input className="dark:text-foreground"  {...field} onChange={(e) => {
                                             field.onChange(e);
                                             handleInputChange()
                                         }} />
@@ -165,7 +170,7 @@ const RegisterPage: React.FC = () => {
                                 <FormItem>
                                     <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">NAME</FormLabel>
                                     <FormControl >
-                                        <Input   {...field} onChange={(e) => {
+                                        <Input className="dark:text-foreground" {...field} onChange={(e) => {
                                             field.onChange(e);
                                             handleInputChange()
                                         }} />
@@ -182,7 +187,7 @@ const RegisterPage: React.FC = () => {
                                 <FormItem>
                                     <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">EMAIL ADDRESS</FormLabel>
                                     <FormControl >
-                                        <Input   {...field} onChange={(e) => {
+                                        <Input className="dark:text-foreground" {...field} onChange={(e) => {
                                             field.onChange(e);
                                             handleInputChange()
                                         }} />
@@ -199,7 +204,7 @@ const RegisterPage: React.FC = () => {
                                 <FormItem>
                                     <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">PASSWORD</FormLabel>
                                     <FormControl >
-                                        <Input type="password" {...field} onChange={(e) => {
+                                        <Input className="dark:text-foreground" type="password" {...field} onChange={(e) => {
                                             field.onChange(e);
                                             handleInputChange()
                                         }} />

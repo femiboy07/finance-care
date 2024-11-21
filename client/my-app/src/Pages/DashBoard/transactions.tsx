@@ -30,6 +30,7 @@ import LimitButton from "../../components/common/LimitButton";
 import { useTransaction } from "../../context/TransactionProvider";
 import { useData } from "../../context/DataProvider";
 import { useCategory } from "../../context/CategoryProvider";
+import ExportDataToCsv from "../../components/Transaction/ExportDataToCsv";
 
 
 
@@ -70,17 +71,17 @@ export default function TransactionPage() {
   const secondBox = useRef<HTMLDivElement | null>(null);
 
 
-  const { data: categories, isLoading: categoryLoading, isFetching: categoriesetching } = useQuery({ queryKey: ['category'], queryFn: fetchCategory });
+  const { data: categories, isLoading: categoryLoading, isFetching: categoriesetching } = useQuery({ queryKey: ['category'], queryFn: fetchCategory, gcTime: 0 });
 
   const { data, isPending, error, isLoading, isFetching } = useQuery({
     queryKey: ['alltransactions', { name, category, year, month, page, search, limit }],
     queryFn: fetchTransactions,
     gcTime: 0,
-    // retry: true,
     enabled: !!categories
-
-
   })
+
+
+  const { updateQueryParams } = useBudget()
 
 
   useEffect(() => {
@@ -89,7 +90,6 @@ export default function TransactionPage() {
 
 
 
-  const { updateQueryParams } = useBudget()
   // console.log(data?.listTransactions, "listTransactions")
 
   useEffect(() => {
@@ -260,8 +260,9 @@ export default function TransactionPage() {
 
   useEffect(() => {
     const handleScroll = () => {
+      const element = document.getElementById('transaction-page');
+      if (controlRef.current && element) {
 
-      if (controlRef.current && document.documentElement.scrollHeight > window.innerHeight) {
         const scrollY = window.scrollY;
         // const tabOffsetTop = Math.abs(secondBox.current.offsetHeight);
         const tabOffsetBottom = Math.abs(controlRef.current.offsetHeight)
@@ -273,48 +274,57 @@ export default function TransactionPage() {
 
             // tabRef.current.style.top += 50;
             controlRef.current.style.position = 'fixed';
-            controlRef.current.style.bottom = '1rem';
+            controlRef.current.style.top = '4rem';
+
 
             // Fix it 1rem from the top
             // firstTab.current.style.display = 'none'
-          } else if (scrollY <= tabOffsetBottom) {
+          } else if (tabOffsetBottom >= scrollY) {
             // Reset position when scrolling back up
             controlRef.current.style.position = 'static';
+
             // firstTab.current.style.display = 'flex'
           }
 
         } else {
           if (tabOffsetBottom <= scrollY) {
+
+            // tabRef.current.style.top += 50;
             controlRef.current.style.position = 'fixed';
-            controlRef.current.style.top = '1rem';
-          } else if (scrollY <= tabOffsetBottom) {
+            controlRef.current.style.bottom = '1rem';
+            controlRef.current.style.height = '100%'
+
+            // Fix it 1rem from the top
+            // firstTab.current.style.display = 'none'
+          } else if (tabOffsetBottom >= scrollY) {
+            // Reset position when scrolling back up
             controlRef.current.style.position = 'static';
+
+            // firstTab.current.style.display = 'flex'
           }
         }
-      } else {
-        return;
+
       }
-
     }
-
 
     window.addEventListener('scroll', handleScroll);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [rowSelection]);
+  }, [rowSelection])
 
   return (
-    <div id="transaction-page" data-page="transaction" className="w-full h-full px-2 md:px-4 xl:px-9 mt-20 mb-10 font-custom2 text-black  ">
-      <h1 className="text-slate-700 font-bold font-custom3 text-2xl text-center lg:text-left">Transactions</h1>
+    <div id="transaction-page" data-page="transaction" className="w-full h-full px-2 md:px-4 2xl:px-14 xl:px-9 mt-20 mb-10 font-custom2 text-black  ">
+      <h1 className="text-slate-700 dark:text-foreground  font-bold font-custom3 text-2xl text-center lg:text-left">Transactions</h1>
       <div className="mt-1">
         <div className="date-table-filters w-full flex h-24 items-center  max-w-full ">
           <MonthPicker params={searchParam} page={page} setPage={setPage} monthStrings={monthStrings} />
-          <div className="ml-auto flex items-center gap-2" >
+          <div className="ml-auto flex items-center gap-2 text-foreground" >
             <TransactionButton handleOpenSideBar={handleOpenSideBar} />
+            <ExportDataToCsv month={month} year={year} data={data && data?.listTransactions} />
 
-            <Button className={buttonVariants({ variant: "default", className: `px-4 bg-orange-400  flex ` })} onClick={() => {
+            <Button className={buttonVariants({ variant: "default", className: `px-4 bg-orange-400 text-foreground  flex ` })} onClick={() => {
               setHideOver(!hideOver)
               updateQueryParams({ month, year })
             }}>
@@ -361,7 +371,7 @@ export default function TransactionPage() {
         )
       }
 
-      <div className=" h-full w-full ">
+      <div className={` h-full w-full `}>
 
         <>
           {width < 816 ?
@@ -370,60 +380,69 @@ export default function TransactionPage() {
                 {isLoading && <CardTransaction handleEditTransaction={handleEditTransaction} data={[]} isPending={isLoading} />}
                 {data && month && year && <CardTransaction handleEditTransaction={handleEditTransaction} data={data?.listTransactions} />}
               </div>
-              <div style={{ minWidth: `calc(260px + 1rem)` }} className={`${hideOver ? `flex` : `hidden`} flex flex-grow flex-1  flex-col items-end `}>
+              <div style={{ minWidth: `calc(260px + 1rem)` }} className={`${hideOver ? `flex` : `hidden`} flex  flex-1 bg-background text-foreground  flex-col items-end `}>
                 <div id="sticky-anchor" className="w-full bg-red-300 h-0"></div>
-                <div id="sticky" ref={controlRef} className="mb-2" >
+                <div id="sticky" ref={controlRef} className=" mb-[4rem] h-fit " >
                   {Object.keys(rowSelection).length > 0 && <SelectedTransactions secondBox={secondBox} />}
                   {data && data?.listTransactions && <ReviewTransactions month={month} category={category} year={year} page={page} transaction={data.listTransactions} />}
                 </div>
               </div>
             </div> :
             <>
-              {isPending || categoriesetching || categoryLoading ? < TransactionTable
+              {isPending || categoryLoading ? < TransactionTable
                 clearFilter={clearFilters}
                 columns={columns}
                 data={[]}
+                hideOver={hideOver}
                 listData={[]}
                 handleOpenSideBar={handleOpenSideBar}
-                isPending={isPending} /> :
-                <div ref={firstBox} className="flex z-0">
-                  <div className=" px-3  mt-5  overflow-x-auto overflow-y-hidden h-fit py-2  z-0 bg-white bg-opacity-30 rounded-md  ">
+                isPending={isLoading || isPending} /> :
+                <div ref={firstBox} className="flex z-0 ">
+                  <div className={` px-3 flex flex-col ${hideOver ? 'xl:max-w-2xl lg:w-full ' : ''}  mt-5 border-0  overflow-x-auto  overflow-y-hidden h-fit py-2 text-foreground  z-0 b bg-opacity-30 rounded-md  `}>
                     {data && data.listTransactions && categories && <TransactionTable
                       clearFilter={clearFilters}
+                      hideOver={hideOver}
                       columns={columns}
                       data={data?.listTransactions}
                       listData={data}
                       handleOpenSideBar={handleOpenSideBar}
-                      isPending={isLoading} />}
+                      isPending={isLoading || isPending} />}
+                    <>
+                      {data && data.listTransactions && data.listTransactions.length >= limit && (
+                        <div className="flex justify-between h-24 items-center  mt-2">
+                          {data && data.listTransactions.length >= limit && <LimitButton setLimit={setLimit} />}
+                          <Pagination className="">
+                            <PaginationContent className="  rounded-md ml-auto">
+                              <PaginationItem className=" bg-transparent  cursor-pointer rounded-md " >
+                                <PaginationPrevious className=" hover:bg-transparent" onClick={handlePrevious} />
+                              </PaginationItem>
+                              {prepareButtons()}
+                              <PaginationItem className=" bg-tranaparent cursor-pointer rounded-md">
+                                <PaginationNext className=" hover:bg-transparent" onClick={handleNext} />
+                              </PaginationItem>
+                            </PaginationContent>
+                          </Pagination>
+                        </div>)
+                      }
+                    </>
+
                   </div>
-                  <div style={{ minWidth: `calc(260px + 1rem)` }} className={`${hideOver ? `flex` : `hidden`} flex flex-grow flex-1 max-[1000px]:flex-row max-[1000px]:items-start flex-col items-end `}>
+                  <div style={{ minWidth: `calc(260px + 1rem)` }} className={`${hideOver ? `flex` : `hidden`} flex  flex-1 flex-grow max-[1000px]:flex-row max-[1000px]:items-start flex-col items-end `}>
                     <div className="w-full bg-red-300 h-0"></div>
-                    <div ref={controlRef} className="" >
+                    <div className="mb-[4rem]" ref={controlRef}>
                       {Object.keys(rowSelection).length > 0 && <SelectedTransactions secondBox={secondBox} />}
                       {data && data?.listTransactions && page && month && year && <ReviewTransactions month={month} category={category} year={year} page={page} transaction={data?.listTransactions} />}
                     </div>
-                  </div>
-                </div>}
-            </>}
 
-          <div className="">
-            {data && data.listTransactions && data.listTransactions.length >= limit && (
-              <div className="flex justify-between h-24 items-center  mt-2">
-                {data && data.listTransactions.length >= limit && <LimitButton setLimit={setLimit} />}
-                <Pagination className="">
-                  <PaginationContent className="  rounded-md ml-auto">
-                    <PaginationItem className=" bg-transparent  cursor-pointer rounded-md " >
-                      <PaginationPrevious className=" hover:bg-transparent" onClick={handlePrevious} />
-                    </PaginationItem>
-                    {prepareButtons()}
-                    <PaginationItem className=" bg-tranaparent cursor-pointer rounded-md">
-                      <PaginationNext className=" hover:bg-transparent" onClick={handleNext} />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              </div>)
-            }
-          </div>
+                  </div>
+
+                </div>}
+            </>
+
+
+          }
+
+
         </>
 
       </div>

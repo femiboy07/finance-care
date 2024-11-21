@@ -99,9 +99,9 @@ export default function AddAccounts({ isAddAccounts, setIsAddAccounts }: { isAdd
   const { isPending } = mutation;
   return (
     <Form {...form}>
-      <RouterForm className="  bg-white w-full  p-[0rem] font-custom relative border-l flex flex-col     text-black " onSubmit={form.handleSubmit(onSubmit)}>
-        <div className="header text-black w-full pt-[2.5em]  px-6 text-2xl ">
-          <h1 >Add New Accounts</h1>
+      <RouterForm className="  bg-white  dark:bg-background text-foreground w-full  p-[0rem] font-custom relative border-l flex flex-col     text-black " onSubmit={form.handleSubmit(onSubmit)}>
+        <div className="header text-black dark:text-foreground w-full pt-[2.5em]  px-6 text-2xl ">
+          <h1>Add New Accounts</h1>
         </div>
         <div className=" p-[1.5em] overflow-y-auto overflow-x-hidden scrollbar-widths flex-1    mt-3  ">
 
@@ -160,10 +160,10 @@ export default function AddAccounts({ isAddAccounts, setIsAddAccounts }: { isAdd
 
         <div className="close-button   pt-[1.5em] m-[1.5em] border-t flex items-center justify-between border-top    ">
 
-          <Button className={buttonVariants({ variant: "default", className: "px-3  bg-orange-400 hover:bg-orange-500 " })} onClick={() => setIsAddAccounts(false)}>
+          <Button className={buttonVariants({ variant: "default", className: "px-3  bg-orange-400 font-bold text-foreground hover:bg-orange-500 " })} onClick={() => setIsAddAccounts(false)}>
             CLOSE
           </Button>
-          <Button className={`ml-auto `} type='submit' disabled={isPending} >
+          <Button className={`ml-auto text-foreground dark:text-orange-400 font-bold `} type='submit' disabled={isPending}  >
             {isPending ? "Loading..." : "CREATE ACCOUNTS"}
           </Button>
 

@@ -9,7 +9,7 @@ import { DataProvider } from "../context/DataProvider";
 
 export default function AuthLayout() {
   return (
-    <div className="w-full min-h-screen loading-banner flex flex-col justify-center items-center overflow-y-auto">
+    <div className="w-full min-h-screen loading-banner dark:loading-dark   dark:bg-background flex flex-col justify-center items-center overflow-y-auto">
       <DataProvider>
         <Outlet />
       </DataProvider>

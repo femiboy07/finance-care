@@ -67,7 +67,7 @@ export const accountColumns: ColumnDef<Accounts>[] = [
 
   {
     id: 'actions',
-
+    size: 20
 
   }
 ]
@@ -160,7 +160,7 @@ export function AccountTable<TData, TValue>({
                 doubleRows.map((item, index) => (
                   <TableRow
                     key={index}
-                    className={`w-full border bg-white ${isPending ? "animate-pulse" : ""}`}
+                    className={`w-full border bg-white dark:bg-card ${isPending ? "animate-pulse" : ""}`}
                   >
                     <TableCell
                       colSpan={table.getHeaderGroups()[0]?.headers?.length || 9}
@@ -172,7 +172,7 @@ export function AccountTable<TData, TValue>({
           )}
         </>
         {table.getRowModel().rows.length === 0 && !isPending && (
-          <div className="max-w-md w-full flex absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 flex-col space-y-2 justify-center items-center text-center">
+          <div className="max-w-md w-full z-[47888] flex dark:text-foreground dark:font-extrabold absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 flex-col space-y-2 justify-center items-center text-center">
             <img src={lunchImage} alt="lunch" className="w-16 h-16" />
             <span className="w-full">You have no accounts yet!</span>
             <span>ways to add a transaction</span>

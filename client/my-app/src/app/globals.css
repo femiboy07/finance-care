@@ -10,7 +10,7 @@
 @layer base {
   :root {
     --background: 0, 5%, 96%;
-    --foreground: 45, 27%, 80%;
+    --foreground: hsl(60, 9%, 4%);
 
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
@@ -41,11 +41,11 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background:240 5%  11%;
+    --foreground:200 18% 97%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card:0 0%  19% ;
+    --card-foreground:200 18% 97% ;
 
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
@@ -65,7 +65,7 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
+    --border:210 6% 14% 0.1;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
   }
@@ -87,13 +87,21 @@
   }
 
   .loading-banner {
-    background: url('../assets/dollarimage.jpg');
+    background-image: url('../assets/dollarimage.jpg');
     background-repeat: repeat;
     background-attachment: fixed;
     background-size: 50px 50px;
     width: 100%;
     height: 100%;
   }
+
+  .loading-dark{
+     background-color: #272727 !important;
+     background-image: url('../assets/dollarimage.jpg') !important;
+     background-size: 91px 64px !important;
+     background-blend-mode: multiply;
+  }
+
 
   .meet {
     background-color: orange;
@@ -109,6 +117,7 @@
 
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
 
   }
 }

@@ -30,14 +30,21 @@ export const LoadingBannerProvider: React.FC<{ children: React.ReactNode }> = ({
         return () => clearTimeout(timeout);
     }, [categories]);
 
+    // useEffect(() => {
+    //     if (token === null) {
+    //         navigate('/auth/login')
+    //     }
+    // }, [navigate, token])
+
     useEffect(() => {
         // Check if user is logged in and accessing login or register pages
         const currentPath = window.location.pathname;
-        if (token && (currentPath === "/login" || currentPath === "/register")) {
+        console.log(currentPath, 'currentPath')
+        if ((token && currentPath === "/auth/login") || (token && currentPath === "/register")) {
             setShowBanner(true);
             const timeout = setTimeout(() => {
                 setShowBanner(false);
-                navigate("/dashboard", { replace: true });
+                navigate("/dashboard");
             }, 10000); // 10 seconds delay
 
             // Clean up on unmount

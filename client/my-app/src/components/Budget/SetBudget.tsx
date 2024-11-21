@@ -8,6 +8,7 @@ import { useOutletContext } from 'react-router-dom';
 import { ContextType } from '../../Layouts/DashboardLayout';
 import { LoaderCircle, LucideXCircle, XCircle, XCircleIcon } from 'lucide-react';
 import { Button, buttonVariants } from '../../@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../@/components/ui/tooltip';
 
 
 
@@ -157,7 +158,15 @@ export default function SetBudget({ placeholder, defaultValue, value, name, clas
         <td onMouseOver={() => setOnTouch(true)} onMouseLeave={() => setOnTouch(false)} className={` ${text !== '' ? 'gap-2' : ''} ${touch ? 'text-orange-400' : ''}  h-full relative hover:border-orange-400 flex   flex-grow-0 max-w-full    items-center`}>
             <div className=' w-8 flex justify-center border-none h-full items-center max-w-full flex-grow-0  ' >
                 {text !== '' && touch ?
-                    <LucideXCircle onClick={() => handleDelete(token.access_token, id)} className='border-none cursor-pointer text-red-500 z-40' size={18} />
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger>
+                                <LucideXCircle onClick={() => handleDelete(token.access_token, id)} className='border-none cursor-pointer text-red-500 z-40' size={18} />
+                            </TooltipTrigger>
+                            <TooltipContent>unset budget</TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+
                     : null}
                 {pendingBudget && <LoaderCircle className=" animate-spin absolute flex items-center self-center bottom-1/2 right-4 top-1/2 w-4 h-4" />}
             </div>
@@ -176,7 +185,7 @@ export default function SetBudget({ placeholder, defaultValue, value, name, clas
                                 type={type}
                                 value={text}
                                 name={name}
-                                className={`${className} py-0  px-[5.1px] border-0 m-0 z-20  flex flex-wrap flex-grow-0 ${touch ? 'hover:text-orange-400' : ''}   outline-none text-left leading-tight shadow-none`}
+                                className={`${className} py-0  px-[5.1px] border-0 m-0 z-20 text-foreground  flex flex-wrap flex-grow-0 ${touch ? 'hover:text-orange-400' : ''}   outline-none text-left leading-tight shadow-none`}
                                 defaultValue={defaultValue}
                                 onChange={(e) => setText(e.target.value)}
                                 placeholder={placeholder}

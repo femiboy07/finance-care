@@ -23,25 +23,7 @@ export default function DeleteTransactionButton({ transactionId, closeSideBar, i
         // mutationKey:['delete',token.access_token,{transactionId}],
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['alltransactions'] })
-            queryClient.invalidateQueries({ queryKey: ['allbudgets'] })
-        }
-    })
-
-    const { isPending, isSuccess } = mutation;
-
-
-
-    const handleDelete = async (tokens: string, transaction: string | string[]) => {
-        try {
-            if (typeof transaction === 'string') {
-                await mutation.mutateAsync({ queryKey: tokens, variable: transaction });
-            } else if (typeof transaction === 'object') {
-                await mutation.mutateAsync({ queryKey: tokens, variable: transaction });
-            }
-
-        } catch (err) {
-            console.log(err);
-        } finally {
+            queryClient.invalidateQueries({ queryKey: ['allbudgets'] });
             new Promise((resolve) => setTimeout(resolve, 5000))
             closeSideBar && closeSideBar()
             toast({
@@ -50,7 +32,32 @@ export default function DeleteTransactionButton({ transactionId, closeSideBar, i
                 className: "text-black bg-white"
             })
             setRowSelection({})
+        },
+        onError(error, variables, context) {
+            new Promise((resolve) => setTimeout(resolve, 5000))
+            closeSideBar && closeSideBar()
+            toast({
+
+                description: `${error}`,
+                className: "text-white",
+                variant: 'destructive',
+            })
+        },
+    })
+
+    const { isPending, isSuccess } = mutation;
+
+
+
+    const handleDelete = async (tokens: string, transaction: string | string[]) => {
+
+        if (typeof transaction === 'string') {
+            mutation.mutate({ queryKey: tokens, variable: transaction });
+        } else if (typeof transaction === 'object') {
+            mutation.mutate({ queryKey: tokens, variable: transaction });
         }
+
+
 
     }
 
@@ -65,7 +72,7 @@ export default function DeleteTransactionButton({ transactionId, closeSideBar, i
                     {icon ? `DELETE ${Object.keys(rowSelection).length}` : 'DELETE THIS TRANSACTION'}
                 </Button>
             </DialogTrigger>
-            <DialogContent className="px-0 font-custom " data-diag="open">
+            <DialogContent className="px-0 font-custom  dark:text-foreground dark:bg-card" data-diag="open">
                 <DialogHeader className="px-3">
                     <DialogTitle>Confirm Deletion</DialogTitle>
                 </DialogHeader>
@@ -73,13 +80,15 @@ export default function DeleteTransactionButton({ transactionId, closeSideBar, i
                     Are you sure you want to delete this transaction
                 </DialogDescription>
                 {/* <DialogFooter className=" border-t h-full w-full "> */}
-                <div className="flex  h-14 justify-center  border-t items-center px-3 gap-2 ">
+                <div className="flex  relative h-14 justify-center   items-center px-3 gap-2 ">
+
                     <DialogClose className={buttonVariants({ variant: "outline", className: "font-semibold border-orange-400" })}>
                         NO,CANCEL
                     </DialogClose>
                     <Button className={buttonVariants({ variant: "default", className: "bg-red-600 font-bold" })} onClick={() => handleDelete(token.access_token, transactionId)}  >
                         {isPending ? "Loading..." : 'YES DELETE'}
                     </Button>
+
                 </div>
                 {/* </DialogFooter> */}
             </DialogContent>

@@ -6,7 +6,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import z from "zod";
 import { useForm, useWatch } from "react-hook-form";
 import { Input } from "../../@/components/ui/input";
-import { Button } from "../../@/components/ui/button";
+import { Button, buttonVariants } from "../../@/components/ui/button";
 import { useAuth } from "../../context/userAutthContext";
 import useRequireAuth from "../../hooks/useRequireAuth";
 import { useLoading } from "../../context/LoadingContext";
@@ -127,13 +127,13 @@ const LoginPage: React.FC = () => {
 
   return (
     <Form {...form}>
-      <div className="w-full font-custom  max-w-sm h-fit text-black  overflow-y-auto overflow-x-hidden flex rounded-md leading-7 justify-center  py-4  lg:py-4  space-y-5 flex-col bg-white  shadow-[0px_0px_4px_3px_rgb(238,238,238)] px-4 border-black ">
+      <div className="w-full font-custom bg-card dark:bg-card   dark:shadow-sm  max-w-sm h-fit text-black dark:text-foreground  overflow-y-auto overflow-x-hidden flex rounded-md leading-7 justify-center  py-4  lg:py-4  space-y-5 flex-col bg-white  shadow-[0px_0px_4px_3px_rgb(238,238,238)] px-4 border-black ">
         <div className="block max-w-[1600px] w-[90%] mx-auto h-fit">
           <div className="w-[100px] h-[100px] m-auto flex justify-center items-center flex-col ">
             <div style={{ backgroundImage: `url(${lunchMoneyImg})`, backgroundRepeat: "no-repeat", backgroundSize: "contain" }} className="circle w-[60px] h-[60px] lg:w-[80px] lg:h-[80px] flex justify-center  rounded-full relative  top-0 animate-logo-bounce "></div>
             <div className="w-[50px] opacity-[0.5] h-[10px] animate-shadow-move   bg-black rounded-[80%] mt-5"></div>
           </div>
-          <h1 className="text-center prose prose-h1:text-lg text-xl md:text-2xl text-stone-700 lg:text-3xl font-bold text-nowrap">Welcome Back!!</h1>
+          <h1 className="text-center prose prose-h1:text-lg text-xl dark:text-foreground md:text-2xl text-stone-700 lg:text-3xl font-bold text-nowrap">Welcome Back!!</h1>
           {/* {!isOnline && <span>No internet connection</span>} */}
           <RouterForm onSubmit={form.handleSubmit(onSubmit)} className="w-full flex flex-col m-[1em_0px_2em] space-y-4">
             {form.formState.errors && form.formState.errors.email?.type === "manual" && <span className="text-white text-center bg-red-600 px-3 rounded-md">{form.formState.errors.email.message}</span>}
@@ -142,10 +142,10 @@ const LoginPage: React.FC = () => {
               control={form.control}
               name="email"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="">
                   <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">EMAIL</FormLabel>
                   <FormControl >
-                    <Input   {...field} onChange={(e) => {
+                    <Input className="text-foreground"  {...field} onChange={(e) => {
                       field.onChange(e);
                       handleInputChange()
                     }} autoComplete="additional-name" />
@@ -161,7 +161,7 @@ const LoginPage: React.FC = () => {
                 <FormItem>
                   <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">PASSWORD</FormLabel>
                   <FormControl>
-                    <Input type="password" autoComplete="password" {...field} />
+                    <Input className="text-foreground" type="password" autoComplete="password" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -170,7 +170,7 @@ const LoginPage: React.FC = () => {
             <div className="relative py-2 ">
               <button className=" text-right  absolute min-w-[45px] right-0 text-sm justify-end font-bold text-teal-500 flex">Forgot password?</button>
             </div>
-            <Button className="w-full bg-orange-400 p-2 mt-2 rounded-full" type="submit" disabled={disabled || isLoading}>
+            <Button className={buttonVariants({ variant: 'default', className: "w-full bg-orange-400 p-2 mt-2 hover:bg-orange-400 text-foreground" })} type="submit" disabled={disabled || isLoading}>
               {isLoading ? "loading..." : "LOGIN"}
             </Button>
 

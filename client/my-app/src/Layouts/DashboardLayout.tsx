@@ -69,7 +69,7 @@ export default function DashBoardLayout() {
 
 
   useEffect(() => {
-    if (token === null) {
+    if (!token) {
       navigate('/auth/login', { replace: true });
     }
   }, [navigate, token])
@@ -109,7 +109,7 @@ export default function DashBoardLayout() {
       {/* so this is for the side bar */}
       <NavBar handleOpenSideBar={handleOpenSideBar} />
       <SideBar setOpen={setOpen} open={open} />
-      {width < 1280 && <MobileSideBar open={open} setOpen={setOpen} />}
+      {width <= 1280 && <MobileSideBar open={open} setOpen={setOpen} />}
       <LoadingOverlay />
       <Banner />
       {isLoading && createPortal(

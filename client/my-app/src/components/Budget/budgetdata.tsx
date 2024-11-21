@@ -113,17 +113,17 @@ export const BudgetColumns: ColumnDef<Budgets>[] = [
       )
     },
     size: 40,
-    maxSize: 150,
-    minSize: 150
+    // maxSize: 150,
+    // minSize: 150
 
 
   },
 
   {
-    size: 40,
-    minSize: 40,
-    maxSize: 40,
     id: 'actions',
+    size: 50,
+
+
 
   },
 
@@ -156,8 +156,8 @@ export function BudgetTable<TData, TValue>({ columns, data, isPending }: DataTab
   const doubleRows = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
   return (
 
-    <Table id="table-lead" className="border-black table-auto  overflow-x-auto border-spacing-0 w-full  overflow-y-hidden ">
-      <TableHeader className="w-full ">
+    <Table className="border-black  dark:border-0 dark:text-[#d2d2d2] table-auto md:table-fixed  overflow-x-auto border-spacing-0 w-full  overflow-y-hidden ">
+      <TableHeader className=" ">
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id} className="[&_tr:first-child]:border-collapse">
             {headerGroup.headers.map((header) => {
@@ -178,9 +178,9 @@ export function BudgetTable<TData, TValue>({ columns, data, isPending }: DataTab
       <TableBody className=" border-black relative ">
         <>
           {isPending &&
-            <div className="max-w-md w-full flex absolute text-black left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 flex-col space-y-2 justify-center items-center text-center ">
-              <span>Fetching transactions..</span>
-              <LoaderCircleIcon />
+            <div className="max-w-md w-full flex absolute text-black dark:text-foreground left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 flex-col space-y-2 justify-center items-center text-center ">
+              <span>Fetching budgets..</span>
+              <LoaderCircleIcon className="animate-spin" />
             </div>
           }
           {table.getRowModel().rows?.length ? (
@@ -211,7 +211,7 @@ export function BudgetTable<TData, TValue>({ columns, data, isPending }: DataTab
                 {doubleRows.map((item, index) => (
 
 
-                  <TableRow key={index} className={` w-full border bg-white ${isPending ? ' animate-pulse' : ''}   `} >
+                  <TableRow key={index} className={` w-full border bg-white dark:bg-card ${isPending ? ' ' : ''}   `} >
                     <TableCell colSpan={table.getHeaderGroups()[0]?.headers?.length || 1} className={`w-full border ${isPending ? 'py-3' : 'py-5'}  `}>
 
                     </TableCell>

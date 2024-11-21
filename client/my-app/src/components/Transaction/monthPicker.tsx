@@ -71,11 +71,11 @@ export default function MonthPicker({ params, page, setPage, monthStrings }: { p
   return (
     <div className='flex py-5 items-center text-black'>
       <div className="date-controls-button flex gap-1">
-        <Button onClick={handlePrevClick} className={buttonVariants({ className: 'rounded-[100%] py-7 bg-transparent hover:bg-slate-200 px-3 text-black' })}><MoveLeftIcon /></Button>
-        <Button onClick={handleNextClick} className={buttonVariants({ className: 'rounded-[100%] py-7 bg-transparent hover:bg-slate-200  px-3 text-black' })}><MoveRightIcon /></Button>
+        <Button onClick={handlePrevClick} className={buttonVariants({ className: 'rounded-[100%] py-7 bg-transparent hover:bg-slate-200 px-3 text-black dark:text-foreground' })}><MoveLeftIcon /></Button>
+        <Button onClick={handleNextClick} className={buttonVariants({ className: 'rounded-[100%] py-7 bg-transparent hover:bg-slate-200  px-3 text-black dark:text-foreground' })}><MoveRightIcon /></Button>
       </div>
       <div className="date-picker date-title ml-2">
-        <span className="text-slate-700 font-bold text-lg lg:text-3xl">{monthString} {mainYear}</span>
+        <span className="text-slate-700 dark:text-foreground font-bold text-lg lg:text-3xl">{monthString} {mainYear}</span>
       </div>
     </div>
   );

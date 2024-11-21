@@ -28,6 +28,7 @@
     "src",
     "my-app",
     "jest.config.js",
-    "babel.config.js"
+    "babel.config.js",
+    "_mocks_"
   ]
 }
