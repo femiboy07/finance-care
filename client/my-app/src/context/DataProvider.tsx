@@ -3,6 +3,7 @@ import { useQuery, useQueries } from '@tanstack/react-query';
 import { fetchTransactions, fetchBudgets, getUser, fetchCategory, getMetrics, getAccounts, fetchTransaction } from '../api/apiRequest';
 import axios, { AxiosResponse } from 'axios';
 import { queryClient } from '..';
+import { apiClient } from './LoadingContext';
 
 
 interface TransactionQueryParams {
@@ -50,7 +51,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const logIn = async (email: string, password: string): Promise<AxiosResponse<any, any>> => {
 
 
-        const res = await axios.post('http://localhost:5000/api/auth/logIn', {
+        const res = await apiClient.post('/auth/logIn', {
             email: email,
             password: password,
         }, {
