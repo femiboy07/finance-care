@@ -114,86 +114,71 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 
-
-
-const router = createBrowserRouter([
-  ...(process.env.NODE_ENV !== 'production') ?
-    [{
-      path: '/',
-      element: <App />
-
-    }] : [],
+const routes = [
+  ...(process.env.NODE_ENV !== 'production'
+    ? [
+      {
+        path: '/',
+        element: <App />,
+      },
+    ]
+    : []),
   {
     path: '/auth',
-
-    element:
-
-      <AuthLayout />
-    ,
-
+    element: <AuthLayout />,
     children: [
       {
         path: 'login',
         element: <LoginPage />,
-
       },
       {
         path: 'register',
         element: <Register />,
       },
-
       {
         path: 'logout',
-        element: <LogOut />
-      }
-
+        element: <LogOut />,
+      },
     ],
   },
   {
-    path: "dashboard",
-    element:
-
-      <DashBoardLayout />,
-
+    path: '/dashboard',
+    element: <DashBoardLayout />,
     children: [
       {
         index: true,
-
-        element: <DashBoard />
+        element: <DashBoard />,
       },
       {
-
-        path: "transactions",
-        element:
-          <TransactionPage />,
+        path: 'transactions',
+        element: <TransactionPage />,
       },
       {
-        path: "transactions/:year?/:month?",
-        element:
-          <TransactionPage />,
-      },
-
-      {
-        path: "accounts",
-        element: <AccountPage />
-      },
-
-      {
-        path: "budgets",
-        element: <BudgetsPage />
+        path: 'transactions/:year?/:month?',
+        element: <TransactionPage />,
       },
       {
-        path: "budgets/:year?/:month?",
-        element: <BudgetsPage />
-      }
-    ]
+        path: 'accounts',
+        element: <AccountPage />,
+      },
+      {
+        path: 'budgets',
+        element: <BudgetsPage />,
+      },
+      {
+        path: 'budgets/:year?/:month?',
+        element: <BudgetsPage />,
+      },
+    ],
   },
   {
-    path: "*",
-    element: <NotFound />
-  }
-]);
+    path: '*',
+    element: <NotFound />,
+  },
+];
 
+// Create the router
+const router = createBrowserRouter(routes);
 root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
