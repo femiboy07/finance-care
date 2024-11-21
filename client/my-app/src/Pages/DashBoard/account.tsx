@@ -3,19 +3,16 @@ import React, { useEffect, useState } from "react";
 import { getAccounts } from "../../api/apiRequest";
 import { Button, buttonVariants } from "../../@/components/ui/button";
 import { Card } from "../../@/components/ui/card";
-import peerIcon from "../../assets/peercoin.png"
 import { accountColumns, AccountTable } from "../../components/Account/accountsTable";
 import AddAccounts from "../../components/Account/AddAccounts";
-import { HomeIcon, LoaderCircle, LoaderIcon, MoreHorizontal, MoveLeftIcon, PlusIcon } from "lucide-react";
+import { MoreHorizontal, MoveLeftIcon } from "lucide-react";
 import { useInnerWidthState } from "../../hooks/useInnerWidthState";
 import { useOutletContext } from "react-router-dom";
 import { ContextType } from "../../Layouts/DashboardLayout";
-import { createPortal } from "react-dom";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../../@/components/ui/dropdown-menu";
 import EditAccounts from "../../components/Account/EditAccount";
 import ReviewAccounts from "../../components/Account/ReviewAccounts";
 import AccountButton from "../../components/Account/AccountButton";
-import { useUser } from "../../context/UserProvider";
 
 
 
