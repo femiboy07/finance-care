@@ -38,7 +38,7 @@ const formSchema = z.object({
 })
 
 
-export default function AddAccounts({ isAddAccounts, setIsAddAccounts }: { isAddAccounts: any, setIsAddAccounts: any }) {
+export default function AddAccount({ isAddAccounts, setIsAddAccounts }: { isAddAccounts: any, setIsAddAccounts: any }) {
   const token = JSON.parse(localStorage.getItem('userAuthToken') || '{}');
   const [reveal, setReveal] = useState(false);
   const { toast } = useToast();

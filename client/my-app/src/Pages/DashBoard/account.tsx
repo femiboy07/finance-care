@@ -4,7 +4,7 @@ import { getAccounts } from "../../api/apiRequest";
 import { Button, buttonVariants } from "../../@/components/ui/button";
 import { Card } from "../../@/components/ui/card";
 import { accountColumns, AccountTable } from "../../components/Account/accountsTable";
-import AddAccounts from "../../components/Account/AddAccounts";
+import AddAccounts from "../../components/Account/AddAccount";
 import { MoreHorizontal, MoveLeftIcon } from "lucide-react";
 import { useInnerWidthState } from "../../hooks/useInnerWidthState";
 import { useOutletContext } from "react-router-dom";
