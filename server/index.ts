@@ -34,7 +34,7 @@ const httpServer=createServer(app);
 const io=new Server(httpServer,{cors:{
     origin:["http://localhost:3000","http://localhost:3001"]
 }})
-const port=5000;
+const port=process.env.PORT || 5000;
 app.use(expresscookie());
 app.use(express.json());
 
