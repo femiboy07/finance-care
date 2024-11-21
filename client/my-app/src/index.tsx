@@ -4,7 +4,7 @@ import "../src/app/globals.css";
 // import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import { RouterProvider, createBrowserRouter, useLocation } from 'react-router-dom';
+import { Navigate, RouterProvider, createBrowserRouter, useLocation } from 'react-router-dom';
 import { onlineManager, QueryClient, QueryClientProvider, } from '@tanstack/react-query';
 import "react-day-picker/dist/style.css";
 
@@ -119,10 +119,15 @@ const routes = [
     ? [
       {
         path: '/',
-        element: <App />,
+        element: <App />, // Development only
       },
     ]
-    : []),
+    : [
+      {
+        path: '/',
+        element: <Navigate to="/auth/login" replace />, // Redirect in production
+      },
+    ]),
   {
     path: '/auth',
     element: <AuthLayout />,
