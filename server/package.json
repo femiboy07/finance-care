@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "start": "npm run build && node --max-old-space-size=4096 dist/index.js",
+    "start": "npm run build && node --inspect dist/index.js",
     "dev": "ts-node-dev index.ts"
   },
   "author": "",
