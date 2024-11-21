@@ -20,7 +20,7 @@ export interface IUser{
   email: string ,           // User's email address
   passwordHash: string,    // Hashed password for authentication
   name: string, 
-  accounts:any
+  accounts:mongoose.Schema.Types.ObjectId | any
   userRefreshTokens:string[],
   tokens?:userTokens,           // Full name of the user
   profilePictureUrl?: string, // URL to the user's profile picture
@@ -61,6 +61,7 @@ const userModel=new mongoose.Schema<IUser,UserModel,IUserMethods>({
     accounts:[{
        type:mongoose.Schema.Types.ObjectId,
        ref:"Accounts",
+       default:[]
     }],
      passwordHash:{
         type:String,

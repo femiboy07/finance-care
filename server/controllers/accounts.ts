@@ -100,6 +100,10 @@ export async function createAccount(req: CreateTransactionRequest, res: Response
 export async function updateAccount(req:Request,res:Response){
     const {id}=req.params;
      const {name,type,balance}=req.body; 
+
+     if(Number.isNaN(balance)){
+         return res.status(403).json({message:'Pls input a valid number'})
+     }
      if (!id) {
             return res.status(400).json({ message: "Account ID is required..." });
         }
@@ -151,6 +155,11 @@ export async function deleteAccount(req: Request, res: Response) {
   
       // Delete all transactions related to the account
       await transcation.deleteMany({ accountId: id }).session(session);
+     const accountUser= await user.findOne({accounts:id}).session(session);
+     if (accountUser) {
+        accountUser.accounts = accountUser.accounts.filter((accountId: string) => accountId.toString() !== id);
+        await accountUser.save({ session }); // Save changes within the transaction
+      }
   
       // Delete all budgets related to the account
       await budgets.deleteMany({ accountId: id }).session(session);

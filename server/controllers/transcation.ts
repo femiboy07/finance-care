@@ -14,6 +14,7 @@ import budgets from "../models/Budgets";
 import CategoryModel from "../models/Category";
 import { toDecimal128 } from "../utils/modify";
 import {toZonedTime} from 'date-fns-tz'
+import {json2csv} from "json-2-csv";
 
 
 
@@ -711,26 +712,46 @@ async function deductBalance(accountId: string, currentBalance:any, amount: any,
 }
 
 
-export async function totalIncome(req:Request,res:Response){
 
+export async function csvExportTransaction(req:CreateTransactionRequest, res: Response) {
+  const { year, month } = req.body;
+
+  if (!year || !month) {
+      return res.status(400).json({ message: 'Year and month are required.' });
+  }
+
+  try {
+      // Fetch transactions based on the year, month, and userId
+      const data = await transcation.find({
+          year: parseInt(year, 10),
+          month: parseInt(month, 10),
+          userId: req.user?._id,
+      }).populate('category','name _id');
+
+      if (!data.length) {
+          return res.status(404).json({ message: 'No transactions found for the specified criteria.' });
+      }
+      console.log(data,'sd');
+      
+     
+      const covertAllAmount=()=>{
+       const dataall= data.map((item)=>({_id:item._id,date:item.date,category:item.category,description:item.description,amount:convertToNumber(item.amount)}));
+       return dataall;
+      }
+
+      const converted=covertAllAmount();
+
+      // Convert the data to CSV format
+      const fields = ['_id', 'amount', 'date', 'name', 'description']; // Adjust fields as per your schema
+      const parser = json2csv(converted,{keys:['category','_id','amount','date','description']});
+      const csv = parser;
+
+      // Set headers and send the CSV
+      res.header('Content-Type', 'text/csv');
+      res.attachment(`transaction_data_${year}_${month}.csv`);
+      res.send(csv);
+  } catch (err) {
+      console.error('Error exporting transactions:', err);
+      return res.status(500).json({ message: 'Internal server error', error: err });
+  }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function zonedTimeToUtc(endOfMonthLocal: Date, timeZone: string) {
-  throw new Error("Function not implemented.");
-}
-

@@ -1,6 +1,6 @@
 import express from 'express';
 import passport from '../config/passport';
-import { deleteBudget, getBudgets, updateBudget } from '../controllers/budgets';
+import { clearAllBudgets, deleteBudget, getBudgets, updateBudget } from '../controllers/budgets';
 
 
 const router=express.Router();
@@ -10,6 +10,7 @@ const router=express.Router();
 router.put('/update/:year/:month',passport.authenticate("jwt",{session:false}),updateBudget);
 router.get('/listbudgets/:year/:month',passport.authenticate("jwt",{session:false}),getBudgets);
 router.delete('/delete/:id',passport.authenticate("jwt",{session:false}),deleteBudget);
+router.post('/clearbudget',passport.authenticate("jwt",{session:false}),clearAllBudgets);
 
 
 

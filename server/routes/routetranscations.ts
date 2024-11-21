@@ -1,6 +1,6 @@
 import express from 'express';
 import passport from '../config/passport';
-import { createTranscation, deleteTranscation, getLatestTransactions, getTranscations, metrics, updateTransaction } from '../controllers/transcation';
+import { createTranscation, csvExportTransaction, deleteTranscation, getLatestTransactions, getTranscations, metrics, updateTransaction } from '../controllers/transcation';
 import { getTotalIncomeAndExpense, getUserName } from '../controllers/user';
 
 
@@ -17,6 +17,7 @@ router.post('/delete',passport.authenticate("jwt",{session:false}),deleteTransca
 router.get('/statistics',passport.authenticate("jwt",{session:false}),getTotalIncomeAndExpense);
 router.get('/metrics',passport.authenticate("jwt",{session:false}),metrics);
 router.get('/getusername',passport.authenticate("jwt",{session:false}),getUserName);
+router.post('/csvexport',passport.authenticate("jwt",{session:false}),csvExportTransaction);
 
 
 

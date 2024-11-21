@@ -232,3 +232,25 @@ export async function deleteBudget(req: Request, res: Response) {
         return res.status(500).json({ message: "System error, please try again later", err });
     }
 }
+
+
+export async function clearAllBudgets(req:Request,res:Response){
+    const {month,year}=req.body;
+  try{
+    const unsetAllbudget=await budgets.updateMany(
+        {month:month,year:year},
+      {$set:{
+        budget:new mongoose.Types.Decimal128("0.0"),
+        remaining:new mongoose.Types.Decimal128("0.0"),
+      }},{upsert:false,new:true}
+    )
+
+        
+    if (!unsetAllbudget) {
+        return res.status(404).json({ message: "An error occured trying to clear all budgets...." });
+    }
+      return res.status(200).json({ message: "Budget cleared successfully..." });
+    }catch(err){
+        return res.status(500).json({ message: "System error, please try again later", err });
+    }
+}

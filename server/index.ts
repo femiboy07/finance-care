@@ -91,14 +91,6 @@ async function seedDatabase() {
 
 main()
 
-// mongoose.connect(process.env.MONGODB_URI!,{dbName:"financeApp"}).then(async()=>{
-    
-//        console.log("connected to the database");
-//        await seedDatabase()
-    
-// }).catch((err)=>{
-//     console.log("not able to connect to db",err)
-// })
 
 
 

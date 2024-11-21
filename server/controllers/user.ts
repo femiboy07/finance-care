@@ -41,7 +41,7 @@ export async function register(req:Request,res:Response,next:NextFunction):Promi
          newUser.save();
          res.cookie('refreshToken',refresh_token,{
             httpOnly:true,
-            secure:process.env.NODE_ENV! === "development",
+            secure:process.env.NODE_ENV === "production",
             sameSite:'strict'
          }) 
         return res.json({access_token,message:"registerd succesfully"});
@@ -64,11 +64,11 @@ export async function signInUser(req:Request,res:Response){
         const access_token=jwt.sign(payload,process.env.SECRET_KEY!,{expiresIn:60})
         const refresh_token=jwt.sign(payload, process.env.SECRET_KEY!,{expiresIn:'7d'});
         const expiresIn=Math.floor(Date.now() / 1000 ) + 1 * 60 * 60    
-        existingUser.userRefreshTokens.push(refresh_token);
+        existingUser.userRefreshTokens = [refresh_token];
         await existingUser.save();
          res.cookie('refreshToken',refresh_token,{
             httpOnly:true,
-            secure:false,
+            secure: process.env.NODE_ENV === 'production',
             sameSite:'strict',
             path:'/',
             domain:"localhost"
@@ -80,82 +80,63 @@ export async function signInUser(req:Request,res:Response){
     }
  
 }
-
-
-export async function refreshToken(req:Request,res:Response){
-    console.log(req.headers.cookie,"cookies")
-    console.log(req.cookies.refreshToken,"refresh")
-    const  refreshToken = req.cookies['refreshToken'];
-    console.log('Received refreshToken:', refreshToken);
-    console.log('Secret Key:', process.env.SECRET_KEY!);
-     console.log(process.env.SECRET_KEY!,"seddddfff")
-  
+export async function refreshToken(req: Request, res: Response, next: NextFunction) {
     try {
-        console.log(refreshToken)
-        if (!refreshToken) {
-            return res.status(401).json({message:'Refresh Token Required'});
-          } 
-      // Verify the refresh token
-      const decoded = jwt.verify(refreshToken, process.env.SECRET_KEY!) as {id:string,email:string};
-
-    
-      console.log(decoded,"decoded")
-      console.log(decoded.id)
-      const users = await user.findById(decoded.id);
-      console.log(users)
+      const refreshToken = req.cookies?.refreshToken;
   
-      if (!users ) {
-           return res.status(403).json({message:'Invalid Refresh Token'});
+      if (!refreshToken) {
+        return res.status(401).json({ message: 'Refresh Token Required' });
       }
-
-    // remove-old userRefreshtoken;
-
-      const tokenIndex=users.userRefreshTokens.findIndex((token)=>token === refreshToken);
-      console.log(tokenIndex,'tokenIndexxxxxxxxxxxxxxx')
-
-      if (tokenIndex === -1) {
-        return res.status(403).json({ message: 'Invalid Refresh Token' });
-    }
-
-    // Remove the old refresh token from the user's array
-    users.userRefreshTokens.splice(tokenIndex, 1);
-    await users.save();
-    // Generate a new access token
-    const access_token = jwt.sign(
-        { id: users._id, email: users.email },
-        process.env.SECRET_KEY!,
-        { expiresIn: '1h' }
-    );
-
-      const refresh_token = jwt.sign(
-        { id: users._id, email: users.email },
-        process.env.SECRET_KEY!,
-        { expiresIn: '1h' }
-      );
-     console.log(access_token,"Acesssssstoken second")
-      users.userRefreshTokens.push(refresh_token);
-      await users.save();
-
-      res.cookie('refreshToken',refresh_token,{
-        httpOnly:true,
-        secure:false,
-        sameSite:'strict',
-        path:'/',
-        domain:"localhost"
-     }) 
   
-     return  res.status(200).json({ access_token});
-    } catch (err:any) {
-        console.log(err.name)
+      let decoded;
+      try {
+        decoded = jwt.verify(refreshToken, process.env.SECRET_KEY!) as { id: string; email: string };
+      } catch (err: any) {
+        console.error('Token verification error:', err.message);
         if (err.name === 'TokenExpiredError') {
-            // Handle expired refresh token
-            res.clearCookie('refreshToken');
-            return res.status(401).json({ message: 'Session expired, please log in again' });
+          res.clearCookie('refreshToken');
+          return res.status(401).json({ message: 'Session expired, please log in again' });
         }
-        // res.clearCookie('refreshToken')
-      return res.status(403).json({message:err})
+        return res.status(403).json({ message: 'Invalid Refresh Token' });
+      }
+  
+      const userRecord = await user.findById(decoded.id);
+      if (!userRecord) {
+        return res.status(403).json({ message: 'Invalid Refresh Token: User not found' });
+      }
+  
+      const tokenIndex = userRecord.userRefreshTokens.indexOf(refreshToken);
+      if (tokenIndex === -1) {
+        return res.status(403).json({ message: 'Invalid Refresh Token: Token not found' });
+      }
+  
+      userRecord.userRefreshTokens.splice(tokenIndex, 1);
+      await userRecord.save();
+  
+      const newAccessToken = generateToken({ id: userRecord._id, email: userRecord.email }, '1h');
+      const newRefreshToken = generateToken({ id: userRecord._id, email: userRecord.email }, '7d');
+  
+      userRecord.userRefreshTokens.push(newRefreshToken);
+      await userRecord.save();
+  
+      res.cookie('refreshToken', newRefreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        path: '/',
+        domain: process.env.COOKIE_DOMAIN || 'localhost',
+      });
+  
+      return res.status(200).json({ access_token: newAccessToken });
+    } catch (err: any) {
+      console.error('Unexpected error:', err);
+      return res.status(500).json({ message: 'Internal server error' });
     }
-}
+  }
+  
+  function generateToken(payload: object, expiry: string) {
+    return jwt.sign(payload, process.env.SECRET_KEY!, { expiresIn: expiry });
+  }
 export async function logOutUser(req: Request, res: Response) {
     const refreshToken = req.cookies['refreshToken'];
     
@@ -293,6 +274,7 @@ export async function getTotalIncomeAndExpense(req: Request<{}, {}, {}, IncomeBy
             return value;
         };
 
+
         // Update the combined results with actual data
         incomeResult.forEach(item => {
             const index = item._id - 1;
@@ -304,8 +286,35 @@ export async function getTotalIncomeAndExpense(req: Request<{}, {}, {}, IncomeBy
             combinedResults[index].expense = convertToNumber(item.totalExpense);
         });
 
+        const calculatePercentageChange = (current: number, previous: number) => {
+            if (previous === 0) return current > 0 ? 100 : 0; // Avoid division by zero
+            return ((current - previous) / previous) * 100;
+        };
+        
+        // Get totals for the previous interval (for comparison)
+        const previousStartDate = startOfWeek(zonedNow, { weekStartsOn: 1 });
+        const previousEndDate = endOfWeek(zonedNow,{weekStartsOn:1})
+        
+        const previousIncome = await transcation.aggregate([
+            { $match: { type: 'income', date: { $gte: previousStartDate, $lt: previousEndDate }, userId: userId._id } },
+            { $group: { _id: null, total: { $sum: '$amount' } } },
+        ]);
+        
+        const previousExpense = await transcation.aggregate([
+            { $match: { type: 'expense', date: { $gte: previousStartDate, $lt: previousEndDate }, userId: userId._id } },
+            { $group: { _id: null, total: { $sum: '$amount' } } },
+        ]);
+        
+        // Calculate trends
+        const totalIncome = incomeResult.reduce((sum, item) => sum + item.totalIncome, 0);
+        const totalExpense = expenseResult.reduce((sum, item) => sum + item.totalExpense, 0);
+        
+        const incomeTrend = calculatePercentageChange(totalIncome, previousIncome[0]?.total || 0);
+        const expenseTrend = calculatePercentageChange(totalExpense, previousExpense[0]?.total || 0);
+        
+
         // Send the results as a JSON response
-        return res.json({ data: combinedResults, message: "Stats retrieved successfully" });
+        return res.json({ data: combinedResults,trends:{incomeTrend,expenseTrend}, message: "Stats retrieved successfully" });
     } catch (err) {
         console.error('Error calculating income and expense:', err);
         res.status(500).json({ message: "Internal server error" });
