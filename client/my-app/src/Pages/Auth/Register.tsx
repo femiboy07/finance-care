@@ -65,12 +65,12 @@ const RegisterPage: React.FC = () => {
         if (!values) return;
         try {
             setIsLoading(true)
-            const response = await axios.post('https://finance-care-14.onrender.com/api/auth/register', {
+            const response = await apiClient.post('/auth/register', {
                 name: values.name,
                 username: values.username,
                 email: values.email,
                 password: values.password,
-            }, { withCredentials: true, headers: { "Content-Type": "application/x-www-form-urlencoded" }, })
+            })
             if (response.status === 200) {
                 localStorage.setItem("userAuthToken", JSON.stringify(response.data));
                 localStorage.setItem("isNew", JSON.stringify({ user: true }))
