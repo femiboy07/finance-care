@@ -10,6 +10,7 @@ import axios from "axios";
 import { Button } from "../../@/components/ui/button";
 import lunchMoneyImg from '../../assets/luncho.png'
 import useRequireAuth from "../../hooks/useRequireAuth";
+import { apiClient } from "../../context/LoadingContext";
 
 const formSchema = z.object({
     name: z.string(),
@@ -64,16 +65,11 @@ const RegisterPage: React.FC = () => {
         if (!values) return;
         try {
             setIsLoading(true)
-            const response = await axios.post('http://localhost:5000/api/auth/register', {
+            const response = await apiClient.post('/auth/register', {
                 name: values.name,
                 username: values.username,
                 email: values.email,
                 password: values.password,
-            }, {
-                withCredentials: true,
-                headers: {
-                    'Content-Type': "application/x-www-form-urlencoded"
-                }
             })
             if (response.status === 200) {
                 localStorage.setItem("userAuthToken", JSON.stringify(response.data));
