@@ -123,7 +123,7 @@ function refreshToken(req, res) {
             res.cookie('refreshToken', newRefreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
-                sameSite: 'none',
+                sameSite: 'lax',
                 path: '/',
             });
             return res.status(200).json({ access_token: newAccessToken });
