@@ -123,7 +123,7 @@ export async function refreshToken(req: Request, res: Response) {
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
         path: '/',
-        domain: process.env.COOKIE_DOMAIN || 'localhost',
+        
       });
   
       return res.status(200).json({ access_token: newAccessToken });
