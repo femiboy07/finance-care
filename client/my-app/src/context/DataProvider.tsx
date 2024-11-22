@@ -51,7 +51,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const logIn = async (email: string, password: string): Promise<AxiosResponse<any, any>> => {
 
 
-        const res = await apiClient.post('/auth/logIn', {
+        const res = await axios.post('/auth/logIn', {
             email: email,
             password: password,
         }, { withCredentials: false })
