@@ -32,7 +32,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use(passport.initialize())
 app.use(cors({
-    origin:["http://localhost:3000","http://localhost:3001","https://finance-care-vcrs.vercel.app","https://finance-care-1.vercel.app"],
+    origin:["http://localhost:3000","http://localhost:3001","https://finance-care-1.vercel.app/"],
     credentials:true,
 }));
 
