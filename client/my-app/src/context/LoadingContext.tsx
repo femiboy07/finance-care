@@ -2,10 +2,10 @@ import axios from 'axios';
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 
-const apiUrl = `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api`;
+const apiUrl = `${"http://localhost:5000"}/api`;
 
 export const apiClient = axios.create({
-  baseURL: apiUrl,
+  baseURL: "https://finance-care-14.onrender.com/api",
   withCredentials: true, // Important to send cookies
   headers: { "Content-Type": "application/x-www-form-urlencoded" },
 });
