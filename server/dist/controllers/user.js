@@ -78,7 +78,6 @@ function signInUser(req, res) {
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
                 path: '/',
-                domain: "localhost"
             });
             return res.json({ access_token, expiresIn }).status(200);
         }
@@ -126,7 +125,6 @@ function refreshToken(req, res) {
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
                 path: '/',
-                domain: process.env.COOKIE_DOMAIN || 'localhost',
             });
             return res.status(200).json({ access_token: newAccessToken });
         }
@@ -168,7 +166,7 @@ function logOutUser(req, res) {
             // Clear the refresh token cookie
             res.clearCookie('refreshToken', {
                 httpOnly: true,
-                secure: false, // Use secure cookies in production
+                secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
                 sameSite: 'strict',
                 path: '/'
             });

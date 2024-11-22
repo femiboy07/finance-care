@@ -54,9 +54,6 @@ const categorySeeders_1 = require("./seeders/categorySeeders");
 const accountSeeder_1 = require("./seeders/accountSeeder");
 const app = (0, express_1.default)();
 const port = process.env.PORT || 5000;
-const allowedOrigins = [
-    "https://finance-care-1.vercel.app"
-];
 app.use((0, cors_1.default)({
     origin: "https://finance-care-1.vercel.app",
     credentials: true,
