@@ -52,7 +52,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const res = await axios.post('https://finance-care-14.onrender.com/api/auth/logIn', {
             email: email,
             password: password,
-        }, { withCredentials: false, headers: { "Content-Type": "application/x-www-form-urlencoded" }, })
+        }, { withCredentials: true, headers: { "Content-Type": "application/x-www-form-urlencoded" }, })
         return res;
     }
 
