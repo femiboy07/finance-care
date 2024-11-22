@@ -121,7 +121,7 @@ export async function refreshToken(req: Request, res: Response) {
       res.cookie('refreshToken', newRefreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite:'lax',
+        sameSite:'none',
         path: '/',
         
       });
