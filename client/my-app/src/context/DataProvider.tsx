@@ -51,7 +51,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const logIn = async (email: string, password: string): Promise<AxiosResponse<any, any>> => {
 
 
-        const res = await axios.post('https://finance-care-1.vercel.app/api/auth/logIn', {
+        const res = await axios.post('https://finance-care-14.onrender.com/api/auth/logIn', {
             email: email,
             password: password,
         }, { withCredentials: false })

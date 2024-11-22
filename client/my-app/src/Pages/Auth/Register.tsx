@@ -65,7 +65,7 @@ const RegisterPage: React.FC = () => {
         if (!values) return;
         try {
             setIsLoading(true)
-            const response = await axios.post('https://finance-care-1.vercel.app/api/auth/register', {
+            const response = await axios.post('https://finance-care-14.onrender.com/api/auth/register', {
                 name: values.name,
                 username: values.username,
                 email: values.email,
