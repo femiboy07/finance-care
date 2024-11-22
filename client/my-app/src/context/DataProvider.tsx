@@ -54,11 +54,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const res = await apiClient.post('/auth/logIn', {
             email: email,
             password: password,
-        }, {
-            withCredentials: true,
-            headers: {
-                'Content-Type': "application/x-www-form-urlencoded"
-            }
         })
         return res;
 
