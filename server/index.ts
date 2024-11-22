@@ -50,6 +50,8 @@ app.use(cors({
   credentials: true,
 }));
 
+app.options('*', cors()); 
+
 // app.use((req:CreateTransactionRequest,res,next)=>{
 //     req.io=io;
 //     next();
