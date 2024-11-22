@@ -49,7 +49,7 @@ function register(req, res) {
         res.cookie('refreshToken', refresh_token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: 'strict'
+            sameSite: 'lax'
         });
         return res.json({ access_token, message: "registerd succesfully" });
     });
@@ -76,7 +76,7 @@ function signInUser(req, res) {
             res.cookie('refreshToken', refresh_token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
+                sameSite: 'lax',
                 path: '/',
             });
             return res.json({ access_token, expiresIn }).status(200);
@@ -123,7 +123,7 @@ function refreshToken(req, res) {
             res.cookie('refreshToken', newRefreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
+                sameSite: 'lax',
                 path: '/',
             });
             return res.status(200).json({ access_token: newAccessToken });
@@ -167,7 +167,7 @@ function logOutUser(req, res) {
             res.clearCookie('refreshToken', {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-                sameSite: 'strict',
+                sameSite: 'lax',
                 path: '/'
             });
             return res.status(200).json({ message: 'Logged out successfully' });

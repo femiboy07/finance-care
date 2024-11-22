@@ -41,7 +41,7 @@ export async function register(req:Request,res:Response):Promise<unknown>{
          res.cookie('refreshToken',refresh_token,{
             httpOnly:true,
             secure:process.env.NODE_ENV === "production",
-            sameSite:'strict'
+            sameSite:'lax'
          }) 
         return res.json({access_token,message:"registerd succesfully"});
          
@@ -68,7 +68,7 @@ export async function signInUser(req:Request,res:Response){
          res.cookie('refreshToken',refresh_token,{
             httpOnly:true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite:'strict',
+            sameSite:'lax',
             path:'/',
             
          }) 
@@ -121,7 +121,7 @@ export async function refreshToken(req: Request, res: Response) {
       res.cookie('refreshToken', newRefreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite:'lax',
         path: '/',
         
       });
@@ -174,7 +174,7 @@ export async function refreshToken(req: Request, res: Response) {
         res.clearCookie('refreshToken', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-            sameSite: 'strict',
+            sameSite: 'lax',
             path: '/'
         });
 
