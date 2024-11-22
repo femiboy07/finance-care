@@ -45,12 +45,7 @@ export default function AddAccount({ isAddAccounts, setIsAddAccounts }: { isAddA
   const { toast } = useToast();
   const mutation = useMutation({
     mutationFn: (data: { name: string, type: string, balance: string }) => {
-      return apiClient.post("/account/create", data, {
-        headers: {
-          "Authorization": `Bearer ${token.access_token}`,
-          "Content-Type": 'application/x-www-form-urlencoded'
-        }
-      });
+      return apiClient.post("/account/create", data);
 
     },
     onSuccess: () => {
