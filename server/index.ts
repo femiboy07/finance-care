@@ -28,10 +28,6 @@ const app=express();
 const port=process.env.PORT || 5000;
 
 
-const allowedOrigins = [
-  
-  "https://finance-care-1.vercel.app"
-];
 
 app.use(cors({
   origin:"https://finance-care-1.vercel.app",

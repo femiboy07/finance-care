@@ -70,7 +70,7 @@ export async function signInUser(req:Request,res:Response){
             secure: process.env.NODE_ENV === 'production',
             sameSite:'strict',
             path:'/',
-            domain:"localhost"
+            
          }) 
        return res.json({access_token,expiresIn}).status(200);
        
@@ -136,7 +136,9 @@ export async function refreshToken(req: Request, res: Response) {
   function generateToken(payload: object, expiry: string) {
     return jwt.sign(payload, process.env.SECRET_KEY!, { expiresIn: expiry });
   }
-export async function logOutUser(req: Request, res: Response) {
+
+
+  export async function logOutUser(req: Request, res: Response) {
     const refreshToken = req.cookies['refreshToken'];
     
     console.log(refreshToken);
@@ -171,7 +173,7 @@ export async function logOutUser(req: Request, res: Response) {
         // Clear the refresh token cookie
         res.clearCookie('refreshToken', {
             httpOnly: true,
-            secure: false, // Use secure cookies in production
+            secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
             sameSite: 'strict',
             path: '/'
         });
