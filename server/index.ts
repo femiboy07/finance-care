@@ -45,17 +45,6 @@ app.use(cors({
   
 }));
 
-export const noCredentialsCors = cors({
-  origin: (origin, callback) => {
-    const allowedOrigins = ["https://finance-care-1.vercel.app"];
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: false, // Disable credentials for specific routes
-});
 
 app.options('*', cors()); 
 app.use(expresscookie());
