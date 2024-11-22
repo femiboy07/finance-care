@@ -26,16 +26,10 @@ import { seedDefaultAccount } from "./seeders/accountSeeder";
 const app=express();
 
 const port=process.env.PORT || 5000;
-app.use(expresscookie());
-app.use(express.json());
-
-app.use(express.urlencoded({extended:true}));
-app.use(passport.initialize())
 
 
 const allowedOrigins = [
-  "http://localhost:3000",
-  "http://localhost:3001",
+  
   "https://finance-care-1.vercel.app"
 ];
 
@@ -48,21 +42,30 @@ app.use(cors({
       }
   },
   credentials: true,
-  allowedHeaders:['Access']
+  
 }));
 
+export const noCredentialsCors = cors({
+  origin: (origin, callback) => {
+    const allowedOrigins = ["https://finance-care-1.vercel.app"];
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: false, // Disable credentials for specific routes
+});
+
 app.options('*', cors()); 
+app.use(expresscookie());
+app.use(express.json());
 
-// app.use((req:CreateTransactionRequest,res,next)=>{
-//     req.io=io;
-//     next();
-// })
+app.use(express.urlencoded({extended:true}));
+app.use(passport.initialize())
 
-function onlyForHandShake(middleware:any){
-   return (req:Request,res:Response,next:NextFunction)=>{
-         const isHandShake=req.query.sid
-   }  
-}
+
+
 
 //connect to mongoDb database finance;
 async function seedDatabase() {

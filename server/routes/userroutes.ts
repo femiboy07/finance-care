@@ -6,6 +6,7 @@ import user from "../models/User";
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import  passport from "../config/passport";
 import { CreateTransactionRequest } from "../controllers/transcation";
+import { noCredentialsCors } from "..";
 
 const router=express.Router(); // instance of a mini app router
 
@@ -36,9 +37,9 @@ export function validateOrigin(req:Request, res:Response, next:NextFunction) {
 
 
 router.get('/register',redirectIfAuthenticated);
-router.post('/register',register);
+router.post('/register',noCredentialsCors,register);
 router.get('/logIn',redirectIfAuthenticated);
-router.post('/logIn',signInUser);
+router.post('/logIn', noCredentialsCors,signInUser);
 router.post('/refreshtoken',refreshToken);
 router.post('/logout',logOutUser);
 
