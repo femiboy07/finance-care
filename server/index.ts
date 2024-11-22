@@ -31,12 +31,24 @@ app.use(express.json());
 
 app.use(express.urlencoded({extended:true}));
 app.use(passport.initialize())
+
+
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "https://finance-care-1.vercel.app"
+];
+
 app.use(cors({
-    origin:["http://localhost:3000","http://localhost:3001","https://finance-care-1.vercel.app/"],
-    credentials:true,
+  origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+      } else {
+          callback(new Error("Not allowed by CORS"));
+      }
+  },
+  credentials: true,
 }));
-
-
 
 // app.use((req:CreateTransactionRequest,res,next)=>{
 //     req.io=io;
