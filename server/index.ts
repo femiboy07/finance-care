@@ -40,7 +40,7 @@ app.use(cors({
 }));
 
 
-app.options('*', cors()); 
+
 app.use(expresscookie());
 app.use(express.json());
 
