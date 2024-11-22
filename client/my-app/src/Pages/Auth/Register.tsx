@@ -70,7 +70,7 @@ const RegisterPage: React.FC = () => {
                 username: values.username,
                 email: values.email,
                 password: values.password,
-            })
+            }, { withCredentials: false })
             if (response.status === 200) {
                 localStorage.setItem("userAuthToken", JSON.stringify(response.data));
                 localStorage.setItem("isNew", JSON.stringify({ user: true }))
