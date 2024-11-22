@@ -54,23 +54,17 @@ const categorySeeders_1 = require("./seeders/categorySeeders");
 const accountSeeder_1 = require("./seeders/accountSeeder");
 const app = (0, express_1.default)();
 const port = process.env.PORT || 5000;
+const allowedOrigins = [
+    "https://finance-care-1.vercel.app"
+];
+app.use((0, cors_1.default)({
+    origin: "https://finance-care-1.vercel.app",
+    credentials: true,
+}));
 app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use(passport_1.default.initialize());
-app.use((0, cors_1.default)({
-    origin: ["http://localhost:3000", "http://localhost:3001"],
-    credentials: true,
-}));
-// app.use((req:CreateTransactionRequest,res,next)=>{
-//     req.io=io;
-//     next();
-// })
-function onlyForHandShake(middleware) {
-    return (req, res, next) => {
-        const isHandShake = req.query.sid;
-    };
-}
 //connect to mongoDb database finance;
 function seedDatabase() {
     return __awaiter(this, void 0, void 0, function* () {
