@@ -13,7 +13,7 @@ const defaultRemaining = defaultBudgetAmount;
 const seedDefaultBudget = async () => {
   try {
     const users = await User.find({}); // Get all users
-    const categories = await Category.find({}); // Get all categories
+    const categories = await Category.find({});// Get all categories
 
     for (const user of users) {
       for (const category of categories) {

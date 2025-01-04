@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "clean": "rimraf dist",
     "build": "tsc",
-    "start": "node --inspect dist/index.js",
-    "dev": "ts-node-dev index.ts"
+    "start": "node dist/index.js",
+    "dev": "npm run build && nodemon dist/index.js"
   },
   "author": "",
   "license": "ISC",

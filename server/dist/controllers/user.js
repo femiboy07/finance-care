@@ -49,7 +49,9 @@ function register(req, res) {
         res.cookie('refreshToken', refresh_token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: 'none'
+            sameSite: 'none',
+            path: '/',
+            maxAge: 7 * 24 * 60 * 60 * 1000
         });
         return res.json({ access_token, message: "registerd succesfully" });
     });
@@ -58,7 +60,7 @@ function signInUser(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const { email, password } = req.body;
         try {
-            if (!email && !password) {
+            if (!email || !password) {
                 return res.status(403).json({ message: "Please provide your email and password to login" });
             }
             const existingUser = yield User_1.default.findOne({ email });
@@ -68,9 +70,9 @@ function signInUser(req, res) {
             if (!isMatch)
                 return res.status(400).json({ message: 'Invalid credentials' });
             const payload = { id: existingUser._id, email: existingUser.email };
-            const access_token = jsonwebtoken_1.default.sign(payload, process.env.SECRET_KEY, { expiresIn: 60 });
+            const access_token = jsonwebtoken_1.default.sign(payload, process.env.SECRET_KEY, { expiresIn: '1h' });
             const refresh_token = jsonwebtoken_1.default.sign(payload, process.env.SECRET_KEY, { expiresIn: '7d' });
-            const expiresIn = Math.floor(Date.now() / 1000) + 1 * 60 * 60;
+            const expiresIn = Math.floor(Date.now() / 1000) + 60 * 60;
             existingUser.userRefreshTokens = [refresh_token];
             yield existingUser.save();
             res.cookie('refreshToken', refresh_token, {
@@ -78,6 +80,7 @@ function signInUser(req, res) {
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'none',
                 path: '/',
+                maxAge: 7 * 24 * 60 * 60 * 1000
             });
             return res.json({ access_token, expiresIn }).status(200);
         }
@@ -110,12 +113,12 @@ function refreshToken(req, res) {
             if (!userRecord) {
                 return res.status(403).json({ message: 'Invalid Refresh Token: User not found' });
             }
-            const tokenIndex = userRecord.userRefreshTokens.indexOf(refreshToken);
-            if (tokenIndex === -1) {
+            if (!userRecord.userRefreshTokens.includes(refreshToken)) {
                 return res.status(403).json({ message: 'Invalid Refresh Token: Token not found' });
             }
-            userRecord.userRefreshTokens.splice(tokenIndex, 1);
-            yield userRecord.save();
+            // Remove the old refresh token and save
+            userRecord.userRefreshTokens = userRecord.userRefreshTokens.filter(token => token !== refreshToken);
+            // Generate new tokens
             const newAccessToken = generateToken({ id: userRecord._id, email: userRecord.email }, '1h');
             const newRefreshToken = generateToken({ id: userRecord._id, email: userRecord.email }, '7d');
             userRecord.userRefreshTokens.push(newRefreshToken);
@@ -125,6 +128,7 @@ function refreshToken(req, res) {
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'none',
                 path: '/',
+                maxAge: 7 * 24 * 60 * 60 * 1000
             });
             return res.status(200).json({ access_token: newAccessToken });
         }
@@ -168,7 +172,8 @@ function logOutUser(req, res) {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
                 sameSite: 'none',
-                path: '/'
+                path: '/',
+                maxAge: 7 * 24 * 60 * 60 * 1000
             });
             return res.status(200).json({ message: 'Logged out successfully' });
         }

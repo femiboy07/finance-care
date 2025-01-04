@@ -18,21 +18,21 @@ declare module 'jsonwebtoken' {
   }
 
 
-export function validateOrigin(req:Request, res:Response, next:NextFunction) {
-    const allowedOrigin = 'https://localhost:5000'; // Replace with your app's URL
-    const origin = req.get('Origin');
-    const referer = req.get('Referer');
+// export function validateOrigin(req:Request, res:Response, next:NextFunction) {
+//     const allowedOrigin = 'https://localhost:5000'; // Replace with your app's URL
+//     const origin = req.get('Origin');
+//     const referer = req.get('Referer');
   
-    if (origin && origin !== allowedOrigin) {
-      return res.status(403).send('Invalid origin');
-    }
+//     if (origin && origin !== allowedOrigin) {
+//       return res.status(403).send('Invalid origin');
+//     }
   
-    if (referer && !referer.startsWith(allowedOrigin)) {
-      return res.status(403).send('Invalid referer');
-    }
+//     if (referer && !referer.startsWith(allowedOrigin)) {
+//       return res.status(403).send('Invalid referer');
+//     }
   
-    next();
-  }
+//     next();
+//   }
 
 
 router.get('/register',redirectIfAuthenticated);

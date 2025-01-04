@@ -16,6 +16,7 @@ exports.fetchCategories = fetchCategories;
 const Category_1 = __importDefault(require("../models/Category"));
 function fetchCategories(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
+        const userId = req.user;
         try {
             const categories = yield Category_1.default.find({}, ' -_id name');
             return res.status(200).json({ data: categories, message: "fetched categories" });

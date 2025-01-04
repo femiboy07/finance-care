@@ -41,7 +41,9 @@ export async function register(req:Request,res:Response):Promise<unknown>{
          res.cookie('refreshToken',refresh_token,{
             httpOnly:true,
             secure:process.env.NODE_ENV === "production",
-            sameSite:'none'
+            sameSite:'none',
+            path:'/',
+            maxAge:7 * 24 * 60 * 60 * 1000
          }) 
         return res.json({access_token,message:"registerd succesfully"});
          
@@ -52,7 +54,7 @@ export async function register(req:Request,res:Response):Promise<unknown>{
 export async function signInUser(req:Request,res:Response){
     const {email,password}=req.body;
     try{
-        if(!email && !password){
+        if(!email || !password){
             return res.status(403).json({message:"Please provide your email and password to login"});
         }
         const existingUser=await user.findOne({email});
@@ -60,9 +62,9 @@ export async function signInUser(req:Request,res:Response){
         const isMatch = await existingUser.comparePassword(password)
         if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
         const payload = { id: existingUser._id ,email:existingUser.email};
-        const access_token=jwt.sign(payload,process.env.SECRET_KEY!,{expiresIn:60})
+        const access_token=jwt.sign(payload,process.env.SECRET_KEY!,{expiresIn:'1h'})
         const refresh_token=jwt.sign(payload, process.env.SECRET_KEY!,{expiresIn:'7d'});
-        const expiresIn=Math.floor(Date.now() / 1000 ) + 1 * 60 * 60    
+        const expiresIn=Math.floor(Date.now() / 1000 ) + 60 * 60    
         existingUser.userRefreshTokens = [refresh_token];
         await existingUser.save();
          res.cookie('refreshToken',refresh_token,{
@@ -70,6 +72,7 @@ export async function signInUser(req:Request,res:Response){
             secure: process.env.NODE_ENV === 'production',
             sameSite:'none',
             path:'/',
+            maxAge: 7 * 24 * 60 * 60 * 1000
             
          }) 
        return res.json({access_token,expiresIn}).status(200);
@@ -79,6 +82,7 @@ export async function signInUser(req:Request,res:Response){
     }
  
 }
+
 export async function refreshToken(req: Request, res: Response) {
     try {
       const refreshToken = req.cookies?.refreshToken;
@@ -104,14 +108,14 @@ export async function refreshToken(req: Request, res: Response) {
         return res.status(403).json({ message: 'Invalid Refresh Token: User not found' });
       }
   
-      const tokenIndex = userRecord.userRefreshTokens.indexOf(refreshToken);
-      if (tokenIndex === -1) {
+      if (!userRecord.userRefreshTokens.includes(refreshToken)) {
         return res.status(403).json({ message: 'Invalid Refresh Token: Token not found' });
       }
   
-      userRecord.userRefreshTokens.splice(tokenIndex, 1);
-      await userRecord.save();
+      // Remove the old refresh token and save
+      userRecord.userRefreshTokens = userRecord.userRefreshTokens.filter(token => token !== refreshToken);
   
+      // Generate new tokens
       const newAccessToken = generateToken({ id: userRecord._id, email: userRecord.email }, '1h');
       const newRefreshToken = generateToken({ id: userRecord._id, email: userRecord.email }, '7d');
   
@@ -121,9 +125,9 @@ export async function refreshToken(req: Request, res: Response) {
       res.cookie('refreshToken', newRefreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite:'none',
+        sameSite: 'none',
         path: '/',
-        
+        maxAge: 7 * 24 * 60 * 60 * 1000
       });
   
       return res.status(200).json({ access_token: newAccessToken });
@@ -131,8 +135,7 @@ export async function refreshToken(req: Request, res: Response) {
       console.error('Unexpected error:', err);
       return res.status(500).json({ message: 'Internal server error' });
     }
-  }
-  
+  } 
   function generateToken(payload: object, expiry: string) {
     return jwt.sign(payload, process.env.SECRET_KEY!, { expiresIn: expiry });
   }
@@ -175,7 +178,8 @@ export async function refreshToken(req: Request, res: Response) {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
             sameSite: 'none',
-            path: '/'
+            path: '/',
+            maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
        

@@ -15,7 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const passport_1 = __importDefault(require("passport"));
 const passport_jwt_1 = require("passport-jwt");
 const User_1 = __importDefault(require("../models/User"));
-console.log(process.env.SECRET_KEY, "secretkey");
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
 const options = {
     passReqToCallback: true,
     jwtFromRequest: passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),

@@ -2,9 +2,11 @@ import passport, { Passport } from "passport";
 import {Strategy,ExtractJwt, StrategyOptionsWithRequest} from "passport-jwt";
 import user, { IUser } from "../models/User";
 import { Request } from "express";
+import dotenv from 'dotenv';
+
+dotenv.config()
 
 
-console.log(process.env.SECRET_KEY,"secretkey");
 
 
 
