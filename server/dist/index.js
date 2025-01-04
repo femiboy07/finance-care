@@ -72,13 +72,13 @@ app.use((0, cors_1.default)({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allow required methods
     allowedHeaders: ['Content-Type', 'Authorization'], //
 }));
-app.options('*', (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*'); // Echo back the origin or use a default value
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.send();
-});
+// app.options('*', (req, res) => {
+//   res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*'); // Echo back the origin or use a default value
+//   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+//   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+//   res.setHeader('Access-Control-Allow-Credentials', 'true');
+//   res.send();
+// });
 app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));

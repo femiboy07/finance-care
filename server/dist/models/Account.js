@@ -12,12 +12,11 @@ const accountsSchema = new mongoose_1.default.Schema({
     },
     name: {
         type: String,
-        required: true
+        required: true,
     },
     type: {
         type: String,
         required: true,
-        unique: true,
         default: "current",
     },
     isSystemAccount: {

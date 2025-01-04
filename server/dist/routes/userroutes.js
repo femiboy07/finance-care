@@ -3,7 +3,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateOrigin = validateOrigin;
 const express_1 = __importDefault(require("express"));
 const user_1 = require("../controllers/user");
 const redirectIfAuthenticated_1 = require("../middlewares/redirectIfAuthenticated");
@@ -11,18 +10,18 @@ const googleauthClient_1 = __importDefault(require("../middlewares/googleauthCli
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const passport_1 = __importDefault(require("../config/passport"));
 const router = express_1.default.Router(); // instance of a mini app router
-function validateOrigin(req, res, next) {
-    const allowedOrigin = 'https://localhost:5000'; // Replace with your app's URL
-    const origin = req.get('Origin');
-    const referer = req.get('Referer');
-    if (origin && origin !== allowedOrigin) {
-        return res.status(403).send('Invalid origin');
-    }
-    if (referer && !referer.startsWith(allowedOrigin)) {
-        return res.status(403).send('Invalid referer');
-    }
-    next();
-}
+// export function validateOrigin(req:Request, res:Response, next:NextFunction) {
+//     const allowedOrigin = 'https://localhost:5000'; // Replace with your app's URL
+//     const origin = req.get('Origin');
+//     const referer = req.get('Referer');
+//     if (origin && origin !== allowedOrigin) {
+//       return res.status(403).send('Invalid origin');
+//     }
+//     if (referer && !referer.startsWith(allowedOrigin)) {
+//       return res.status(403).send('Invalid referer');
+//     }
+//     next();
+//   }
 router.get('/register', redirectIfAuthenticated_1.redirectIfAuthenticated);
 router.post('/register', user_1.register);
 router.get('/logIn', redirectIfAuthenticated_1.redirectIfAuthenticated);

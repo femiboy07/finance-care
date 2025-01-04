@@ -23,12 +23,11 @@ const accountsSchema=new mongoose.Schema<IAccounts>({
      },
       name:{
         type:String,
-         required:true
+         required:true,
       },
       type:{
         type:String,
         required:true,
-        unique:true,
         default:"current",
       },
 

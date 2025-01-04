@@ -7,7 +7,7 @@
     "clean": "rimraf dist",
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "npm run build && nodemon dist/index.js"
+    "dev": "nodemon --watch . --ext ts --exec node dist/index.js"
   },
   "author": "",
   "license": "ISC",
