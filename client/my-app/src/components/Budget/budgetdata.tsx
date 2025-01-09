@@ -11,7 +11,7 @@ import { LoaderCircleIcon } from "lucide-react";
 interface Budgets {
   _id: string;
   category: string
-  budget: any | null;
+  budget: any;
   spent: any;
   remaining: any;
 }
@@ -20,23 +20,22 @@ export const BudgetColumns: ColumnDef<Budgets>[] = [
   {
     accessorKey: "category",
     header: (props) => {
-      return <div className="text-left uppercase min-w-64  w-64 ">{"Category"}</div>
+      return <div className="text-left uppercase  ">{"Category"}</div>
     },
     cell(props) {
       return (
-        <span className="self-center px-[13px]  text-ellipsis flex-shrink-0  flex-1  w-full h-full items-center flex-nowrap leading-tight m-0 overflow-hidden text-nowrap ">{props.row.original.category}</span>
+        <span className="self-center px-[13px]   text-ellipsis flex-shrink-0  flex-auto    h-full items-center flex-nowrap leading-tight m-0 overflow-hidden text-nowrap ">{props.row.original.category}</span>
       )
     },
     size: 800,
-    maxSize: 800,
-    minSize: 800,
+
 
   },
 
   {
     accessorKey: "spent",
     header: (props) => {
-      return <div className=" uppercase min-w-11" >{"SPENT"}</div>
+      return <div className=" uppercase " >{"SPENT"}</div>
     },
     cell({ row, cell }) {
       let amount: any = row.original.spent.$numberDecimal;
@@ -50,7 +49,7 @@ export const BudgetColumns: ColumnDef<Budgets>[] = [
         formatted = ''
       }
       return (
-        <span className=" self-center px-[13px] text-orange-300 font-semibold border-none flex-shrink-0 w-full h-[36px] flex items-center  whitespace-pre-wrap max-w-full overflow-hidden text-ellipsis ">{formatted}</span>
+        <td className=" self-center px-[13px] text-orange-300 flex-grow font-semibold border-none flex-shrink-0 w-full h-[36px] flex items-center  whitespace-pre-wrap  overflow-hidden text-ellipsis ">{formatted}</td>
       )
     },
 
@@ -61,7 +60,7 @@ export const BudgetColumns: ColumnDef<Budgets>[] = [
   {
     accessorKey: "budget",
     header: () => {
-      return <div className="uppercase max-w-11">BUDGET</div>
+      return <div className="uppercase max-w-full w-10">BUDGET</div>
     },
     cell({ row, cell }) {
       let amount: any = row.original.budget.$numberDecimal;
@@ -76,25 +75,31 @@ export const BudgetColumns: ColumnDef<Budgets>[] = [
         }).format(amount)
       }
 
-      return <SetBudget value={amount !== '0.0' ? formatted : ''}
-        id={row.original._id}
-        defaultValue={amount}
-        type={"text"}
-        category={category}
-        remaining={remaining}
-        spent={spent}
-        name={"budget"}
-        className={`text-black bg-transparent text-ellipsis  w-full rounded-md  overflow-hidden   hover:border-orange-400  font-semibold`} placeholder={"set Budget"} />
+      return (
+
+        <SetBudget value={amount !== '0.0' ? formatted : ''}
+          id={row.original._id}
+          defaultValue={amount}
+          type={"text"}
+          category={category}
+          remaining={remaining}
+          spent={spent}
+          name={"budget"}
+          className="w-fit"
+          placeholder={"set Budget"} />
+
+      )
     },
-    size: 150,
-    maxSize: 150,
+
+
+
 
   },
 
   {
     accessorKey: "remaining",
     header: () => {
-      return <div className="min-w-11 max-w-64">REMAINING</div>
+      return <div className="">REMAINING</div>
     },
     cell({ row, cell }) {
       let amount: any = row.original.remaining.$numberDecimal;
@@ -107,24 +112,20 @@ export const BudgetColumns: ColumnDef<Budgets>[] = [
       }
       return (
 
-        <span className=" self-center px-[13px]  text-red-600 flex-shrink-0 font-semibold w-full  border-none py-0  h-[36px] flex items-center    overflow-hidden text-ellipsis">{formatted}</span>
+        <div className=" self-center px-[13px]  text-red-600 flex-shrink-0 font-semibold   border-none py-0  h-[36px] flex items-center    overflow-hidden text-ellipsis">{formatted}</div>
 
 
       )
     },
-    size: 40,
-    // maxSize: 150,
-    // minSize: 150
 
 
   },
 
   {
     id: 'actions',
-    size: 50,
-
-
-
+    size: 10,
+    minSize: 10,
+    maxSize: 10
   },
 
 
@@ -156,10 +157,10 @@ export function BudgetTable<TData, TValue>({ columns, data, isPending }: DataTab
   const doubleRows = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
   return (
 
-    <Table className="border-black  dark:border-0 dark:text-[#d2d2d2] table-auto md:table-fixed  overflow-x-auto border-spacing-0 w-full  overflow-y-hidden ">
-      <TableHeader className=" ">
+    <Table id="table-lead" className="text-md dark:border-0 dark:border-l-0 border-0 bg-card     dark:bg-[#303030]  dark:border-[#303030] text-left overflow-y-hidden   w-full  border-spacing-0 ">
+      <TableHeader >
         {table.getHeaderGroups().map((headerGroup) => (
-          <TableRow key={headerGroup.id} className="[&_tr:first-child]:border-collapse">
+          <TableRow key={headerGroup.id} className={`${headerGroup.id === 'actions' ? 'max-w-4 w-full' : ''}`}>
             {headerGroup.headers.map((header) => {
               return (
                 <TableHead key={header.id} className="leading-[15px] bg-background   border  align-middle px-[13px]  text-ellipsis h-[40px]  pt-[10px] pb-[8px] text-[#aeaeae]">
@@ -175,7 +176,7 @@ export function BudgetTable<TData, TValue>({ columns, data, isPending }: DataTab
           </TableRow>
         ))}
       </TableHeader>
-      <TableBody className=" border-black relative ">
+      <TableBody className=" border-black relative table-fixed ">
         <>
           {isPending &&
             <div className="max-w-md w-full flex absolute text-black dark:text-foreground left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 flex-col space-y-2 justify-center items-center text-center ">

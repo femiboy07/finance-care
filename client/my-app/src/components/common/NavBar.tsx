@@ -18,7 +18,8 @@ import { useTheme } from "../../context/ThemeProvider";
 
 export default function NavBar({ handleOpenSideBar }: { handleOpenSideBar: any }) {
   const [width] = useInnerWidthState();
-  const { token, removeToken, isLoading, setLoading } = useRequireAuth();
+  const { removeToken, isLoading, setLoading } = useRequireAuth();
+  const { auth } = useRequireAuth()
   const [show, setIsShow] = useState(false);
   const { theme, setTheme } = useTheme()
 
@@ -61,7 +62,7 @@ export default function NavBar({ handleOpenSideBar }: { handleOpenSideBar: any }
             {isLoading && createPortal(
               <UserLoggedOut />, document.body
             )}
-            {token !== null ?
+            {auth !== null ?
               (<LogOutUser />) : (
                 <CircleUserRoundIcon size={25} />)}
           </div>

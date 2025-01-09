@@ -39,8 +39,8 @@ export function BudgetProvider({ children }: { children: React.ReactElement }) {
     const { data, isLoading, error, isFetching, isPending } = useQuery({
         queryKey: ['allbudgets', queryParams],
         queryFn: fetchBudgets,
-        gcTime: 0
-        // staleTime: 24 * 60 * 60 * 1000,
+        gcTime: 0,
+        staleTime: 24 * 60 * 60 * 1000,
     });
 
     // Function to update query parameters
@@ -51,9 +51,6 @@ export function BudgetProvider({ children }: { children: React.ReactElement }) {
         }));
     };
 
-    // useEffect(() => {
-    //     updateQueryParams({})
-    // }, [])
 
 
 

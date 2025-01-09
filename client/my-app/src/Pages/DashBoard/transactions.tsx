@@ -41,7 +41,7 @@ export const dataCategory: string[] = ["Food", "Rent", "Salary", "Entertainment"
 
 export default function TransactionPage() {
 
-  const { category, name, setCategory, setName, setSearchParams, months, search, setSearch, hideOver, setHideOver, monthString, monthStrings, setMonthStrings } = useOutletContext<ContextType>()
+  const { category, name, setCategory, setName, months, search, setSearch, hideOver, setHideOver, monthStrings, searchParams, setSearchParams } = useOutletContext<ContextType>()
   const navigate = useNavigate()
   const { year, month } = useParams();
   const [active, setActive] = useState(false);
@@ -54,7 +54,7 @@ export default function TransactionPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAddTransaction, setIsAddTransaction] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
-  const [searchParam, setSearchParam] = useSearchParams();
+
   const [width] = useInnerWidthState();
   const { rowSelection } = useSelectedFilter();
   const addRef = useRef(null);
@@ -66,9 +66,9 @@ export default function TransactionPage() {
   const secondBox = useRef<HTMLDivElement | null>(null);
 
 
-  const { data: categories, isLoading: categoryLoading, isFetching: categoriesetching } = useQuery({ queryKey: ['category'], queryFn: fetchCategory, gcTime: 0 });
+  const { data: categories, isLoading: categoryLoading } = useQuery({ queryKey: ['category'], queryFn: fetchCategory, gcTime: 0 });
 
-  const { data, isPending, error, isLoading, isFetching } = useQuery({
+  const { data, isPending, isLoading } = useQuery({
     queryKey: ['alltransactions', { name, category, year, month, page, search, limit }],
     queryFn: fetchTransactions,
     gcTime: 0,
@@ -88,21 +88,21 @@ export default function TransactionPage() {
   // console.log(data?.listTransactions, "listTransactions")
 
   useEffect(() => {
-    if (category) searchParam.set('category', category);
-    if (name) searchParam.set('name', name);
-    if (page) searchParam.set('page', page.toString());
-    if (search) searchParam.set('search', search);
-    setSearchParam(searchParam);
+    if (category) searchParams.set('category', category);
+    if (name) searchParams.set('name', name);
+    if (page) searchParams.set('page', page.toString());
+    if (search) searchParams.set('search', search);
+    setSearchParams(searchParams);
     updateQueryParams({ month, year })
     // updateTransactionQueryParams({ month, year, search, limit, page })
-  }, [category, name, page, searchParam, setSearchParam, search, month, year]);
+  }, [category, name, page, searchParams, setSearchParams, search, month, year]);
 
 
 
 
   function clearFilters() {
     const newParams = new URLSearchParams();
-    setSearchParam(newParams, { replace: true });
+    setSearchParams(newParams);
     setCategory('');
     setSearch('')
     setName("")
@@ -314,12 +314,12 @@ export default function TransactionPage() {
       <h1 className="text-slate-700 dark:text-foreground  font-bold font-custom3 text-2xl text-center lg:text-left">Transactions</h1>
       <div className="mt-1">
         <div className="date-table-filters w-full flex h-24 items-center  max-w-full ">
-          <MonthPicker params={searchParam} page={page} setPage={setPage} monthStrings={monthStrings} />
+          <MonthPicker params={searchParams} page={page} setPage={setPage} monthStrings={monthStrings} />
           <div className="ml-auto flex items-center gap-2 text-foreground" >
             <TransactionButton handleOpenSideBar={handleOpenSideBar} />
             <ExportDataToCsv month={month} year={year} data={data && data?.listTransactions} />
 
-            <Button className={buttonVariants({ variant: "default", className: `px-4 bg-orange-400 text-foreground  flex ` })} onClick={() => {
+            <Button className={buttonVariants({ variant: "default", className: `px-4 bg-orange-400 text-white flex ` })} onClick={() => {
               setHideOver(!hideOver)
               updateQueryParams({ month, year })
             }}>

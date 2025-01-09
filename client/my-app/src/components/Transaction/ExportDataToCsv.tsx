@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, buttonVariants } from '../../@/components/ui/button';
 import { useMutation } from '@tanstack/react-query';
-import { apiClient } from '../../context/LoadingContext';
+import { apiClient } from '../../api/axios';
 import { Download, DownloadCloudIcon } from 'lucide-react';
 import CsvDownloadButton from 'react-json-to-csv';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../@/components/ui/tooltip';

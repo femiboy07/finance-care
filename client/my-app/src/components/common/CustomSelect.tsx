@@ -43,10 +43,10 @@ const CustomSelect = <TFieldValues extends Record<string, any>>({
     const handleSelect = (value: string | Option) => {
         setSelectedValue(value);
         setFilterText(typeof value === 'object' ? value.systemAccount !== true ? `${value.name},(${value.type})` : value.name : value);
-        field.onChange(typeof value === 'object' && name === 'accountId' ? `${value.name},(${value.type})` : value)
+        field.onChange(value)
         form.setValue(
             name,
-            typeof value === 'object' && name === 'accountId' ? value : value // Ensure correct value is sent to the form
+            value // Ensure correct value is sent to the form
         );
         setIsExpanded(false);
         setFilter(options);
@@ -135,9 +135,8 @@ const CustomSelect = <TFieldValues extends Record<string, any>>({
                 }}
                 value={filterText}
                 placeholder={field.value && field.value
-                    ? typeof field.value === 'object'
-                        ? name === 'accountId' ? `${field.value.name},(${field.value.type})` : field.value.name
-                        : `${field.value}`
+                    ? typeof field.value === 'object' && name === 'accountId' && field.value.type !== 'def_coin'
+                        ? `${field.value.name},(${field.value.type})` : field.value.type === 'def_coin' ? `${field.value.name}` : field.value
                     : placeholder}
 
                 name={field.name}
@@ -164,12 +163,15 @@ const CustomSelect = <TFieldValues extends Record<string, any>>({
                             <div
                                 key={typeof item === 'object' ? item._id : index}
                                 id={`option-${typeof item === 'object' ? item._id : index}`}
-                                onClick={() => handleSelect(isOptionType(item) ? item : item)}
+                                onClick={() => handleSelect(isOptionType(item) ? item._id : item)}
                                 className={`cursor-pointer px-4 text-sm py-2 hover:bg-gray-100 ${selectedValue === item ? 'bg-gray-300 text-black' : 'text-gray-500'} ${focusedIndex === index ? 'bg-gray-200' : ''}`}
                                 role="option"
                                 aria-selected={selectedValue === item || focusedIndex === index}
                             >
-                                {item && typeof item === 'object' ? `${item.name},(${item.type})` : item}
+                                {item && typeof item === 'object' && name === 'accountId' && item.type === 'def_coin'
+                                    ? `${item.name}` // Only show name for def_coin type
+                                    : typeof item === 'object' && name === 'accountId' ? `${item.name},(${item.type})` // Show name and type for other types
+                                        : item.toString()}
                             </div>
                         ))
                     }

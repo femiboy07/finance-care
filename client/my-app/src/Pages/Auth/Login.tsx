@@ -14,6 +14,7 @@ import useOnlineStatus from "../../hooks/useOnlineStatus";
 import { queryClient } from "../..";
 import { useData } from "../../context/DataProvider";
 import lunchMoneyImg from '../../assets/luncho.png';
+import { LoaderCircle } from "lucide-react";
 
 const formSchema = z.object({
   email: z.string({
@@ -32,12 +33,12 @@ const LoginPage: React.FC = () => {
 
   const [disabled, setDisabled] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState(false);
-
   const navigate = useNavigate();
-  const { setShowModal } = useLoading();
   const { isOnline } = useOnlineStatus();
   const { logIn, setIsUserLoggedIn } = useData();
-  const { token } = useRequireAuth();
+  const { auth, setAuth } = useAuth();
+  const token = localStorage.getItem("userAuthToken")
+  const { setShowModal } = useLoading()
 
 
 
@@ -52,7 +53,7 @@ const LoginPage: React.FC = () => {
   });
 
   const field = useWatch({
-    control: form.control
+    control: form.control,
   });
 
 
@@ -71,7 +72,7 @@ const LoginPage: React.FC = () => {
       }
 
       if (response.status === 200) {
-        localStorage.setItem("userAuthToken", JSON.stringify(response.data));
+        setAuth({ access_token: response.data.access_token });
         navigate('/dashboard', { replace: true });
         setIsLoading(false);
         setIsUserLoggedIn(true)
@@ -88,6 +89,7 @@ const LoginPage: React.FC = () => {
       }
     } catch (err) {
       console.log(err);
+      setAuth({});
       form.setError('email', { type: "manual", message: "'Invalid credentials. Please check your email and password." })
       setIsLoading(false)
     }
@@ -100,10 +102,10 @@ const LoginPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (token) {
+    if (auth.access_token) {
       navigate('/dashboard')
     }
-  }, [navigate, token])
+  }, [navigate, auth])
 
 
 
@@ -145,7 +147,7 @@ const LoginPage: React.FC = () => {
                 <FormItem className="">
                   <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">EMAIL</FormLabel>
                   <FormControl >
-                    <Input className="text-foreground"  {...field} onChange={(e) => {
+                    <Input disabled={isLoading} className="text-foreground"  {...field} onChange={(e) => {
                       field.onChange(e);
                       handleInputChange()
                     }} autoComplete="additional-name" />
@@ -161,17 +163,17 @@ const LoginPage: React.FC = () => {
                 <FormItem>
                   <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">PASSWORD</FormLabel>
                   <FormControl>
-                    <Input className="text-foreground" type="password" autoComplete="password" {...field} />
+                    <Input disabled={isLoading} className="text-foreground" type="password" autoComplete="password" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <div className="relative py-2 ">
+            {/* <div className="relative py-2 ">
               <button className=" text-right  absolute min-w-[45px] right-0 text-sm justify-end font-bold text-teal-500 flex">Forgot password?</button>
-            </div>
-            <Button className={buttonVariants({ variant: 'default', className: "w-full bg-orange-400 p-2 mt-2 hover:bg-orange-400 text-foreground" })} type="submit" disabled={disabled || isLoading}>
-              {isLoading ? "loading..." : "LOGIN"}
+            </div> */}
+            <Button typeof="submit" className={buttonVariants({ variant: 'default', className: "w-full bg-orange-400 p-2 mt-2 hover:bg-orange-400 text-foreground" })} type="submit" disabled={disabled || isLoading}>
+              {isLoading ? <LoaderCircle className="animate-spin text-white" size={18} /> : "LOGIN"}
             </Button>
 
             <span className="text-center mt-2 text-sm">Not registerd yet? <Link to={'/auth/register'} className="text-teal-500 font-bold">Create an account.</Link></span>

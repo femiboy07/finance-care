@@ -1,19 +1,14 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ColumnDef, flexRender, getCoreRowModel, getSortedRowModel, RowSelectionState, SortingState, useReactTable } from "@tanstack/react-table";
+import React, { useCallback, useEffect } from "react";
+import { ColumnDef, flexRender, getCoreRowModel, getSortedRowModel, SortingState, useReactTable } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../@/components/ui/table";
-import { formatDate } from "date-fns";
-import { ArrowUpDown, CheckCircleIcon, LoaderCircleIcon, XIcon } from "lucide-react";
-import MyInput from "../common/MyInput";
+import { ArrowUpDown, LoaderCircleIcon, XIcon } from "lucide-react";
 import MyInputMutation from "../common/MyInputMutaion";
 import { Checkbox } from "../../@/components/ui/checkbox";
 import { useSelectedFilter } from "../../context/TableFilterContext";
-import { tab } from "@testing-library/user-event/dist/tab";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "../../@/components/ui/button";
 import lunchImage from '../../assets/lunch image.png';
-import AddTransaction from "./AddTransaction";
 import TransactionButton from "./TransactionButton";
-import { Input } from "../../@/components/ui/input";
 
 
 
@@ -176,10 +171,7 @@ export const transactionColumns: ColumnDef<Transaction>[] = [
 
       )
     },
-
-
   },
-
   {
     size: 40,
     id: 'actions',
@@ -287,7 +279,7 @@ export function TransactionTable<TData, TValue>({ columns, data, isPending, list
 
   return (
 
-    <Table id="table-lead" className={`  dark:border-0 dark:border-l-0 border-0 bg-card    dark:bg-[#303030]  dark:border-[#303030] text-left overflow-y-hidden table-fixed  w-full  border-spacing-0`}>
+    <Table id="table-lead" className={` text-md dark:border-0 dark:border-l-0 border-0 bg-card     dark:bg-[#303030]  dark:border-[#303030] text-left overflow-y-hidden   w-full  border-spacing-0`}>
       <TableHeader className="">
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id} className="bg-white ">
@@ -355,7 +347,7 @@ export function TransactionTable<TData, TValue>({ columns, data, isPending, list
 
 
                   <TableRow key={index} className={` w-full border bg-white dark:bg-card ${isPending ? ' ' : ''}   `} >
-                    <TableCell colSpan={table.getHeaderGroups()[0]?.headers?.length || 1} className={`w-full border ${isPending ? 'py-3' : 'py-5'}  `}>
+                    <TableCell colSpan={table.getHeaderGroups()[0]?.headers?.length || 1} className={`w-full border ${isPending ? 'py-3' : 'py-3'}  `}>
 
                     </TableCell>
 
@@ -371,7 +363,7 @@ export function TransactionTable<TData, TValue>({ columns, data, isPending, list
           <span className="w-full">No data related to your query</span>
 
         </div>}
-        {table.getRowModel().rows.length === 0 && !isPending && < div className="w-full left-0 right-0 max-w-full absolute top-1/2  -translate-y-1/2  flex flex-col space-y-2 justify-center items-center text-center ">
+        {table.getRowModel().rows.length === 0 && searchParam.size === 1 && !isPending && < div className="w-full left-0 right-0 max-w-full absolute top-1/2  -translate-y-1/2  flex flex-col space-y-2 justify-center items-center text-center ">
           <img src={lunchImage} alt="lunch" className=" w-16 h-16" />
           <span className="w-full">You have no transaction yet</span>
           <span>ways to add a transactions</span>

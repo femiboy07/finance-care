@@ -27,7 +27,6 @@ export default function DeleteTransactionButton({ transactionId, closeSideBar, i
             new Promise((resolve) => setTimeout(resolve, 5000))
             closeSideBar && closeSideBar()
             toast({
-
                 description: "transaction sucessfull deleted",
                 className: "text-black bg-white"
             })
@@ -37,7 +36,6 @@ export default function DeleteTransactionButton({ transactionId, closeSideBar, i
             new Promise((resolve) => setTimeout(resolve, 5000))
             closeSideBar && closeSideBar()
             toast({
-
                 description: `${error}`,
                 className: "text-white",
                 variant: 'destructive',
@@ -56,9 +54,6 @@ export default function DeleteTransactionButton({ transactionId, closeSideBar, i
         } else if (typeof transaction === 'object') {
             mutation.mutate({ queryKey: tokens, variable: transaction });
         }
-
-
-
     }
 
     return (

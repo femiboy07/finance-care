@@ -1,35 +1,36 @@
-import React, { ReactElement, ReactNode, useEffect } from 'react';
-import { Navigate, Outlet, OutletProps, redirect, useLocation, useNavigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/userAutthContext';
-import useRequireAuth from '../../hooks/useRequireAuth';
+import Banner from '../../components/common/Banner';
 
 
 
 
 
 interface ProtectedPageProps {
-    children: React.ReactNode;
+  children: React.ReactNode;
+}
+
+
+
+const ProtectedPage: React.FC<ProtectedPageProps> = ({ children }) => {
+  const { auth } = useAuth();
+  const location = useLocation();
+
+
+  console.log("Auth State:", auth);
+  // if (!auth || !auth?.access_token) return <div className='text-blue'>Loading...</div>;
+  // Check if `auth` or `access_token` is missing
+  if (!auth.access_token) {
+    return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
-  
-  const ProtectedPage: React.FC <ProtectedPageProps>= ({children}) => {
-    // const auth = useRequireAuth();
-    const {auth}=useAuth();
-    const location=useLocation();
-    const navigate=useNavigate();
-    
-    console.log(auth)
-   useEffect(()=>{
-  
 
-    if (!auth) {
-         navigate('/auth/login',{replace:true});
-     }
-    //  navigate('/dashboard',{replace:true})
-},[navigate, auth])
+  // Render children if user is authenticated
+  return (
+    <>
+      {children}
+    </>
+  )
+};
 
-   console.log(auth)
- 
-    return  (<>{children}</>)
-  };
-  
-  export default ProtectedPage;
+export default ProtectedPage;

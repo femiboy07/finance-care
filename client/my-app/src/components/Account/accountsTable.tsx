@@ -31,14 +31,19 @@ export const accountColumns: ColumnDef<Accounts>[] = [
       return <div className=" w-full h-[36px] flex items-center whitespace-nowrap overflow-hidden text-ellipsis ">AccountName</div>
     },
     cell({ row, cell }) {
-      return <div className={` px-[13px] w-full h-[36px] flex items-center whitespace-nowrap overflow-hidden text-ellipsis`}>{row.original.name}</div>
+
+      return <div className={` px-[13px] w-full h-[36px]  flex items-center whitespace-nowrap overflow-hidden text-ellipsis`}>{row.original.name}</div>
     }
   },
   {
     accessorKey: "type",
     header: "Type",
     cell({ row, cell }) {
-      return <div className="px-[13px] w-full h-[36px] flex items-center whitespace-nowrap overflow-hidden text-ellipsis">{row.original.type}</div>
+      const getRandomHexColor = () => {
+        return `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
+      }
+      const color = getRandomHexColor();
+      return <div className={`px-[13px] w-full h-[36px] text-orange-700   uppercase font-extrabold flex items-center whitespace-nowrap overflow-hidden text-ellipsis`}>{row.original.type}</div>
     },
   },
 
@@ -98,13 +103,7 @@ export function AccountTable<TData, TValue>({
   });
 
   // Filter out rows where name is "Cash Transaction" or type is "def_coin"
-  const filteredRows = table
-    .getRowModel()
-    .rows.filter((row) => {
 
-      const systemAccount = row.getValue('isSystemAccount')// adjust 'type' to your actual accessorKey
-      return !(systemAccount)
-    });
   const doubleRows = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
   return (
@@ -131,7 +130,7 @@ export function AccountTable<TData, TValue>({
       </TableHeader>
       <TableBody className="border-black overflow-y-hidden relative">
         {isPending && (
-          <div className="max-w-md w-full flex absolute z-50 text-black left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 flex-col space-y-2 justify-center items-center text-center">
+          <div className="max-w-md w-full flex absolute  dark:text-white z-50 text-black left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 flex-col space-y-2 justify-center items-center text-center">
             <span>Fetching accounts...</span>
             <LoaderCircleIcon className="animate-spin" />
           </div>

@@ -1,16 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { addMonths, subMonths } from 'date-fns';
 import { Button, buttonVariants } from '../../@/components/ui/button';
-import { ArrowBigRightDash, ArrowDownRightIcon, LucideArrowLeftToLine, MoveLeft, MoveLeftIcon, MoveRightIcon } from 'lucide-react';
-import { Link, useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom';
+import { MoveLeftIcon, MoveRightIcon } from 'lucide-react';
+import { useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 import { ContextType } from '../../Layouts/DashboardLayout';
-import { useSelectedFilter } from '../../context/TableFilterContext';
 import { useBudget } from '../../context/BudgetContext';
 
 
 
 export default function MonthPicker({ params, page, setPage, monthStrings }: { params: any, page: number, setPage: any, monthStrings: string }) {
-  const { PrevMonth, NextMonth, monthString, month, year, setMonthStrings } = useOutletContext<ContextType>();
+  const { PrevMonth, NextMonth, monthString, month, year, setMonthStrings, monthNames } = useOutletContext<ContextType>();
   const { updateQueryParams } = useBudget()
   const navigate = useNavigate();
   const location = useLocation();
@@ -21,51 +19,48 @@ export default function MonthPicker({ params, page, setPage, monthStrings }: { p
   useEffect(() => {
     localStorage.setItem("currentYear", year.toString());
     localStorage.setItem("currentDay", convert);
-  }, [convert, year]);
+    setMonthStrings(monthNames[Number(convert) - 1])
+  }, [convert, monthNames, setMonthStrings, year]);
 
-  useEffect(() => {
-    // PrevMonth();
-    // NextMonth()
 
-  }, [PrevMonth, NextMonth])
 
   // let queryParams = new URLSearchParams(params).toString();
   const handlePrevClick = useCallback(() => {
     PrevMonth();
     setPage(1);
     const targetPath = `/dashboard/${path}/${year}/${convert}`;
-    const queryParams = new URLSearchParams(params).toString();
+    const queryParams = params.toString();
     navigate(`${targetPath}${queryParams ? `?${queryParams}` : ''}`);
+    setMonthStrings(monthNames[Number(convert)])
     updateQueryParams(params)
 
 
-  }, [PrevMonth, setPage, path, year, convert, params, navigate, updateQueryParams]);
+
+  }, [PrevMonth, setPage, path, year, convert, params, navigate, updateQueryParams, monthNames, setMonthStrings]);
 
   const handleNextClick = useCallback(() => {
     NextMonth();
     setPage(1);
     const targetPath = `/dashboard/${path}/${year}/${convert}`;
-    const queryParams = new URLSearchParams(params).toString();
+    const queryParams = params.toString();
     navigate(`${targetPath}${queryParams ? `?${queryParams}` : ''}`);
     updateQueryParams(params)
   }, [NextMonth, setPage, path, year, convert, params, navigate, updateQueryParams]);
 
-  useEffect(() => {
-    if (year && month) {
-      const targetPath = `/dashboard/${path}/${year}/${convert}`;
-      const queryParams = new URLSearchParams(params).toString();
-      navigate(`${targetPath}${queryParams ? `?${queryParams}` : ''}`);
+  // useEffect(() => {
+  //   if (year && month) {
+  //     const targetPath = `/dashboard/${path}/${year}/${convert}`;
+  //     const queryParams = params.toString();
+  //     navigate(`${targetPath}${queryParams ? `?${queryParams}` : ''}`, { replace: false });
 
-    }
-  }, [navigate, path, convert, year, month, params]);
+  //   }
+  // }, [navigate, path, convert, year, month, params]);
 
 
   useEffect(() => {
     const targetPath = `/dashboard/${path}/${year}/${convert}`;
-    const queryParams = new URLSearchParams(params).toString();
-
-
-    navigate(`${targetPath}${queryParams ? `?${queryParams}` : ''}`);
+    const queryParams = params.toString();
+    navigate(`${targetPath}${queryParams ? `?${queryParams}` : ''}`, { replace: false });
 
   }, [convert, navigate, params, path, year, month])
   return (

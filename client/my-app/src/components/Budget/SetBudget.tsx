@@ -9,6 +9,7 @@ import { ContextType } from '../../Layouts/DashboardLayout';
 import { LoaderCircle, LucideXCircle, XCircle, XCircleIcon } from 'lucide-react';
 import { Button, buttonVariants } from '../../@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../@/components/ui/tooltip';
+import { Input } from '../../@/components/ui/input';
 
 
 
@@ -155,37 +156,37 @@ export default function SetBudget({ placeholder, defaultValue, value, name, clas
     }, [value]);
 
     return (
-        <td onMouseOver={() => setOnTouch(true)} onMouseLeave={() => setOnTouch(false)} className={` ${text !== '' ? 'gap-2' : ''} ${touch ? 'text-orange-400' : ''}  h-full relative hover:border-orange-400 flex   flex-grow-0 max-w-full    items-center`}>
-            <div className=' w-8 flex justify-center border-none h-full items-center max-w-full flex-grow-0  ' >
-                {text !== '' && touch ?
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger>
-                                <LucideXCircle onClick={() => handleDelete(token.access_token, id)} className='border-none cursor-pointer text-red-500 z-40' size={18} />
-                            </TooltipTrigger>
-                            <TooltipContent>unset budget</TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+        <div className={`  ${touch ? 'text-orange-400' : ''}    relative hover:border-orange-400 flex flex-shrink flex-grow-0   flex-initial    items-center`}>
+            <>
+                <td className=' w-8 flex justify-center border-none  h-full items-center  flex-grow-0  ' >
+                    {text !== '' && touch ?
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger>
+                                    <LucideXCircle onClick={() => handleDelete(token.access_token, id)} className='border-none cursor-pointer text-red-500 z-40' size={18} />
+                                </TooltipTrigger>
+                                <TooltipContent>unset budget</TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
 
-                    : null}
-                {pendingBudget && <LoaderCircle className=" animate-spin absolute flex items-center self-center bottom-1/2 right-4 top-1/2 w-4 h-4" />}
-            </div>
-            <div onClick={() => setSelected(true)} className={`w-full h-full flex flex-grow-0 hover:border-orange-400`}>
+                        : null}
+                    {pendingBudget && <LoaderCircle className=" animate-spin absolute flex items-center self-center bottom-1/2 right-4 top-1/2 w-4 h-4" />}
+                </td>
+                <td onClick={() => setSelected(true)} className={` h-full w-full flex flex-grow-0 hover:border-1 hover:border-orange-400`}>
 
-                {isPending && <LoaderCircle className=" animate-spin absolute flex items-center self-center bottom-1/2 right-4 top-1/2 w-4 h-4" />}
-                {/* {pendingBudget && <LoaderCircle className=" animate-spin absolute flex items-center self-center bottom-1/2 right-4 top-1/2 w-4 h-4" />} */}
-                {selected ? (
-                    <div
-                        className={`cursor-text rounded-[2px] px-[13px] h-[37px] flex flex-grow-0 w-full border border-orange-400`}
-                    >
-                        <div className={`${'relative  py-[9px] flex flex-grow-0 w-full hover:border-orange-400'}`}>
+                    {isPending && <LoaderCircle className=" animate-spin absolute flex items-center self-center bottom-1/2 right-4 top-1/2 w-4 h-4" />}
+                    {/* {pendingBudget && <LoaderCircle className=" animate-spin absolute flex items-center self-center bottom-1/2 right-4 top-1/2 w-4 h-4" />} */}
+                    {selected ? (
+                        <div className={`cursor-text rounded-[2px] px-[13px] flex-grow-0   h-[37px] max-w-full w-full border border-orange-400`}>
+                            {/* <div className={`${'relative  py-[9px] flex flex-grow-0 w-full hover:border-orange-400'}`}> */}
 
                             <input
+                                style={{ height: '100%', width: '100%' }}
                                 ref={inputRef}
                                 type={type}
                                 value={text}
                                 name={name}
-                                className={`${className} py-0  px-[5.1px] border-0 m-0 z-20 text-foreground  flex flex-wrap flex-grow-0 ${touch ? 'hover:text-orange-400' : ''}   outline-none text-left leading-tight shadow-none`}
+                                className={`${className} py-0  inline-flex w-fit   px-[5.1px] border-0 m-0 z-20 text-foreground   flex-wrap flex-grow-0   outline-none text-left leading-tight shadow-none`}
                                 defaultValue={defaultValue}
                                 onChange={(e) => setText(e.target.value)}
                                 placeholder={placeholder}
@@ -193,15 +194,22 @@ export default function SetBudget({ placeholder, defaultValue, value, name, clas
                                 onFocus={handleFocus}
                             />
 
+                            {/* </div> */}
                         </div>
-                    </div>
-                ) : (
-                    <div className={` px-[13px]  w-full h-full flex-grow-0 hover:border-orange-400 border border-transparent outline-none  inline-flex items-center flex-wrap leading-tight m-0 overflow-hidden text-nowrap     text-ellipsis`}>
-                        {text}
-                    </div>
-                )}
+                    ) : (
+                        <div className={` h-[37px] text-right hover:border flex-grow-0 hover:border-orange-400 border-l-0 w-full flex `}>
+                            <div className='h-[37px] text-right '>
+                                <div className='border-none  hover:border-solid   pl-[13px] text-right pr-[13px] w-full h-[36px] flex items-center whitespace-nowrap overflow-hidden text-ellipsis'>
+                                    <span className='inline-block w-full overflow-hidden '>{text}</span>
+                                </div>
 
-            </div>
-        </td>
+                            </div>
+                        </div>
+                    )}
+
+                </td>
+            </>
+
+        </div>
     )
 }

@@ -149,11 +149,11 @@ export default function BudgetsPage() {
         </Card>
       )}
 
-      <div className=" h-full overflow-y-hidden max-w-full w-full ">
+      <div className=" h-full overflow-y-hidden w-full ">
         {isPending || isLoading ? <BudgetTable columns={columns} data={[]} isPending={isPending || isLoading} /> :
           <>
             {data && data.data && data.data.length > 0 && month && year && (
-              <div className='  mt-5   h-fit py-2 w-full max-w-full  z-0 text-foreground bg-opacity-30 rounded-md'>
+              <div className='  mt-5   h-fit py-2 w-full   z-0 text-foreground bg-opacity-30 rounded-md'>
                 <BudgetTable columns={columns} data={data?.data} isPending={isLoading || isPending} />
 
               </div>)}

@@ -98,8 +98,9 @@ export default function AddTransaction({ setIsAddTransaction, months, transactRe
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [newValue, setNewValue] = useState('');
   const type: string[] = ["income", "expense"];
+
+  const { data: categories, isLoading: categoryLoading } = useQuery({ queryKey: ['category'], queryFn: fetchCategory, gcTime: 0 });
   const { data } = useQuery({ queryKey: ['accounts'], queryFn: getAccountsName })
-  const { categories } = useCategory()
   const { isOnline } = useOnlineStatus();
   // console.log(categoryData, "datacategories");
   console.log(data, 'acccontName')
@@ -125,7 +126,7 @@ export default function AddTransaction({ setIsAddTransaction, months, transactRe
       toast({
         description: `${error}`,
         variant: "destructive",
-        className: "text-black h-24"
+        className: "text-black h-16"
       })
     }
   })
@@ -138,7 +139,7 @@ export default function AddTransaction({ setIsAddTransaction, months, transactRe
     resolver: zodResolver(formSchema),
     defaultValues: {
       accountId: {
-        name: data[0].name,
+        name: data[0]?.name,
         _id: data[0]._id,
         type: data[0].type
       },
@@ -298,7 +299,7 @@ export default function AddTransaction({ setIsAddTransaction, months, transactRe
                         onSelect={(value: any) => value}
                         form={form}
                         name={"category"}
-                        options={categories && categories.map((item: any) => item.name)}
+                        options={categories.data && categories?.data?.map((item: any) => item.name)}
                         field={field}
                       />}
                     <FormMessage />

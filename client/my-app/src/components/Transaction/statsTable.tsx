@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Legend, Tooltip, Area, AreaChart, CartesianAxis, Bar, BarChart } from 'recharts';
-import { apiClient } from '../../context/LoadingContext'; import { LoaderCircleIcon } from 'lucide-react';
+import { apiClient } from '../../api/axios';
+import { LoaderCircleIcon } from 'lucide-react';
+import { useAuth } from '../../context/userAutthContext';
 ;
 // import { BarChart } from 'lucide-react';
 
@@ -18,12 +20,13 @@ export default function StatsGraph({ intervals }: { intervals: string }) {
    const [data, setData] = useState<any | null>(null);
    const token = JSON.parse(localStorage.getItem('userAuthToken') || '{}');
    const getstorageInterval = localStorage.getItem('intervalKey');
+   const { auth } = useAuth()
 
 
    //  console.log(data,"stats")
 
    useEffect(() => {
-      if (token.access_token) {
+      if (auth?.access_token) {
          setLoading(true);
          apiClient.get(`/transactions/statistics?interval=${intervals}`).then((res: any) => {
 
@@ -37,7 +40,7 @@ export default function StatsGraph({ intervals }: { intervals: string }) {
          });
 
       }
-   }, [token.access_token, intervals]);
+   }, [auth, intervals]);
 
 
    if (loading) {

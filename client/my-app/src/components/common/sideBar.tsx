@@ -11,8 +11,8 @@ import { Card } from "../../@/components/ui/card";
 
 
 export default function SideBar({ open, setOpen }: { open: boolean, setOpen: any }) {
-  const currentDate = new Date();
-  const year = currentDate.getFullYear();
+  // const currentDate = new Date();
+  // const year = currentDate.getFullYear();
   const { removeToken } = useRequireAuth()
 
   return (
@@ -35,7 +35,7 @@ export default function SideBar({ open, setOpen }: { open: boolean, setOpen: any
 
         </div>
         <div className="items px-3">
-          <NavLink title="budgets" className={({ isActive, isPending, isTransitioning }) =>
+          <NavLink title="budgets" end={false} className={({ isActive, isPending, isTransitioning }) =>
             [
               isPending ? "" : "",
               isActive ? "text-orange-300" : "",
@@ -51,7 +51,7 @@ export default function SideBar({ open, setOpen }: { open: boolean, setOpen: any
           </NavLink>
         </div>
         <div className="items px-3">
-          <NavLink title="transactions" reloadDocument={false} className={({ isActive, isPending, isTransitioning }) =>
+          <NavLink title="transactions" end={false} reloadDocument={false} className={({ isActive, isPending, isTransitioning }) =>
             [
               isPending ? "" : "",
               isActive ? "text-orange-300" : "",

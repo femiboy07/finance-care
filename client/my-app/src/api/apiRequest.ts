@@ -1,4 +1,5 @@
-import { apiClient } from "../context/LoadingContext";
+import { useAuth } from "../context/userAutthContext";
+import { apiClient } from "./axios";
 
 
 
@@ -51,7 +52,8 @@ interface DeleteAccountParams {
 
 
 export async function getAccountsName({queryKey}:any){
-  const [_key]=queryKey
+  const [_key]=queryKey;
+  
     try{
     const res=apiClient.get("/account/get");
 
@@ -74,14 +76,9 @@ export async function fetchTransaction({queryKey}:any){
   const [_key]=queryKey;
   try{
     const res=apiClient.get("/transactions/latesttransaction");
-
-      const data=(await res).data;
-
-      
-          return data;
-      
-
-    }catch(err){
+    const data=(await res).data;
+    return data;
+  }catch(err){
         console.log(err);
     }
 }
@@ -103,17 +100,12 @@ export async function fetchTransactions({queryKey}:any){
      const data= res.data;
     return data;
     }
-    // if(page || limit){
-    // const res=apiClient.get(`/transactions/listtransactions/${year}/${convert}?page=${page}&pageLimit=${limit}`);
-    // const data=(await res).data;
-    // return data;
-    // }
-
-   
-      
-
-    }catch(err){
-        console.log(err);
+  }catch(err:any){
+     console.log(err);
+     if (err.response) {
+      return Promise.reject(err.response.data.message || 'An error occurred'); // Reject the error to propagate it
+    }
+    return Promise.reject(err.message || 'An unexpected error occurred');
     }
 }
 
@@ -126,13 +118,15 @@ export async function fetchBudgets({queryKey}:any){
  const convert = month > 0  &&  month <= 9 ? `0${month}` : `${month}`
 
   try{
-  
+    if(year === undefined && convert === undefined){
+      return;
+    }
     const res=apiClient.get(`/budgets/listbudgets/${year}/${convert}`);
     const data=(await res).data;
     return data;
     }catch(err){
         console.log(err);
-        return err
+        return []
     }
 }
 
@@ -142,31 +136,15 @@ export async function fetchCategory({queryKey}:{queryKey?:any} ){
   const [_key]=queryKey;
   console.log(_key)
   
-  
 try{
-   
-    const res=apiClient.get(`/category/get`);
+   const res=apiClient.get(`/category/get`);
     const data=(await res).data;
-    
-
     return data;
-      
-
-    }catch(err){
+  }catch(err){
         console.log(err);
         return err
     }
 }
-
-
-
-
-
-
-
-
-
-
 
 
 export async function logOutUser(){
@@ -234,24 +212,6 @@ export async function deleteTransaction({queryKey,variable}:DeleteTransactionPar
     }
 }
 
-// export async function updateTransaction({queryKey,variable,id}:updateTransactionParams){
-//   const [_key,token]=queryKey;
-//   console.log(token,variable)
-//   console.log(id)
-//  try{
-//  const res=await apiClient.put(`/transactions/update/${id}`,variable);
-//  if(res.status === 200){
-//   return res.data;
-//  }
-
-// }catch (err: any) { // Update this to ensure `err` is of type `any`
-//   // Check if the error has a response and message
-//   if (err.response) {
-//     return Promise.reject(err.response.data.message || 'An error occurred'); // Reject the error to propagate it
-//   }
-//   return Promise.reject(err.message || 'An unexpected error occurred');
-// }
-// }
 
 
 
@@ -261,20 +221,14 @@ export async function updateTransaction({queryKey,variable,id}:updateTransaction
   console.log(id)
  try{
  const res=await apiClient.put(`/transactions/update/${id}`,variable);
- 
-  
-    return res.data;
-  
- 
-
+ return res.data;
 }catch (err: any) { // Update this to ensure `err` is of type `any`
   // Check if the error has a response and message
-  
-  if (err.response) {
+if (err.response) {
     return Promise.reject(err.response.data.message || 'An error occurred'); // Reject the error to propagate it
-  }
-  return Promise.reject(err.message || 'An unexpected error occurred');
 }
+ return Promise.reject(err.message || 'An unexpected error occurred');
+ }
 }
 
 

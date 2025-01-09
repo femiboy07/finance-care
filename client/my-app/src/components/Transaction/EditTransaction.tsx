@@ -10,7 +10,7 @@ import { format, formatISO, isValid, parse } from "date-fns";
 import DeleteTransactionButton from "./DeleteTransaction";
 import { Button, buttonVariants } from "../../@/components/ui/button";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { getAccountsName, updateTransaction } from "../../api/apiRequest";
+import { fetchCategory, getAccountsName, updateTransaction } from "../../api/apiRequest";
 import { queryClient } from "../..";
 import { useToast } from "../../@/components/ui/use-toast";
 import CustomSelect from "../common/CustomSelect";
@@ -67,7 +67,7 @@ export default function EditTransaction({ transaction, closeSideBar }: { transac
   const type: string[] = ["income", "expense"];
   const divRef = useRef<HTMLDivElement | null>(null)
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const { categories } = useCategory()
+  const { data: categories, isLoading: categoryLoading, isFetching: categoriesetching } = useQuery({ queryKey: ['category'], queryFn: fetchCategory, gcTime: 0 });
   const { error, data } = useQuery({
     queryKey: ['accounts'],
     queryFn: getAccountsName
@@ -252,7 +252,7 @@ export default function EditTransaction({ transaction, closeSideBar }: { transac
               <FormItem>
                 <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">CATEGORY</FormLabel>
                 {categories && <CustomSelect
-                  options={categories && categories?.map((item: any) => item.name)}
+                  options={categories?.data.map((item: { name: any; }) => item.name)}
                   name="category"
                   form={form}
                   field={field}

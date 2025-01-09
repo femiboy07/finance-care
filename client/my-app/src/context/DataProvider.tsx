@@ -3,7 +3,7 @@ import { useQuery, useQueries } from '@tanstack/react-query';
 import { fetchTransactions, fetchBudgets, getUser, fetchCategory, getMetrics, getAccounts, fetchTransaction } from '../api/apiRequest';
 import axios, { AxiosResponse } from 'axios';
 import { queryClient } from '..';
-import { apiClient } from './LoadingContext';
+import { apiClient } from '../api/axios';
 
 
 interface TransactionQueryParams {
@@ -53,6 +53,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             email: email,
             password: password,
         })
+
         return res;
     }
 

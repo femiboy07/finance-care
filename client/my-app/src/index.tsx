@@ -39,6 +39,7 @@ import { toast, useToast } from './@/components/ui/use-toast';
 import ShowNetworkToast from './components/common/ShowNetworkToast';
 import { ThemeProvider } from './context/ThemeProvider';
 import { LoadingBannerProvider } from './context/LoadingBannerProvider';
+import ProtectedPage from './Pages/Protected/Protected';
 
 
 export const queryClient = new QueryClient({
@@ -148,13 +149,18 @@ const routes = [
   },
   {
     path: '/dashboard',
-    element: <DashBoardLayout />,
+
+    element:
+      <ProtectedPage>
+        <DashBoardLayout />
+      </ProtectedPage>,
     children: [
       {
         index: true,
         element: <DashBoard />,
       },
       {
+        index: true,
         path: 'transactions',
         element: <TransactionPage />,
       },
@@ -185,29 +191,23 @@ const routes = [
 // Create the router
 const router = createBrowserRouter(routes);
 root.render(
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme='light' storageKey='femiootheme'>
-        <DataProvider>
-          <LoadingProvider>
-
-            <AuthProvider>
-              <FilterProvider>
-                {/* <LoadingBannerProvider> */}
-                <CategoryProvider>
-                  <BudgetProvider>
-                    <RouterProvider router={router} />
-                  </BudgetProvider>
-                </CategoryProvider>
-                {/* </LoadingBannerProvider> */}
-              </FilterProvider>
-            </AuthProvider>
-
-          </LoadingProvider>
-        </DataProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
-  </React.StrictMode >
+  // <React.StrictMode>
+  <QueryClientProvider client={queryClient}>
+    <AuthProvider>
+      <LoadingProvider>
+        <ThemeProvider defaultTheme='light' storageKey='femiootheme'>
+          <DataProvider>
+            <FilterProvider>
+              <BudgetProvider>
+                <RouterProvider router={router} />
+              </BudgetProvider>
+            </FilterProvider>
+          </DataProvider>
+        </ThemeProvider>
+      </LoadingProvider>
+    </AuthProvider>
+  </QueryClientProvider>
+  // </React.StrictMode >
 );
 
 // If you want to start measuring performance in your app, pass a function

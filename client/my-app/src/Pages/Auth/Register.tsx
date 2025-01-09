@@ -10,7 +10,8 @@ import axios from "axios";
 import { Button } from "../../@/components/ui/button";
 import lunchMoneyImg from '../../assets/luncho.png'
 import useRequireAuth from "../../hooks/useRequireAuth";
-import { apiClient } from "../../context/LoadingContext";
+import { apiClient } from "../../api/axios";
+import { useAuth } from "../../context/userAutthContext";
 
 const formSchema = z.object({
     name: z.string(),
@@ -37,7 +38,7 @@ const RegisterPage: React.FC = () => {
     const errors: any = useActionData();
     const location = useLocation();
     const navigate = useNavigate();
-    const { token } = useRequireAuth()
+    const { auth, setAuth } = useAuth()
 
 
 
@@ -72,7 +73,7 @@ const RegisterPage: React.FC = () => {
                 password: values.password,
             })
             if (response.status === 200) {
-                localStorage.setItem("userAuthToken", JSON.stringify(response.data));
+                setAuth({ access_token: response.data.access_token })
                 localStorage.setItem("isNew", JSON.stringify({ user: true }))
                 navigate('/dashboard', { replace: true });
                 setIsLoading(false)
@@ -96,10 +97,10 @@ const RegisterPage: React.FC = () => {
     };
 
     useEffect(() => {
-        if (token) {
+        if (auth.access_token) {
             navigate('/dashboard')
         }
-    }, [navigate, token])
+    }, [navigate, auth])
 
 
 

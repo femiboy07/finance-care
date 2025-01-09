@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, buttonVariants } from '../../@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../@/components/ui/tooltip';
 import { useMutation } from '@tanstack/react-query';
-import { apiClient } from '../../context/LoadingContext';
+import { apiClient } from '../../api/axios';
 import { useToast } from '../../@/components/ui/use-toast';
 import { queryClient } from '../..';
 import { LoaderCircleIcon } from 'lucide-react';

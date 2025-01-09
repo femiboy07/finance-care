@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import SideBar from "../components/common/sideBar";
-import { Outlet, useNavigate, useSearchParams } from "react-router-dom";
+import { Outlet, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import NavBar from "../components/common/NavBar";
 import { Toaster } from "../@/components/ui/toaster";
 import { addMonths, subMonths } from "date-fns";
@@ -13,6 +13,8 @@ import Banner from "../components/common/Banner";
 import { createPortal } from "react-dom";
 import UserLoggedOut from "../components/Modals/UserLoggedOut";
 import ShowNetworkToast from "../components/common/ShowNetworkToast";
+import useRefreshToken from "../hooks/useRefreshToken";
+import { useLoading } from "../context/LoadingContext";
 
 
 
@@ -41,7 +43,8 @@ export type ContextType = {
   setPage: any;
   setCurrentPage: any
   monthStrings: string;
-  setMonthStrings: any
+  setMonthStrings: any;
+  monthNames: string[]
 
 }
 
@@ -65,14 +68,10 @@ export default function DashBoardLayout() {
   const [page, setPage] = useState(1);
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState<number>(page);
-  const { token, isLoading } = useRequireAuth();
+  // const { setIsLoading } = useLoading()
+  const { isLoading } = useRequireAuth();
 
 
-  useEffect(() => {
-    if (!token) {
-      navigate('/auth/login', { replace: true });
-    }
-  }, [navigate, token])
 
   const monthNames = [
     "January", "February", "March", "April", "May", "June",
@@ -112,6 +111,7 @@ export default function DashBoardLayout() {
       {width <= 1280 && <MobileSideBar open={open} setOpen={setOpen} />}
       <LoadingOverlay />
       <Banner />
+      {/* {!isAppReady && <Banner />} */}
       {isLoading && createPortal(
         <UserLoggedOut />, document.body
       )}
@@ -142,7 +142,8 @@ export default function DashBoardLayout() {
             search,
             currentPage,
             monthStrings,
-            setMonthStrings
+            setMonthStrings,
+            monthNames
           } satisfies ContextType} />
         <Toaster />
       </div>

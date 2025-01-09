@@ -10,7 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "../../@/components/ui/input";
 import { useToast } from "../../@/components/ui/use-toast";
 import { queryClient } from "../..";
-import { apiClient } from "../../context/LoadingContext";
+import { apiClient } from "../../api/axios";
 
 
 
@@ -110,7 +110,7 @@ export default function AddAccount({ isAddAccounts, setIsAddAccounts }: { isAddA
                   <FormItem >
                     <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">NAME</FormLabel>
                     <FormControl>
-                      <Input type="string" className="bg-white"  {...field} />
+                      <Input type="text" placeholder="account name..." className="bg-white"  {...field} />
 
                     </FormControl>
                     <FormMessage />
@@ -124,7 +124,7 @@ export default function AddAccount({ isAddAccounts, setIsAddAccounts }: { isAddA
                   <FormItem >
                     <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">BALANCE</FormLabel>
                     <FormControl>
-                      <Input type="string" className="bg-white"  {...field} />
+                      <Input type="text" placeholder="account balance..." className="bg-white"  {...field} />
 
                     </FormControl>
                     <FormMessage />
@@ -139,7 +139,7 @@ export default function AddAccount({ isAddAccounts, setIsAddAccounts }: { isAddA
                   <FormItem >
                     <FormLabel className="after:content-['*'] after:text-red-600 after:ml-2">TYPE</FormLabel>
                     <FormControl>
-                      <Input type="string" placeholder='write a note' className="bg-white"  {...field} />
+                      <Input type="string" placeholder='Add type of asset...' className="bg-white"  {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -154,10 +154,10 @@ export default function AddAccount({ isAddAccounts, setIsAddAccounts }: { isAddA
 
         <div className="close-button   pt-[1.5em] m-[1.5em] border-t flex items-center justify-between border-top    ">
 
-          <Button className={buttonVariants({ variant: "default", className: "px-3  bg-orange-400 font-bold text-foreground hover:bg-orange-500 " })} onClick={() => setIsAddAccounts(false)}>
+          <Button className={buttonVariants({ variant: "default", className: "px-3  bg-orange-400 font-bold text-foreground text-white  hover:bg-orange-500 " })} onClick={() => setIsAddAccounts(false)}>
             CLOSE
           </Button>
-          <Button className={`ml-auto text-foreground dark:text-orange-400 font-bold `} type='submit' disabled={isPending}  >
+          <Button className={`ml-auto text-foreground dark:text-orange-400 text-white font-bold `} type='submit' disabled={isPending}  >
             {isPending ? "Loading..." : "CREATE ACCOUNTS"}
           </Button>
 

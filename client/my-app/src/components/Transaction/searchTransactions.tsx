@@ -37,7 +37,7 @@ export default function SearchTransactions({ clearFilter }: { clearFilter: () =>
         onBlur={() => setSearchColor(false)}
         onFocus={() => setSearchColor(true)}
         placeholder="Quick Search..."
-        className="absolute inset-0  w-full  border focus:transition-colors ease-in-out duration-100   focus-within:border-orange-400 placeholder:text-orange-400 placeholder:font-semibold outline-none border-slate-100  h-full pl-8 dark:bg-card text-foreground "
+        className="absolute inset-0  w-full rounded-md border focus:transition-colors ease-in-out duration-100   focus-within:border-orange-400 placeholder:text-orange-400 placeholder:font-semibold outline-none border-slate-100  h-full pl-8 dark:bg-card text-foreground "
       />
       <SearchIcon className={`absolute ${searchColor ? 'text-orange-400 font-bold' : 'text-slate-300'}   top-1/2 -translate-y-1/2 left-2`} size={18} />
     </div>

@@ -35,9 +35,9 @@ export default function MyInputMutation({ value, type, id, name, placeholder, cl
   const [startDate, setStartDate] = useState<Date | null>(new Date())
   const meet = text;
   const { isOnline } = useOnlineStatus()
-  const { categories } = useCategory();
+  const { data: categories, isLoading: categoryLoading, isFetching: categoriesetching } = useQuery({ queryKey: ['category'], queryFn: fetchCategory, gcTime: 0 });
   console.log(categories, 'anyyyyy')
-  const categoryData = categories?.map((item: any) => item.name)
+  const categoryData = categories?.data?.map((item: any) => item.name)
 
   const mutation = useMutation({
     mutationFn: updateTransaction,
@@ -201,7 +201,7 @@ export default function MyInputMutation({ value, type, id, name, placeholder, cl
             </SelectTrigger>
             <SelectContent id={id} className=" h-28">
 
-              {categoryData && categoryData.map((item: any) => (
+              {categoryData && categoryData?.map((item: any) => (
                 <SelectItem value={item} key={item}>
                   {isPending && <LoaderCircle className=" animate-spin absolute flex items-center self-center bottom-1/2 right-4 top-1/2 w-4 h-4" />}
                   {item}
@@ -253,7 +253,7 @@ export default function MyInputMutation({ value, type, id, name, placeholder, cl
                     type={type}
                     value={text}
                     name={name}
-                    className={`${className}  py-0 px-[5.1px] border-0 m-0 max-w-full  w-full flex flex-wrap  outline-none text-left leading-tight shadow-none`}
+                    className={`${className}  py-0 px-[5.1px] dark:text-white border-0 m-0 max-w-full  w-full flex flex-wrap  outline-none text-left leading-tight shadow-none`}
                     defaultValue={defaultValue}
                     onChange={(e) => setText(e.target.value)}
                     placeholder={placeholder}
