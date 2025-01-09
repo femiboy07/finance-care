@@ -2,16 +2,45 @@ import { Request, Response } from "express";
 import accounts from "../models/Account";
 import transcation from "../models/Transcation";
 import budgets from "../models/Budgets";
-import mongoose from "mongoose";
-import { CreateTransactionRequest } from "./transcation";
+import mongoose, { ObjectId } from "mongoose";
 import user from "../models/User";
 import CategoryModel from "../models/Category";
 
 
+export const createDefaultAccountForUser = async (userId:any) => {
+    try {
+      // Check if the default account exists for the user
+      
+  
+      const defaultAccountExists = await accounts.findOne({
+        name: 'Cash Transaction',
+        type: 'def_coin',
+        userId: userId, // Check for user-specific default account
+      });
+    
+  
+      if (!defaultAccountExists) {
+        const account = new accounts({
+          userId: userId, // Tie account to the specific user
+          type: 'def_coin',
+          isSystemAccount: true,
+          name: 'Cash Transaction',
+          balance:100000000000000,
+        });
+  
+        await account.save();
+        console.log(`Default account created for user: ${userId}`);
+      } else {
+        console.log(`Default account already exists for user: ${userId}`);
+      }
+    } catch (error) {
+      console.error(`Error creating default account for user ${userId}:`, error);
+    }
+  };
+  
 
 
-
-export async function createAccount(req: CreateTransactionRequest, res: Response) {
+export async function createAccount(req: Request, res: Response) {
     const { name, type, balance } = req.body;
 
     // Validate required fields
@@ -34,7 +63,7 @@ export async function createAccount(req: CreateTransactionRequest, res: Response
         const newAccount = new accounts({
             userId: userId,
             name: name,
-            type: type,
+            assets: type,
             balance: balance
         });
 
@@ -43,6 +72,7 @@ export async function createAccount(req: CreateTransactionRequest, res: Response
 
         // Update user's account list (Assuming 'users' model exists and has accounts array)
         const userAccount = await user.findById(userId).session(session);
+        console.log(userAccount)
         if (!userAccount) {
             throw new Error("User not found");
         }
@@ -177,7 +207,7 @@ export async function deleteAccount(req: Request, res: Response) {
     }
   }
 
-  export async function getAccounts(req: CreateTransactionRequest, res: Response) {
+  export async function getAccounts(req: Request, res: Response) {
     try {
         const userId: any = req.user;
 

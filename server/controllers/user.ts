@@ -2,10 +2,11 @@
 import { Response,Request } from "express";
 import user from "../models/User";
 import jwt from "jsonwebtoken";
-import { CreateTransactionRequest } from "./transcation";
 import transcation from "../models/Transcation";
 import {startOfWeek,startOfMonth,startOfYear,endOfWeek,endOfMonth,endOfYear} from "date-fns";
 import {toZonedTime} from 'date-fns-tz'
+import { createDefaultAccountForUser } from "./accounts";
+import { generateToken } from "../utils/modify";
 
 
 export async function register(req:Request,res:Response):Promise<unknown>{
@@ -28,16 +29,15 @@ export async function register(req:Request,res:Response):Promise<unknown>{
               name:name,
               email:email,
               passwordHash:password,
-              
-
         }) 
+       
          const payload={id:newUser.id,email}
          const access_token=jwt.sign(payload,process.env.SECRET_KEY!,{expiresIn:'4h'})
          const refresh_token=jwt.sign(payload, process.env.SECRET_KEY!,{expiresIn:'7d'});
          const expiresIn=Math.floor(Date.now() / 1000 ) * 60 * 60  
          newUser.userRefreshTokens.push(refresh_token);
-
-         newUser.save();
+         await newUser.save()
+       
          res.cookie('refreshToken',refresh_token,{
             httpOnly:true,
             secure:process.env.NODE_ENV === "production",
@@ -45,6 +45,9 @@ export async function register(req:Request,res:Response):Promise<unknown>{
             path:'/',
             maxAge:7 * 24 * 60 * 60 * 1000
          }) 
+         await createDefaultAccountForUser(null);
+         
+        
         return res.json({access_token,message:"registerd succesfully"});
          
 }
@@ -62,7 +65,7 @@ export async function signInUser(req:Request,res:Response){
         const isMatch = await existingUser.comparePassword(password)
         if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
         const payload = { id: existingUser._id ,email:existingUser.email};
-        const access_token=jwt.sign(payload,process.env.SECRET_KEY!,{expiresIn:'1h'})
+        const access_token=jwt.sign(payload,process.env.SECRET_KEY!,{expiresIn:90})
         const refresh_token=jwt.sign(payload, process.env.SECRET_KEY!,{expiresIn:'7d'});
         const expiresIn=Math.floor(Date.now() / 1000 ) + 60 * 60    
         existingUser.userRefreshTokens = [refresh_token];
@@ -70,7 +73,7 @@ export async function signInUser(req:Request,res:Response){
          res.cookie('refreshToken',refresh_token,{
             httpOnly:true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite:'none',
+            sameSite:process.env.NODE_ENV === 'production' ? 'none' : 'lax',
             path:'/',
             maxAge: 7 * 24 * 60 * 60 * 1000
             
@@ -86,6 +89,7 @@ export async function signInUser(req:Request,res:Response){
 export async function refreshToken(req: Request, res: Response) {
     try {
       const refreshToken = req.cookies?.refreshToken;
+      console.log(refreshToken,"refreshToken")
   
       if (!refreshToken) {
         return res.status(401).json({ message: 'Refresh Token Required' });
@@ -120,14 +124,20 @@ export async function refreshToken(req: Request, res: Response) {
       const newRefreshToken = generateToken({ id: userRecord._id, email: userRecord.email }, '7d');
   
       userRecord.userRefreshTokens.push(newRefreshToken);
-      await userRecord.save();
+    await user.updateOne(
+        { _id: userRecord._id },
+        { $set: { userRefreshTokens: userRecord.userRefreshTokens } }
+      );
+
+    //   await userRecord.save()
   
       res.cookie('refreshToken', newRefreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         path: '/',
-        maxAge: 7 * 24 * 60 * 60 * 1000
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        
       });
   
       return res.status(200).json({ access_token: newAccessToken });
@@ -136,9 +146,7 @@ export async function refreshToken(req: Request, res: Response) {
       return res.status(500).json({ message: 'Internal server error' });
     }
   } 
-  function generateToken(payload: object, expiry: string) {
-    return jwt.sign(payload, process.env.SECRET_KEY!, { expiresIn: expiry });
-  }
+ 
 
 
   export async function logOutUser(req: Request, res: Response) {
@@ -146,8 +154,7 @@ export async function refreshToken(req: Request, res: Response) {
     
     console.log(refreshToken);
     
-
-    try {
+     try {
         if (!refreshToken) {
             return res.status(401).json({ message: 'No refresh token found' });
         }
@@ -169,30 +176,33 @@ export async function refreshToken(req: Request, res: Response) {
             return res.status(403).json({ message: 'Invalid Refresh Token' });
         }
         // Clear all refresh tokens
-        currentUser.userRefreshTokens = []
-        // currentUser.userRefreshTokens=[];
+       // Step 2: Add the new refresh token
+       currentUser.userRefreshTokens=[]
        
         await currentUser.save();
         // Clear the refresh token cookie
         res.clearCookie('refreshToken', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-            sameSite: 'none',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
             path: '/',
-            maxAge: 7 * 24 * 60 * 60 * 1000
+            // maxAge: 7 * 24 * 60 * 60 * 1000
         });
-
-       
-
-        return res.status(200).json({ message: 'Logged out successfully' });
+       return res.status(200).json({ message: 'Logged out successfully' });
     } catch (err) {
+        res.clearCookie('refreshToken', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            path: '/',
+            // maxAge: 7 * 24 * 60 * 60 * 1000
+        });
         console.error('Error during logout:', err);
         return res.status(500).json({ message: 'An error occurred during logout' });
     }
 }
-export async function getUserName(req:CreateTransactionRequest,res:Response){
-
-  try{
+export async function getUserName(req:Request,res:Response){
+ try{
       const userId=req.user?._id;
       const users=await user.findById(userId);
       const data=users?.username;

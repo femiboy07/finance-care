@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.createDefaultAccountForUser = void 0;
 exports.createAccount = createAccount;
 exports.updateAccount = updateAccount;
 exports.deleteAccount = deleteAccount;
@@ -22,6 +23,34 @@ const Budgets_1 = __importDefault(require("../models/Budgets"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const User_1 = __importDefault(require("../models/User"));
 const Category_1 = __importDefault(require("../models/Category"));
+const createDefaultAccountForUser = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Check if the default account exists for the user
+        const defaultAccountExists = yield Account_1.default.findOne({
+            name: 'Cash Transaction',
+            type: 'def_coin',
+            userId: userId, // Check for user-specific default account
+        });
+        if (!defaultAccountExists) {
+            const account = new Account_1.default({
+                userId: userId, // Tie account to the specific user
+                type: 'def_coin',
+                isSystemAccount: true,
+                name: 'Cash Transaction',
+                balance: 100000000000000,
+            });
+            yield account.save();
+            console.log(`Default account created for user: ${userId}`);
+        }
+        else {
+            console.log(`Default account already exists for user: ${userId}`);
+        }
+    }
+    catch (error) {
+        console.error(`Error creating default account for user ${userId}:`, error);
+    }
+});
+exports.createDefaultAccountForUser = createDefaultAccountForUser;
 function createAccount(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         var _a;
@@ -42,13 +71,14 @@ function createAccount(req, res) {
             const newAccount = new Account_1.default({
                 userId: userId,
                 name: name,
-                type: type,
+                assets: type,
                 balance: balance
             });
             // Save the new account within the transaction
             yield newAccount.save({ session });
             // Update user's account list (Assuming 'users' model exists and has accounts array)
             const userAccount = yield User_1.default.findById(userId).session(session);
+            console.log(userAccount);
             if (!userAccount) {
                 throw new Error("User not found");
             }

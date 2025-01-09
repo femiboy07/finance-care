@@ -1,6 +1,5 @@
 import { Request,Response } from "express";
 import budgets from "../models/Budgets";
-import {  CreateTransactionRequest } from "./transcation";
 import transcation from "../models/Transcation";
 import CategoryModel from "../models/Category";
 import mongoose from "mongoose";
@@ -27,7 +26,7 @@ const findTransactionBudgets = async (category: string,userId:any): Promise<numb
 };
 
 
-export async function getBudgets(req: CreateTransactionRequest, res: Response) {
+export async function getBudgets(req: Request, res: Response) {
     try {
         const { year, month } = req.params;
         const userId = req.user?._id; // Assuming `req.user` has been populated via authentication middleware.
@@ -75,7 +74,7 @@ export async function getBudgets(req: CreateTransactionRequest, res: Response) {
         return res.status(500).json({ message: "System error, please try again later", err });
     }
 }
-export async function updateBudget(req: CreateTransactionRequest, res: Response) {
+export async function updateBudget(req: Request, res: Response) {
     const { category, amount, spent, remaining, year, month } = req.body;
     const userId = req.user?._id;
   console.log(spent,remaining,amount)

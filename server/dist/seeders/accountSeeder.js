@@ -15,32 +15,36 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.seedDefaultAccount = void 0;
 exports.clearAccounts = clearAccounts;
 const User_1 = __importDefault(require("../models/User")); // Ensure the User model is imported
-const Category_1 = __importDefault(require("../models/Category")); // Ensure the Category model is imported
 const Account_1 = __importDefault(require("../models/Account"));
 const seedDefaultAccount = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const defaultAccountExists = yield Account_1.default.findOne({ name: 'Cash Transaction', type: 'def_coin', userId: null });
         const users = yield User_1.default.find({}); // Get all users
-        const categories = yield Category_1.default.find({}); // Get all categories
         for (const user of users) {
+            // Check if the default account exists for each user
+            const defaultAccountExists = yield Account_1.default.findOne({
+                name: 'Cash Transaction',
+                type: 'def_coin',
+                userId: user._id, // Check for user-specific default account
+            });
             if (!defaultAccountExists) {
-                const account = yield Account_1.default.create({
-                    userId: null,
+                const account = new Account_1.default({
+                    userId: user._id, // Tie account to the specific user
                     type: 'def_coin',
                     isSystemAccount: true,
                     name: 'Cash Transaction',
-                    balance: 0
+                    balance: 'unlimited',
                 });
                 yield account.save();
+                console.log(`Default account created for user: ${user._id}`);
             }
             else {
-                console.log('default account already exists!...');
+                console.log(`Default account already exists for user: ${user._id}`);
             }
         }
-        console.log("Budget seeding complete.");
+        console.log("Default account seeding complete.");
     }
     catch (error) {
-        console.error("Error seeding budgets:", error);
+        console.error("Error seeding default accounts:", error);
     }
 });
 exports.seedDefaultAccount = seedDefaultAccount;

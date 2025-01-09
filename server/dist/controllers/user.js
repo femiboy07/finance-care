@@ -23,6 +23,8 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const Transcation_1 = __importDefault(require("../models/Transcation"));
 const date_fns_1 = require("date-fns");
 const date_fns_tz_1 = require("date-fns-tz");
+const accounts_1 = require("./accounts");
+const modify_1 = require("../utils/modify");
 function register(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const { email, password, name, username } = req.body;
@@ -45,7 +47,7 @@ function register(req, res) {
         const refresh_token = jsonwebtoken_1.default.sign(payload, process.env.SECRET_KEY, { expiresIn: '7d' });
         const expiresIn = Math.floor(Date.now() / 1000) * 60 * 60;
         newUser.userRefreshTokens.push(refresh_token);
-        newUser.save();
+        yield newUser.save();
         res.cookie('refreshToken', refresh_token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
@@ -53,6 +55,7 @@ function register(req, res) {
             path: '/',
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
+        yield (0, accounts_1.createDefaultAccountForUser)(null);
         return res.json({ access_token, message: "registerd succesfully" });
     });
 }
@@ -70,7 +73,7 @@ function signInUser(req, res) {
             if (!isMatch)
                 return res.status(400).json({ message: 'Invalid credentials' });
             const payload = { id: existingUser._id, email: existingUser.email };
-            const access_token = jsonwebtoken_1.default.sign(payload, process.env.SECRET_KEY, { expiresIn: '1h' });
+            const access_token = jsonwebtoken_1.default.sign(payload, process.env.SECRET_KEY, { expiresIn: 90 });
             const refresh_token = jsonwebtoken_1.default.sign(payload, process.env.SECRET_KEY, { expiresIn: '7d' });
             const expiresIn = Math.floor(Date.now() / 1000) + 60 * 60;
             existingUser.userRefreshTokens = [refresh_token];
@@ -78,7 +81,7 @@ function signInUser(req, res) {
             res.cookie('refreshToken', refresh_token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
-                sameSite: 'none',
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
                 path: '/',
                 maxAge: 7 * 24 * 60 * 60 * 1000
             });
@@ -94,6 +97,7 @@ function refreshToken(req, res) {
         var _a;
         try {
             const refreshToken = (_a = req.cookies) === null || _a === void 0 ? void 0 : _a.refreshToken;
+            console.log(refreshToken, "refreshToken");
             if (!refreshToken) {
                 return res.status(401).json({ message: 'Refresh Token Required' });
             }
@@ -119,16 +123,17 @@ function refreshToken(req, res) {
             // Remove the old refresh token and save
             userRecord.userRefreshTokens = userRecord.userRefreshTokens.filter(token => token !== refreshToken);
             // Generate new tokens
-            const newAccessToken = generateToken({ id: userRecord._id, email: userRecord.email }, '1h');
-            const newRefreshToken = generateToken({ id: userRecord._id, email: userRecord.email }, '7d');
+            const newAccessToken = (0, modify_1.generateToken)({ id: userRecord._id, email: userRecord.email }, '1h');
+            const newRefreshToken = (0, modify_1.generateToken)({ id: userRecord._id, email: userRecord.email }, '7d');
             userRecord.userRefreshTokens.push(newRefreshToken);
-            yield userRecord.save();
+            yield User_1.default.updateOne({ _id: userRecord._id }, { $set: { userRefreshTokens: userRecord.userRefreshTokens } });
+            //   await userRecord.save()
             res.cookie('refreshToken', newRefreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
-                sameSite: 'none',
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
                 path: '/',
-                maxAge: 7 * 24 * 60 * 60 * 1000
+                maxAge: 7 * 24 * 60 * 60 * 1000,
             });
             return res.status(200).json({ access_token: newAccessToken });
         }
@@ -137,9 +142,6 @@ function refreshToken(req, res) {
             return res.status(500).json({ message: 'Internal server error' });
         }
     });
-}
-function generateToken(payload, expiry) {
-    return jsonwebtoken_1.default.sign(payload, process.env.SECRET_KEY, { expiresIn: expiry });
 }
 function logOutUser(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -164,20 +166,27 @@ function logOutUser(req, res) {
                 return res.status(403).json({ message: 'Invalid Refresh Token' });
             }
             // Clear all refresh tokens
+            // Step 2: Add the new refresh token
             currentUser.userRefreshTokens = [];
-            // currentUser.userRefreshTokens=[];
             yield currentUser.save();
             // Clear the refresh token cookie
             res.clearCookie('refreshToken', {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-                sameSite: 'none',
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
                 path: '/',
-                maxAge: 7 * 24 * 60 * 60 * 1000
+                // maxAge: 7 * 24 * 60 * 60 * 1000
             });
             return res.status(200).json({ message: 'Logged out successfully' });
         }
         catch (err) {
+            res.clearCookie('refreshToken', {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+                path: '/',
+                // maxAge: 7 * 24 * 60 * 60 * 1000
+            });
             console.error('Error during logout:', err);
             return res.status(500).json({ message: 'An error occurred during logout' });
         }

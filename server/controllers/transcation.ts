@@ -9,6 +9,7 @@ import CategoryModel from "../models/Category";
 import { toDecimal128 } from "../utils/modify";
 import {toZonedTime} from 'date-fns-tz'
 import {json2csv} from "json-2-csv";
+import user from "../models/User";
 
 
 
@@ -29,13 +30,13 @@ export const convertToNumber = (value: any) => {
   return value;
 };
 
-export interface CreateTransactionRequest extends Request {
-  io?:Server;
-  userId?: string;
-     user?:{
-      _id?:mongoose.Schema.Types.ObjectId,
-     } // Assuming userId is added to the request object by authentication middleware
-}
+// export interface CreateTransactionRequest extends Request {
+//   io?:Server;
+//   userId?: string;
+//      user?:{
+//       _id?:mongoose.Schema.Types.ObjectId,
+//      } // Assuming userId is added to the request object by authentication middleware
+// }
 
 interface TransactionDTO{
      type:string;
@@ -50,7 +51,7 @@ interface TransactionDTO{
 
 
 
-export async function createTranscation(req: CreateTransactionRequest, res: Response): Promise<ITranscations | any> {
+export async function createTranscation(req:Request, res: Response): Promise<ITranscations | any> {
   const { type, amount, description, category, accountId, date,month,year } = req.body as TransactionDTO;
   console.log(date,"ass")
 
@@ -153,7 +154,7 @@ export async function createTranscation(req: CreateTransactionRequest, res: Resp
   }
 }
 
-export async function updateTransaction(req: CreateTransactionRequest, res: Response) {
+export async function updateTransaction(req: Request, res: Response) {
   const { id } = req.params;
   const { category, type, amount, description, date, accountId } = req.body as Partial<TransactionDTO>;
   console.log(accountId,"accountId")
@@ -437,7 +438,7 @@ interface QueryParams {
   pageLimit?:number;
 
 }
-export async function getLatestTransactions(req: CreateTransactionRequest, res: Response) {
+export async function getLatestTransactions(req: Request, res: Response) {
   try {
     const transactions = await transcation.aggregate([
       { $match: { userId: req.user?._id } }, // Filter by user ID if needed
@@ -561,7 +562,7 @@ const endOfMonthUtc = toZonedTime(endOfMonthLocal, timeZone)
 }
 
 
-export async function metrics(req:CreateTransactionRequest,res:Response){
+export async function metrics(req:Request,res:Response){
          try{
           const userId:any=req.user;
 
@@ -707,7 +708,7 @@ async function deductBalance(accountId: string, currentBalance:any, amount: any,
 
 
 
-export async function csvExportTransaction(req:CreateTransactionRequest, res: Response) {
+export async function csvExportTransaction(req:Request, res: Response) {
   const { year, month } = req.body;
 
   if (!year || !month) {

@@ -60,6 +60,7 @@ app.use(expresscookie());
 app.use(express.json());
 
 app.use(express.urlencoded({extended:true}));
+
 app.use(passport.initialize())
 
 
@@ -73,8 +74,7 @@ async function seedDatabase() {
   //  await clearBudgets()
       // Run seeders
       await seedCategories();
-      // await clearAccounts()
-      await seedDefaultAccount();
+      // await seedDefaultAccount();
       // await seedDefaultBudget();
       // Call other seeders here
   

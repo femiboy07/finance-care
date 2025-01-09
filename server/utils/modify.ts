@@ -1,4 +1,6 @@
+import { NextFunction, Request, Response } from "express";
 import mongoose from "mongoose";
+import jwt from 'jsonwebtoken';
 
 
 export const toDecimal128 = (value: any) => {
@@ -7,3 +9,7 @@ export const toDecimal128 = (value: any) => {
     }
     return undefined;
 };
+
+export function generateToken(payload: object, expiry: string) {
+    return jwt.sign(payload, process.env.SECRET_KEY!, { expiresIn: expiry });
+  }

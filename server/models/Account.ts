@@ -34,7 +34,6 @@ const accountsSchema=new mongoose.Schema<IAccounts>({
       isSystemAccount:{
         type:Boolean,
         default:false,
-        
       },
       balance:{
         type:mongoose.Types.Decimal128,

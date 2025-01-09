@@ -51,7 +51,6 @@ const routecategory_1 = __importDefault(require("./routes/routecategory"));
 const googleauthClient_1 = __importDefault(require("./middlewares/googleauthClient"));
 const User_1 = __importDefault(require("./models/User"));
 const categorySeeders_1 = require("./seeders/categorySeeders");
-const accountSeeder_1 = require("./seeders/accountSeeder");
 const app = (0, express_1.default)();
 const port = process.env.PORT || 5000;
 const allowedOrigins = [
@@ -92,8 +91,7 @@ function seedDatabase() {
             //  await clearBudgets()
             // Run seeders
             yield (0, categorySeeders_1.seedCategories)();
-            // await clearAccounts()
-            yield (0, accountSeeder_1.seedDefaultAccount)();
+            // await seedDefaultAccount();
             // await seedDefaultBudget();
             // Call other seeders here
             console.log("Database seeding completed.");

@@ -71,6 +71,7 @@ const userTranscations = new mongoose_1.Schema({
     accountId: {
         type: mongoose_1.default.Types.ObjectId,
         ref: "Accounts",
+        required: true
     },
     month: {
         type: Number,

@@ -60,8 +60,8 @@ const userTranscations=new Schema<ITranscations>({
      accountId:{
          type:mongoose.Types.ObjectId,
          ref:"Accounts",
-         
-     },
+         required:true
+      },
      month:{
       type:Number,
      },
